@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>lucidité — Varun Agarwal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,480;0,9..144,600;1,9..144,400;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #1b2119;
+    --paper: #f1e7d2;
+    --paper-soft: #e6d9bd;
+    --gold: #c29a4b;
+    --oxblood: #7b3131;
+    --text-on-paper: #2a241c;
+    --muted-on-paper: rgba(42,36,28,0.55);
+    --max: 760px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--text-on-paper);
+    font-family:"Space Mono", monospace;
+    min-height:100vh;
+  }
+
+  header.site-header{
+    max-width:var(--max); margin:0 auto;
+    padding:2.5rem 1.5rem 1.5rem;
+    display:flex; align-items:baseline; justify-content:space-between;
+    border-bottom:1px solid rgba(42,36,28,0.16);
+  }
+  .wordmark{
+    font-family:"Fraunces", serif; font-weight:480;
+    font-size:1.15rem; margin:0; letter-spacing:-0.01em;
+  }
+  nav.site-nav a{
+    color:var(--text-on-paper); text-decoration:none;
+    font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
+    margin-left:1.25rem; border-bottom:1px solid transparent;
+  }
+  nav.site-nav a:hover{ border-bottom-color:var(--oxblood); }
+
+  main{max-width:var(--max); margin:0 auto; padding:4rem 1.5rem 3rem;}
+
+  h1.title{
+    font-family:"Fraunces", serif; font-weight:340; font-optical-sizing:auto;
+    font-size:clamp(2.6rem, 9vw, 4.2rem); line-height:0.98; margin:0 0 1.5rem;
+    color:var(--ink);
+  }
+  h1.title em{ font-style:italic; font-weight:400; color:var(--oxblood); }
+
+  .intro{
+    color:var(--muted-on-paper); font-size:0.9rem; line-height:1.8;
+    max-width:52ch; margin:0 0 4rem;
+  }
+
+  .sections{
+    display:grid; gap:1.25rem;
+    grid-template-columns:1fr;
+  }
+  @media(min-width:640px){
+    .sections{ grid-template-columns:1fr 1fr 1fr; }
+  }
+
+  .section-card{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--paper-soft);
+    border:1px solid rgba(42,36,28,0.16);
+    padding:1.5rem 1.35rem;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .section-card:hover{
+    transform:translateY(-3px);
+    box-shadow:4px 6px 0 0 rgba(42,36,28,0.1);
+  }
+  .section-tag{
+    font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--gold); display:block; margin-bottom:0.6rem;
+  }
+  .section-name{
+    font-family:"Fraunces", serif; font-weight:500; font-size:1.3rem;
+    color:var(--ink); margin:0 0 0.5rem;
+  }
+  .section-card:hover .section-name{ color:var(--oxblood); }
+  .section-blurb{
+    font-size:0.76rem; color:var(--muted-on-paper); line-height:1.6; margin:0;
+  }
+
+  footer{
+    max-width:var(--max); margin:0 auto; padding:3rem 1.5rem 5rem;
+    color:var(--muted-on-paper); font-size:0.7rem; letter-spacing:0.04em;
+    border-top:1px solid rgba(42,36,28,0.14); margin-top:2rem;
+  }
+  footer a{ color:var(--oxblood); text-decoration:none; }
+  footer a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <p class="wordmark">lucidité</p>
+  <nav class="site-nav">
+    <a href="https://www.instagram.com/ag.varun" target="_blank" rel="noopener">INSTAGRAM</a>
+  </nav>
+</header>
+
+<main>
+  <h1 class="title">Varun <em>Agarwal.</em></h1>
+  <p class="intro">
+    A personal site, migrated off Cargo. Books I've read, places I've
+    been, and the odd gadget or project writeup — split across a few
+    sections below.
+  </p>
+
+  <div class="sections">
+    <a class="section-card" href="https://books.varunagarwal.com">
+      <span class="section-tag">Reading log</span>
+      <p class="section-name">Books</p>
+      <p class="section-blurb">Recent reads, roughly newest first — plus a few highlights pulled from the wider GoodReads library.</p>
+    </a>
+    <a class="section-card" href="https://wander.varunagarwal.com">
+      <span class="section-tag">Photos &amp; travel</span>
+      <p class="section-name">Field Notes</p>
+      <p class="section-blurb">Street art, temples, and gig photos from wherever I end up — London, Khajuraho, concerts.</p>
+    </a>
+    <a class="section-card" href="https://notes.varunagarwal.com">
+      <span class="section-tag">Writeups</span>
+      <p class="section-name">Notes</p>
+      <p class="section-blurb">Gadgets, projects, and whatever else doesn't fit the other two.</p>
+    </a>
+  </div>
+</main>
+
+<footer>lucidité, by <a href="https://www.instagram.com/ag.varun" target="_blank" rel="noopener">Varun Agarwal</a></footer>
+
+</body>
+</html>
