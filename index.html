@@ -12,6 +12,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,480;0,9..144,600;1,9..144,400;1,9..144,500&family=Fredoka:wght@700&family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  @font-face{
+    font-family:"Honera";
+    src:url("fonts/honera/HONERA-Regular.woff2") format("woff2"),
+        url("fonts/honera/HONERA-Regular.woff") format("woff");
+    font-weight:400; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:"Honera Script";
+    src:url("fonts/honera/Honera-Script.woff2") format("woff2"),
+        url("fonts/honera/Honera-Script.woff") format("woff");
+    font-weight:400; font-style:normal; font-display:swap;
+  }
   :root{
     --ink: #1b2119;
     --paper: #f1e7d2;
@@ -20,6 +32,8 @@
     --oxblood: #7b3131;
     --forest: #2f4a3a;
     --deep-teal: #1f4356;
+    --title-blue: #3f7286;
+    --title-orange: #cc5f21;
     --text-on-paper: #2a241c;
     --muted-on-paper: rgba(42,36,28,0.55);
     --muted-on-dark: rgba(241,231,210,0.68);
@@ -55,11 +69,20 @@
   main{max-width:var(--max); margin:0 auto; padding:4rem 1.5rem 3rem;}
 
   h1.title{
-    font-family:"Fraunces", serif; font-weight:340; font-optical-sizing:auto;
-    font-size:clamp(2.6rem, 9vw, 4.2rem); line-height:0.98; margin:0 0 1.5rem;
-    color:var(--ink);
+    position:relative;
+    font-family:"Honera", serif; font-weight:400;
+    font-size:clamp(3.2rem, 12vw, 5.6rem); line-height:0.92; margin:0 0 5.5rem;
+    color:var(--title-blue);
   }
-  h1.title em{ font-style:italic; font-weight:400; color:var(--oxblood); }
+  h1.title .title-script{
+    position:absolute; left:2%; top:58%;
+    display:block; width:96%;
+    font-family:"Honera Script", cursive; font-weight:400; font-style:normal;
+    font-size:clamp(2.4rem, 9.5vw, 4.1rem); line-height:1;
+    color:var(--title-orange);
+    transform:rotate(-5deg);
+    white-space:nowrap;
+  }
 
   .intro{
     color:var(--muted-on-paper); font-size:0.9rem; line-height:1.8;
@@ -67,19 +90,28 @@
   }
 
   .sections{
-    display:grid; gap:1.25rem;
-    grid-template-columns:1fr;
+    display:flex; gap:1.1rem;
+    overflow-x:auto; overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;
+    margin:0 -1.5rem; padding:0 1.5rem 0.75rem;
   }
   @media(min-width:640px){
-    .sections{ grid-template-columns:1fr 1fr 1fr; }
+    .sections{
+      display:grid; grid-template-columns:1fr 1fr 1fr; align-items:start;
+      overflow-x:visible; margin:0; padding:0;
+    }
   }
 
   .section-card{
     display:block; text-decoration:none; color:inherit;
-    border:2px solid var(--card-color);
+    flex:0 0 78%; scroll-snap-align:start;
+    border:4px solid var(--card-color);
     border-radius:8px;
     overflow:hidden;
     transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  @media(min-width:640px){
+    .section-card{ flex:initial; }
   }
   .section-card--books{ --card-color:var(--forest); }
   .section-card--wander{ --card-color:var(--deep-teal); }
@@ -94,8 +126,8 @@
   }
   .section-name{
     position:absolute; left:0; right:0; bottom:0; margin:0;
-    padding:2.6rem 1.1rem 0.75rem;
-    background:linear-gradient(to top, var(--card-color) 6%, transparent 100%);
+    padding:0.6rem 1.1rem 0.75rem;
+    background:var(--card-color);
     font-family:"Fraunces", serif; font-weight:500; font-size:1.3rem;
     color:var(--paper); line-height:1.15;
   }
@@ -141,7 +173,7 @@
 </header>
 
 <main>
-  <h1 class="title">Varun <em>Agarwal.</em></h1>
+  <h1 class="title">Varun<span class="title-script">Agarwal.</span></h1>
   <p class="intro">
     i made a digital diary of things i found fun. browse around and see!
   </p>
