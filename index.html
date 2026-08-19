@@ -76,32 +76,28 @@
 
   .section-card{
     display:block; text-decoration:none; color:inherit;
-    border:1px solid rgba(42,36,28,0.16);
+    border:2px solid var(--card-color);
+    border-radius:8px;
     overflow:hidden;
     transition:transform 0.2s ease, box-shadow 0.2s ease;
   }
+  .section-card--books{ --card-color:var(--forest); }
+  .section-card--wander{ --card-color:var(--deep-teal); }
+  .section-card--notes{ --card-color:var(--oxblood); }
   .section-card:hover{
     transform:translateY(-3px);
     box-shadow:5px 7px 0 0 rgba(27,33,25,0.22);
   }
+  .section-cover-wrap{ position:relative; line-height:0; }
   .section-cover{
-    width:100%; height:140px; object-fit:cover; display:block;
-  }
-  .section-card-body{
-    padding:1.5rem 1.35rem;
-    background:var(--paper-soft);
-    color:var(--text-on-paper);
-  }
-  .section-card--books .section-card-body{ background:var(--forest); color:var(--paper); }
-  .section-card--wander .section-card-body{ background:var(--deep-teal); color:var(--paper); }
-  .section-card--notes .section-card-body{ background:var(--oxblood); color:var(--paper); }
-  .section-tag{
-    font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--gold); display:block; margin-bottom:0.6rem;
+    width:100%; height:auto; display:block;
   }
   .section-name{
+    position:absolute; left:0; right:0; bottom:0; margin:0;
+    padding:2.6rem 1.1rem 0.75rem;
+    background:linear-gradient(to top, var(--card-color) 6%, transparent 100%);
     font-family:"Fraunces", serif; font-weight:500; font-size:1.3rem;
-    color:inherit; margin:0 0 0.5rem;
+    color:var(--paper); line-height:1.15;
   }
   .section-card:hover .section-name{ color:var(--gold); }
 
@@ -109,6 +105,16 @@
   .section-card--books .section-name{ font-style:italic; }
   .section-card--wander .section-name{ font-family:"Fredoka", sans-serif; font-weight:700; }
   .section-card--notes .section-name{ font-family:"Archivo Black", sans-serif; font-weight:400; letter-spacing:-0.01em; }
+
+  .section-card-body{
+    padding:1rem 1.1rem 1.35rem;
+    background:var(--card-color);
+    color:var(--paper);
+  }
+  .section-tag{
+    font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--gold); display:block; margin-bottom:0.6rem;
+  }
   .section-blurb{
     font-size:0.76rem; line-height:1.6; margin:0;
     color:var(--muted-on-dark);
@@ -142,26 +148,32 @@
 
   <div class="sections">
     <a class="section-card section-card--books" href="https://books.varunagarwal.com">
-      <img class="section-cover" src="img/cover-books.jpg" alt="" loading="lazy">
+      <div class="section-cover-wrap">
+        <img class="section-cover" src="img/cover-books.jpg" alt="" loading="lazy">
+        <p class="section-name">Books</p>
+      </div>
       <div class="section-card-body">
         <span class="section-tag">Reading log</span>
-        <p class="section-name">Books</p>
         <p class="section-blurb">Recent reads, roughly newest first — plus a few highlights pulled from the wider GoodReads library.</p>
       </div>
     </a>
     <a class="section-card section-card--wander" href="https://wander.varunagarwal.com">
-      <img class="section-cover" src="img/cover-field-notes.jpg" alt="" loading="lazy">
+      <div class="section-cover-wrap">
+        <img class="section-cover" src="img/cover-field-notes.jpg" alt="" loading="lazy">
+        <p class="section-name">Wander</p>
+      </div>
       <div class="section-card-body">
         <span class="section-tag">Photos &amp; travel</span>
-        <p class="section-name">Wander</p>
         <p class="section-blurb">Street art, temples, and gig photos from wherever I end up — London, Khajuraho, concerts.</p>
       </div>
     </a>
     <a class="section-card section-card--notes" href="https://notes.varunagarwal.com">
-      <img class="section-cover" src="img/cover-notes.jpg" alt="" loading="lazy">
+      <div class="section-cover-wrap">
+        <img class="section-cover" src="img/cover-notes.jpg" alt="" loading="lazy">
+        <p class="section-name">Notes</p>
+      </div>
       <div class="section-card-body">
         <span class="section-tag">Writeups</span>
-        <p class="section-name">Notes</p>
         <p class="section-blurb">Gadgets, projects, and whatever else doesn't fit the other two.</p>
       </div>
     </a>
