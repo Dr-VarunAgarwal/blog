@@ -2,6 +2,7 @@
   "_note": "Canonical list of Varun's sites. Single source of truth for nav/site-list links — update here first when a site is added, renamed, or its URL changes. Not a build/CMS dependency; pages may hardcode from this or fetch it at runtime, whichever suits that page.",
   "sites": [
     { "key": "blog",    "label": "Home",    "url": "https://blog.varunagarwal.com/",    "role": "hub / entrance" },
+    { "key": "cv",      "label": "CV",      "url": "https://varunagarwal.com/",         "role": "professional profile / CV, separate tone from the personal hub" },
     { "key": "books",   "label": "Books",   "url": "https://books.varunagarwal.com/",   "role": "reading" },
     { "key": "wander",  "label": "Wander",  "url": "https://wander.varunagarwal.com/",  "role": "photographs, travel, visual field material — name/framing still evolving, not settled" },
     { "key": "notes",   "label": "Notes",   "url": "https://notes.varunagarwal.com/",   "role": "gadgets, projects, writeups, miscellaneous interests" },

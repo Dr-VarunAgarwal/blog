@@ -123,6 +123,8 @@ When proposing changes, distinguish between:
 
 Prefer solving the smallest layer necessary.
 
+Every decision (editorial, design, architecture, infrastructure) gets logged in `../DECISIONS.md` at the workspace root, tagged `[USER]` or `[AI]`. See `../CLAUDE.md` for the rule.
+
 Before broad redesigns, inspect the existing pages and recent Git history. Preserve successful patterns unless there is a clear reason to change them.
 
 When Varun asks for a design change, implement the requested change narrowly first rather than opportunistically redesigning unrelated parts.
