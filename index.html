@@ -170,6 +170,30 @@
     color:var(--muted-on-dark);
   }
 
+  .upcoming-card{
+    display:flex; align-items:center; gap:0.9rem;
+    max-width:var(--max); margin:0.85rem auto 0;
+    padding:0.85rem 1.1rem;
+    border:2px dashed rgba(42,36,28,0.28);
+    border-radius:8px;
+  }
+  @media(min-width:640px){
+    .upcoming-card{ margin-top:1.25rem; padding:1.1rem 1.35rem; }
+  }
+  .upcoming-card svg{
+    width:26px; height:26px; flex-shrink:0;
+    color:var(--muted-on-paper);
+  }
+  .upcoming-text{ display:flex; flex-direction:column; gap:0.3rem; }
+  .upcoming-tag{
+    font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--muted-on-paper);
+  }
+  .upcoming-name{
+    font-family:"Fraunces", serif; font-weight:500; font-size:1.05rem;
+    margin:0; color:var(--text-on-paper);
+  }
+
   footer{
     max-width:var(--max); margin:1rem auto 0; padding:1.25rem 1.5rem 1.5rem;
     color:var(--muted-on-paper); font-size:0.7rem; letter-spacing:0.04em;
@@ -240,6 +264,20 @@
         <p class="section-blurb">Gadgets, projects, and whatever else doesn't fit the other two.</p>
       </div>
     </a>
+  </div>
+
+  <div class="upcoming-card">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <ellipse cx="12" cy="16.5" rx="5" ry="4.2"/>
+      <ellipse cx="5.5" cy="9" rx="2" ry="2.6"/>
+      <ellipse cx="10" cy="5.5" rx="2" ry="2.6"/>
+      <ellipse cx="15" cy="5.5" rx="2" ry="2.6"/>
+      <ellipse cx="19.5" cy="9" rx="2" ry="2.6"/>
+    </svg>
+    <div class="upcoming-text">
+      <span class="upcoming-tag">Coming soon</span>
+      <p class="upcoming-name">Paws — pet photos</p>
+    </div>
   </div>
 </main>
 
