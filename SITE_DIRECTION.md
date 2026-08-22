@@ -104,13 +104,15 @@ Do not implement R2 merely for the sake of architecture. Implement it when media
 
 ## 7. Stories
 
-Stories are planned but deliberately deferred.
+Stories are realized, living in the wander/field-notes section (`wander/field-notes/index.html`, the `STORIES` array + ring-feed viewer) rather than on the blog. This is a permanent, first-party story format: sequences of Varun's own photographs, videos and short pieces of text. It does NOT depend on YouTube, Instagram, Vimeo or another platform — a small personal publishing format that belongs to the site.
 
-The concept is a permanent, first-party story format: sequences of Varun's own photographs, videos and short pieces of text. It should NOT depend on YouTube, Instagram, Vimeo or another platform. The point is to create a small personal publishing format that belongs to the site.
+Current known gap (as of 2026-08-22): most place-based Stories entries are a straight subset copy-pasted from that place's own album `DATA` (same image, same location, same caption/note) — see `wander/field-notes/STANDARDS.md` §5–7. Distinct, standalone story content is possible today (the `log/index.html` mobile uploader writes into `stories/<id>/img/`, independent of any album), but place Stories themselves aren't yet meaningfully distinct from their source album. Work in progress: making Stories/highlights curated and distinct from the albums they're drawn from, rather than a mirror.
 
-When the time comes, Stories should probably live naturally within the visual/travel side of the site rather than becoming a separate social network clone.
+Stories live naturally within the visual/travel side of the site rather than becoming a separate social network clone.
 
-Do not let the future Stories system distort the current architecture prematurely.
+The operational runbook for turning a new raw photo/video dump into a live section (or an update to an existing one) — repo structure, per-page DATA schemas, EXIF/ffmpeg steps, colorFrame extraction, Stories-curation rule, verify-before-commit checklist — lives in `wander/field-notes/STANDARDS.md` §8. Read it before processing any new batch.
+
+Do not let the Stories system distort the current architecture prematurely.
 
 ## 8. Design review workflow
 
