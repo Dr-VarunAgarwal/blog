@@ -183,7 +183,6 @@
   }
 
   .upcoming-card{
-    display:flex; align-items:center; gap:0.9rem;
     max-width:var(--max); margin:0.85rem auto 0;
     padding:0.85rem 1.1rem;
     border:2px dashed rgba(42,36,28,0.28);
@@ -192,13 +191,19 @@
   @media(min-width:640px){
     .upcoming-card{ margin-top:1.25rem; padding:1.1rem 1.35rem; }
   }
-  .upcoming-card svg{
-    width:26px; height:26px; flex-shrink:0;
-    color:var(--muted-on-paper);
-  }
-  .upcoming-text{ display:flex; flex-direction:column; gap:0.3rem; }
   .upcoming-tag{
     font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--muted-on-paper); display:block; margin-bottom:0.7rem;
+  }
+  .upcoming-items{
+    display:flex; flex-direction:column; gap:0.7rem;
+  }
+  @media(min-width:640px){
+    .upcoming-items{ flex-direction:row; gap:2rem; }
+  }
+  .upcoming-item{ display:flex; align-items:center; gap:0.75rem; }
+  .upcoming-item svg{
+    width:24px; height:24px; flex-shrink:0;
     color:var(--muted-on-paper);
   }
   .upcoming-name{
@@ -279,16 +284,26 @@
   </div>
 
   <div class="upcoming-card">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-      <ellipse cx="12" cy="16.5" rx="5" ry="4.2"/>
-      <ellipse cx="5.5" cy="9" rx="2" ry="2.6"/>
-      <ellipse cx="10" cy="5.5" rx="2" ry="2.6"/>
-      <ellipse cx="15" cy="5.5" rx="2" ry="2.6"/>
-      <ellipse cx="19.5" cy="9" rx="2" ry="2.6"/>
-    </svg>
-    <div class="upcoming-text">
-      <span class="upcoming-tag">Coming soon</span>
-      <p class="upcoming-name">Paws — pet photos</p>
+    <span class="upcoming-tag">Coming soon</span>
+    <div class="upcoming-items">
+      <div class="upcoming-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <ellipse cx="12" cy="16.5" rx="5" ry="4.2"/>
+          <ellipse cx="5.5" cy="9" rx="2" ry="2.6"/>
+          <ellipse cx="10" cy="5.5" rx="2" ry="2.6"/>
+          <ellipse cx="15" cy="5.5" rx="2" ry="2.6"/>
+          <ellipse cx="19.5" cy="9" rx="2" ry="2.6"/>
+        </svg>
+        <p class="upcoming-name">Paws — pet photos</p>
+      </div>
+      <div class="upcoming-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="6" cy="18" r="2.5"/>
+          <circle cx="16" cy="16" r="2.5"/>
+          <path d="M8.5 18V6l10-2v10"/>
+        </svg>
+        <p class="upcoming-name">Playlist — music</p>
+      </div>
     </div>
   </div>
 </main>
