@@ -182,6 +182,41 @@
     color:var(--muted-on-dark);
   }
 
+  /* live-pulled from wander.varunagarwal.com's own PLACES data —
+     hidden until the fetch resolves, so a slow/failed load just
+     shows the card exactly as it looks without this. */
+  .wander-stamp{
+    position:absolute; top:10px; right:10px;
+    background:var(--paper); color:var(--ink);
+    border:1.5px dashed rgba(27,33,25,0.45);
+    border-radius:4px;
+    padding:0.3rem 0.55rem;
+    font-family:"Space Mono", monospace;
+    font-size:0.62rem; letter-spacing:0.03em; white-space:nowrap;
+    transform:rotate(-6deg);
+    box-shadow:1px 2px 0 rgba(27,33,25,0.15);
+  }
+  .wander-ticker-wrap{
+    margin-top:0.8rem; padding-top:0.7rem;
+    border-top:1px solid rgba(241,231,210,0.22);
+    overflow:hidden;
+  }
+  .wander-ticker{
+    display:flex; width:max-content;
+    font-size:0.6rem; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--gold);
+    animation:wander-scroll 26s linear infinite;
+  }
+  .wander-ticker span{ white-space:nowrap; }
+  .wander-ticker .dot{ opacity:0.5; margin:0 0.45rem; }
+  @keyframes wander-scroll{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .wander-ticker{ animation:none; }
+  }
+
   .upcoming-card{
     max-width:var(--max); margin:0.85rem auto 0;
     padding:0.85rem 1.1rem;
@@ -264,11 +299,15 @@
     <a class="section-card section-card--wander" href="https://wander.varunagarwal.com">
       <div class="section-cover-wrap">
         <img class="section-cover" src="img/cover-field-notes.jpg" alt="" loading="lazy">
+        <span class="wander-stamp" id="wander-stamp" hidden></span>
         <p class="section-name">Wander</p>
       </div>
       <div class="section-card-body">
         <span class="section-tag">Photos &amp; travel</span>
         <p class="section-blurb">Street art, temples, and gig photos from wherever I end up — London, Khajuraho, concerts.</p>
+        <div class="wander-ticker-wrap" id="wander-ticker-wrap" hidden>
+          <div class="wander-ticker" id="wander-ticker"></div>
+        </div>
       </div>
     </a>
     <a class="section-card section-card--notes" href="https://notes.varunagarwal.com">
@@ -320,6 +359,47 @@
   </div>
   <p class="footer-credit">lucidité, by Varun Agarwal</p>
 </footer>
+
+<script>
+// Pull the Wander card's stamp count + ticker live from wander.varunagarwal.com's
+// own PLACES array, so it never goes stale as that site grows. Fails silently —
+// the card looks exactly as it does without this if the fetch/parse doesn't work.
+(async function(){
+  try {
+    const res = await fetch('https://wander.varunagarwal.com/', {cache:'no-store'});
+    if (!res.ok) return;
+    const text = await res.text();
+    const marker = 'const PLACES = [';
+    const start = text.indexOf(marker);
+    if (start === -1) return;
+    let i = start + marker.length - 1, depth = 0, end = -1;
+    for (; i < text.length; i++) {
+      if (text[i] === '[') depth++;
+      else if (text[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    if (end === -1) return;
+    const PLACES = new Function('return ' + text.slice(start + marker.length - 1, end + 1))();
+
+    const count = PLACES.filter(p => p.status === 'live' || p.status === 'story').length;
+    const stamp = document.getElementById('wander-stamp');
+    if (stamp && count) {
+      stamp.textContent = count + ' places';
+      stamp.hidden = false;
+    }
+
+    const tickerNames = PLACES.flatMap(p => p.tickerNames || [p.name]);
+    const ticker = document.getElementById('wander-ticker');
+    const tickerWrap = document.getElementById('wander-ticker-wrap');
+    if (ticker && tickerWrap && tickerNames.length) {
+      const items = tickerNames.map(n => `<span>${n}<span class="dot">·</span></span>`).join('');
+      ticker.innerHTML = items + items;
+      tickerWrap.hidden = false;
+    }
+  } catch (e) {
+    // network/CORS/parse failure — leave the card as-is
+  }
+})();
+</script>
 
 </body>
 </html>
