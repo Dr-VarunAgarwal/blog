@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paws — lucidité</title>
+<meta name="description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
+<meta name="theme-color" content="#f1e7d2">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="lucidité">
+<meta property="og:url" content="https://blog.varunagarwal.com/paws/">
+<meta property="og:title" content="Paws — lucidité">
+<meta property="og:description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
+<meta property="og:image" content="https://blog.varunagarwal.com/paws/img/10-recent-closeup.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Paws — lucidité">
+<meta name="twitter:description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../favicon-512.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+
+<!--
+  PAWS PAGE — lives at blog.varunagarwal.com/paws/ (a subdirectory of
+  the blog site, not its own subdomain/repo — corrected 2026-09-09,
+  see ../DECISIONS.md). Plain HTML/CSS/JS, no build step, same DIY
+  convention as the rest of the family (see wander/SETUP.md,
+  books/index.html). Favicons are ../ references to the blog's own
+  set rather than a duplicated copy.
+
+  TO ADD A PHOTO:
+  Drop the image into img/, then scroll to the DATA array below, copy
+  an existing entry, paste it as a new line, give it the next id, and
+  fill in img / caption / date. Save, commit. No redeploy step needed.
+
+  Photos pulled from a shared Google Photos album ("Vanilla") and
+  selected/downloaded by Claude in this session — a curated subset,
+  not the whole album. Captions are short and factual (AI-drafted
+  placeholders); Varun should feel free to rewrite them in his own
+  voice.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,480;0,9..144,600;1,9..144,400;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink: #1b2119;
+    --paper: #f1e7d2;
+    --paper-soft: #e6d9bd;
+    --gold: #c29a4b;
+    --clay: #b5572e;
+    --clay-deep: #8a3f20;
+    --text-on-paper: #2a241c;
+    --muted-on-paper: rgba(42,36,28,0.55);
+    --max: 1080px;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    background: var(--paper);
+    color: var(--text-on-paper);
+    font-family: "Space Mono", monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  a{ color: inherit; }
+
+  .wrap{ max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+  header.site-header{
+    padding: 1.1rem 1.5rem 0.9rem;
+    border-bottom: 1px solid rgba(42,36,28,0.16);
+  }
+  .back-link{
+    font-family: "Fraunces", serif; font-weight: 480;
+    font-size: 1.15rem; letter-spacing: -0.01em;
+    text-decoration: none; color: inherit;
+  }
+  .back-link .arrow{ color: var(--muted-on-paper); margin-right: 0.35rem; }
+  @media(min-width:640px){
+    header.site-header{ padding: 2.5rem 1.5rem 1.5rem; }
+  }
+
+  main{ padding: 1.75rem 0 3rem; }
+  @media(min-width:640px){ main{ padding: 3.5rem 0 5rem; } }
+
+  .hero{ max-width: 62ch; margin: 0 0 2.5rem; }
+  h1.title{
+    font-family: "Fraunces", serif; font-weight: 500; font-style: italic;
+    font-size: clamp(2.6rem, 9vw, 4.25rem); line-height: 1;
+    margin: 0 0 0.9rem; color: var(--clay-deep);
+  }
+  .hero p{
+    font-size: 0.92rem; line-height: 1.7;
+    color: var(--muted-on-paper); margin: 0 0 0.4rem;
+  }
+  .hero .meta{
+    font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--clay);
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media(min-width:640px){
+    .grid{ grid-template-columns: 1fr 1fr; gap: 1.75rem 1.5rem; }
+  }
+  @media(min-width:960px){
+    .grid{ grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  figure.photo{
+    margin: 0; break-inside: avoid;
+  }
+  figure.photo .frame{
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--paper-soft);
+    border: 1px solid rgba(42,36,28,0.1);
+  }
+  figure.photo img{
+    display: block; width: 100%; height: auto;
+  }
+  figcaption{
+    margin-top: 0.55rem;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 0.75rem;
+  }
+  figcaption .cap{
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 480;
+    font-size: 0.95rem; color: var(--text-on-paper);
+  }
+  figcaption .date{
+    font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--muted-on-paper); white-space: nowrap;
+  }
+
+  footer{
+    max-width: var(--max); margin: 2rem auto 0; padding: 1.25rem 1.5rem 1.5rem;
+    color: var(--muted-on-paper); font-size: 0.7rem; letter-spacing: 0.04em;
+    border-top: 1px solid rgba(42,36,28,0.14);
+    text-align: center;
+  }
+  @media(min-width:640px){
+    footer{ margin: 3rem auto 0; padding: 2rem 1.5rem 3.5rem; }
+  }
+  .footer-site{
+    color: var(--text-on-paper); text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .footer-site:hover{ border-bottom-color: var(--clay); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="back-link" href="https://blog.varunagarwal.com"><span class="arrow">←</span>lucidité</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="hero">
+      <h1 class="title">Paws.</h1>
+      <p>Vanilla, a golden retriever, has been around since 2021 — this is a running photo log of her, from the ride home to now.</p>
+      <span class="meta" id="photo-count"></span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<footer>
+  <a class="footer-site" href="https://varunagarwal.com">varunagarwal.com</a>
+  <p style="margin:0.6rem 0 0;">lucidité, by Varun Agarwal</p>
+</footer>
+
+<script>
+const DATA = [
+  {id:1, img:'img/01-home-day-one.jpg', caption:'Home, day one', date:'Oct 2021'},
+  {id:2, img:'img/02-ride-home.jpg', caption:'The ride back', date:'Oct 2021'},
+  {id:3, img:'img/03-keeping-watch.jpg', caption:'Keeping watch', date:'Dec 2023'},
+  {id:4, img:'img/04-morning-walk.jpg', caption:'Morning walk', date:'Aug 2024'},
+  {id:5, img:'img/05-toy-excavation.jpg', caption:'Toy excavation', date:'Aug 2024'},
+  {id:6, img:'img/06-face-licking.jpg', caption:'Unrequested kisses', date:'Aug 2024'},
+  {id:7, img:'img/07-backseat.jpg', caption:'Backseat', date:'Aug 2025'},
+  {id:8, img:'img/08-floor-moment.jpg', caption:'Floor moment', date:'Aug 2025'},
+  {id:9, img:'img/09-waiting.jpg', caption:'Waiting by the door', date:'May 2025'},
+  {id:10, img:'img/10-recent-closeup.jpg', caption:'Still going strong', date:'Jan 2026'},
+];
+
+const grid = document.getElementById('grid');
+grid.innerHTML = DATA.map(p => `
+  <figure class="photo">
+    <div class="frame">
+      <img src="${p.img}" alt="${p.caption}" loading="lazy">
+    </div>
+    <figcaption>
+      <span class="cap">${p.caption}</span>
+      <span class="date">${p.date}</span>
+    </figcaption>
+  </figure>
+`).join('');
+
+document.getElementById('photo-count').textContent = DATA.length + ' photos';
+</script>
+
+</body>
+</html>
