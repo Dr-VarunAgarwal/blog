@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vanilluuu. — lucidité</title>
-<meta name="description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
+<title>Paws — lucidité</title>
+<meta name="description" content="Pets — photos by Varun Agarwal.">
 <meta name="theme-color" content="#f1e7d2">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="lucidité">
 <meta property="og:url" content="https://blog.varunagarwal.com/paws/">
-<meta property="og:title" content="Vanilluuu. — lucidité">
-<meta property="og:description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
-<meta property="og:image" content="https://blog.varunagarwal.com/paws/img/10-recent-closeup.jpg">
+<meta property="og:title" content="Paws — lucidité">
+<meta property="og:description" content="Pets — photos by Varun Agarwal.">
+<meta property="og:image" content="https://blog.varunagarwal.com/paws/vanilla/img/10-recent-closeup.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Vanilluuu. — lucidité">
-<meta name="twitter:description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
+<meta name="twitter:title" content="Paws — lucidité">
+<meta name="twitter:description" content="Pets — photos by Varun Agarwal.">
 <link rel="icon" href="../favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
@@ -22,23 +22,20 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 
 <!--
-  PAWS PAGE — lives at blog.varunagarwal.com/paws/ (a subdirectory of
-  the blog site, not its own subdomain/repo — corrected 2026-09-09,
-  see ../DECISIONS.md). Plain HTML/CSS/JS, no build step, same DIY
-  convention as the rest of the family (see wander/SETUP.md,
-  books/index.html). Favicons are ../ references to the blog's own
-  set rather than a duplicated copy.
+  PAWS HUB — lives at blog.varunagarwal.com/paws/. Lists every pet as
+  its own sibling gallery (vanilla/, cookie/, and eventually scrappy/,
+  dexter/), same pattern as the main blog hub one level up listing
+  books/wander/notes/paws. Plain HTML, no build step, no DATA array —
+  short enough (a handful of pets) that a new entry is just a copy of
+  an existing <a class="pet-card"> block, or a new <li> in the
+  "Coming soon" list for one not built yet.
 
-  TO ADD A PHOTO:
-  Drop the image into img/, then scroll to the DATA array below, copy
-  an existing entry, paste it as a new line, give it the next id, and
-  fill in img / caption / date. Save, commit. No redeploy step needed.
+  TO ADD A LIVE PET:
+  Copy an existing .pet-card block, point href/img at the new
+  gallery, pick a --card-color not already used by a sibling card.
 
-  Photos pulled from a shared Google Photos album ("Vanilla") and
-  selected/downloaded by Claude in this session — a curated subset,
-  not the whole album. Captions are short and factual (AI-drafted
-  placeholders); Varun should feel free to rewrite them in his own
-  voice.
+  TO ADD A "COMING SOON" PET:
+  Add a new <li> to the .upcoming-items list.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,13 +49,13 @@
     --paper-soft: #e6d9bd;
     --gold: #c29a4b;
     --clay: #b5572e;
-    --clay-deep: #8a3f20;
+    --caramel: #9c6b2e;
     --text-on-paper: #2a241c;
     --muted-on-paper: rgba(42,36,28,0.55);
-    --max: 1080px;
+    --muted-on-dark: rgba(241,231,210,0.68);
+    --max: 760px;
   }
   *{ box-sizing: border-box; }
-  html{ scroll-behavior: smooth; }
   body{
     margin: 0;
     background: var(--paper);
@@ -88,58 +85,91 @@
   main{ padding: 1.75rem 0 3rem; }
   @media(min-width:640px){ main{ padding: 3.5rem 0 5rem; } }
 
-  .hero{ max-width: 62ch; margin: 0 0 2.5rem; }
+  .hero{ max-width: 62ch; margin: 0 0 2rem; }
   h1.title{
     font-family: "Fraunces", serif; font-weight: 500; font-style: italic;
     font-size: clamp(2.6rem, 9vw, 4.25rem); line-height: 1;
-    margin: 0 0 0.9rem; color: var(--clay-deep);
+    margin: 0 0 0.9rem; color: var(--text-on-paper);
   }
   .hero p{
     font-size: 0.92rem; line-height: 1.7;
-    color: var(--muted-on-paper); margin: 0 0 0.4rem;
-  }
-  .hero .meta{
-    font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--clay);
+    color: var(--muted-on-paper); margin: 0;
   }
 
-  .grid{
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .pets{
+    display: flex; gap: 0.85rem; align-items: flex-start;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    margin: 0 -1.5rem; padding: 0 1.5rem 0.75rem;
   }
   @media(min-width:640px){
-    .grid{ grid-template-columns: 1fr 1fr; gap: 1.75rem 1.5rem; }
-  }
-  @media(min-width:960px){
-    .grid{ grid-template-columns: 1fr 1fr 1fr; }
+    .pets{
+      display: grid; grid-template-columns: 1fr 1fr; align-items: start;
+      overflow-x: visible; margin: 0; padding: 0;
+    }
   }
 
-  figure.photo{
-    margin: 0; break-inside: avoid;
-  }
-  figure.photo .frame{
-    position: relative;
-    border-radius: 6px;
+  .pet-card{
+    display: block; text-decoration: none; color: inherit;
+    flex: 0 0 62%; scroll-snap-align: start;
+    background: var(--card-color);
+    border: 4px solid var(--card-color);
+    border-radius: 8px;
     overflow: hidden;
-    background: var(--paper-soft);
-    border: 1px solid rgba(42,36,28,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  figure.photo img{
-    display: block; width: 100%; height: auto;
+  @media(min-width:640px){ .pet-card{ flex: initial; } }
+  .pet-card--vanilla{ --card-color: var(--clay); }
+  .pet-card--cookie{ --card-color: var(--caramel); }
+  .pet-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 5px 7px 0 0 rgba(27,33,25,0.22);
   }
-  figcaption{
-    margin-top: 0.55rem;
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 0.75rem;
+  .pet-cover-wrap{ position: relative; line-height: 0; }
+  .pet-cover{ width: 100%; height: auto; display: block; aspect-ratio: 4/5; object-fit: cover; }
+  .pet-name{
+    position: absolute; left: 0; right: 0; bottom: 0; margin: 0;
+    padding: 0.6rem 1.1rem 0.75rem;
+    background: var(--card-color);
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 500; font-size: 1.3rem;
+    color: var(--paper); line-height: 1.15;
   }
-  figcaption .cap{
-    font-family: "Fraunces", serif; font-style: italic; font-weight: 480;
-    font-size: 0.95rem; color: var(--text-on-paper);
+  .pet-card:hover .pet-name{ color: var(--gold); }
+  .pet-card-body{
+    padding: 1rem 1.1rem 1.35rem;
+    background: var(--card-color);
+    color: var(--paper);
   }
-  figcaption .date{
-    font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase;
-    color: var(--muted-on-paper); white-space: nowrap;
+  .pet-tag{
+    font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gold); display: block; margin-bottom: 0.6rem;
+  }
+  .pet-blurb{
+    font-size: 0.76rem; line-height: 1.6; margin: 0;
+    color: var(--muted-on-dark);
+  }
+
+  .upcoming-card{
+    max-width: var(--max); margin: 1.5rem auto 0;
+    padding: 0.85rem 1.1rem;
+    border: 2px dashed rgba(42,36,28,0.28);
+    border-radius: 8px;
+  }
+  @media(min-width:640px){ .upcoming-card{ padding: 1.1rem 1.35rem; } }
+  .upcoming-tag{
+    font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted-on-paper); display: block; margin-bottom: 0.7rem;
+  }
+  .upcoming-items{
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 0.7rem;
+  }
+  @media(min-width:640px){ .upcoming-items{ flex-direction: row; gap: 2rem; } }
+  .upcoming-item{ display: flex; align-items: center; gap: 0.75rem; }
+  .upcoming-item svg{ width: 22px; height: 22px; flex-shrink: 0; color: var(--muted-on-paper); }
+  .upcoming-name{
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 500; font-size: 1.05rem;
+    margin: 0; color: var(--text-on-paper);
   }
 
   footer{
@@ -148,13 +178,8 @@
     border-top: 1px solid rgba(42,36,28,0.14);
     text-align: center;
   }
-  @media(min-width:640px){
-    footer{ margin: 3rem auto 0; padding: 2rem 1.5rem 3.5rem; }
-  }
-  .footer-site{
-    color: var(--text-on-paper); text-decoration: none;
-    border-bottom: 1px solid transparent;
-  }
+  @media(min-width:640px){ footer{ margin: 3rem auto 0; padding: 2rem 1.5rem 3.5rem; } }
+  .footer-site{ color: var(--text-on-paper); text-decoration: none; border-bottom: 1px solid transparent; }
   .footer-site:hover{ border-bottom-color: var(--clay); }
 </style>
 </head>
@@ -163,18 +188,66 @@
 <header class="site-header">
   <div class="wrap">
     <a class="back-link" href="https://blog.varunagarwal.com"><span class="arrow">←</span>lucidité</a>
-    <a class="back-link" href="cookie/">🍪</a>
   </div>
 </header>
 
 <main>
   <div class="wrap">
     <div class="hero">
-      <h1 class="title">Vanilluuu.</h1>
-      <span class="meta" id="photo-count"></span>
+      <h1 class="title">Paws.</h1>
+      <p>The pets.</p>
     </div>
+  </div>
 
-    <div class="grid" id="grid"></div>
+  <div class="pets">
+    <a class="pet-card pet-card--vanilla" href="vanilla/">
+      <div class="pet-cover-wrap">
+        <img class="pet-cover" src="vanilla/img/10-recent-closeup.jpg" alt="" loading="lazy">
+        <p class="pet-name">Vanilluuu.</p>
+      </div>
+      <div class="pet-card-body">
+        <span class="pet-tag">Golden retriever</span>
+        <p class="pet-blurb">Since 2021, and still going.</p>
+      </div>
+    </a>
+    <a class="pet-card pet-card--cookie" href="cookie/">
+      <div class="pet-cover-wrap">
+        <img class="pet-cover" src="cookie/img/04-wide-awake.jpg" alt="" loading="lazy">
+        <p class="pet-name">🍪</p>
+      </div>
+      <div class="pet-card-body">
+        <span class="pet-tag">Cat</span>
+        <p class="pet-blurb">A short while, in 2025.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="wrap">
+    <div class="upcoming-card">
+      <span class="upcoming-tag">Coming soon</span>
+      <ul class="upcoming-items">
+        <li class="upcoming-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <ellipse cx="12" cy="16.5" rx="5" ry="4.2"/>
+            <ellipse cx="5.5" cy="9" rx="2" ry="2.6"/>
+            <ellipse cx="10" cy="5.5" rx="2" ry="2.6"/>
+            <ellipse cx="15" cy="5.5" rx="2" ry="2.6"/>
+            <ellipse cx="19.5" cy="9" rx="2" ry="2.6"/>
+          </svg>
+          <p class="upcoming-name">Scrappy</p>
+        </li>
+        <li class="upcoming-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <ellipse cx="12" cy="16.5" rx="5" ry="4.2"/>
+            <ellipse cx="5.5" cy="9" rx="2" ry="2.6"/>
+            <ellipse cx="10" cy="5.5" rx="2" ry="2.6"/>
+            <ellipse cx="15" cy="5.5" rx="2" ry="2.6"/>
+            <ellipse cx="19.5" cy="9" rx="2" ry="2.6"/>
+          </svg>
+          <p class="upcoming-name">Dexter</p>
+        </li>
+      </ul>
+    </div>
   </div>
 </main>
 
@@ -182,35 +255,6 @@
   <a class="footer-site" href="https://varunagarwal.com">varunagarwal.com</a>
   <p style="margin:0.6rem 0 0;">lucidité, by Varun Agarwal</p>
 </footer>
-
-<script>
-const DATA = [
-  {id:2, img:'img/02-ride-home.jpg', caption:'The ride back', date:'Oct 2021'},
-  {id:3, img:'img/03-keeping-watch.jpg', caption:'Keeping watch', date:'Dec 2023'},
-  {id:4, img:'img/04-morning-walk.jpg', caption:'Morning walk', date:'Aug 2024'},
-  {id:5, img:'img/05-toy-excavation.jpg', caption:'Toy excavation', date:'Aug 2024'},
-  {id:6, img:'img/06-face-licking.jpg', caption:'Unrequested kisses', date:'Aug 2024'},
-  {id:7, img:'img/07-backseat.jpg', caption:'Backseat', date:'Aug 2025'},
-  {id:8, img:'img/08-floor-moment.jpg', caption:'Floor moment', date:'Aug 2025'},
-  {id:9, img:'img/09-waiting.jpg', caption:'Waiting by the door', date:'May 2025'},
-  {id:10, img:'img/10-recent-closeup.jpg', caption:'Still going strong', date:'Jan 2026'},
-];
-
-const grid = document.getElementById('grid');
-grid.innerHTML = DATA.map(p => `
-  <figure class="photo">
-    <div class="frame">
-      <img src="${p.img}" alt="${p.caption}" loading="lazy">
-    </div>
-    <figcaption>
-      <span class="cap">${p.caption}</span>
-      <span class="date">${p.date}</span>
-    </figcaption>
-  </figure>
-`).join('');
-
-document.getElementById('photo-count').textContent = DATA.length + ' photos';
-</script>
 
 </body>
 </html>
