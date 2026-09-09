@@ -3,42 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vanilluuu. — lucidité</title>
-<meta name="description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
+<title>🍪 — lucidité</title>
+<meta name="description" content="A cat, remembered with a cookie emoji — photos by Varun Agarwal.">
 <meta name="theme-color" content="#f1e7d2">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="lucidité">
-<meta property="og:url" content="https://blog.varunagarwal.com/paws/">
-<meta property="og:title" content="Vanilluuu. — lucidité">
-<meta property="og:description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
-<meta property="og:image" content="https://blog.varunagarwal.com/paws/img/10-recent-closeup.jpg">
+<meta property="og:url" content="https://blog.varunagarwal.com/paws/cookie/">
+<meta property="og:title" content="🍪 — lucidité">
+<meta property="og:description" content="A cat, remembered with a cookie emoji — photos by Varun Agarwal.">
+<meta property="og:image" content="https://blog.varunagarwal.com/paws/cookie/img/04-wide-awake.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Vanilluuu. — lucidité">
-<meta name="twitter:description" content="Vanilla, a golden retriever — photos by Varun Agarwal.">
-<link rel="icon" href="../favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="../favicon-512.png">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="twitter:title" content="🍪 — lucidité">
+<meta name="twitter:description" content="A cat, remembered with a cookie emoji — photos by Varun Agarwal.">
+<link rel="icon" href="../../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../../favicon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../../favicon-512.png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
 
 <!--
-  PAWS PAGE — lives at blog.varunagarwal.com/paws/ (a subdirectory of
-  the blog site, not its own subdomain/repo — corrected 2026-09-09,
-  see ../DECISIONS.md). Plain HTML/CSS/JS, no build step, same DIY
-  convention as the rest of the family (see wander/SETUP.md,
-  books/index.html). Favicons are ../ references to the blog's own
-  set rather than a duplicated copy.
+  COOKIE PAGE — lives at blog.varunagarwal.com/paws/cookie/, a sibling
+  of the Vanilla gallery at /paws/. Same plain HTML/CSS/JS convention,
+  same DATA-array-add-a-photo pattern (see ../index.html, wander/SETUP.md).
+
+  She wasn't given a name — Varun remembers her by the cookie emoji,
+  so that's the page title, not a name. She lived a short while
+  (roughly May-Aug 2025, per the real photo timestamps); a couple of
+  photos were added to the source album later (with an upload date,
+  not a capture date) and are dated only "2025" here rather than
+  guessing a false precision. No narrative/intro copy on this page by
+  design — captions are short and factual, same restraint as /paws/.
 
   TO ADD A PHOTO:
   Drop the image into img/, then scroll to the DATA array below, copy
   an existing entry, paste it as a new line, give it the next id, and
   fill in img / caption / date. Save, commit. No redeploy step needed.
-
-  Photos pulled from a shared Google Photos album ("Vanilla") and
-  selected/downloaded by Claude in this session — a curated subset,
-  not the whole album. Captions are short and factual (AI-drafted
-  placeholders); Varun should feel free to rewrite them in his own
-  voice.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,8 +50,8 @@
     --paper: #f1e7d2;
     --paper-soft: #e6d9bd;
     --gold: #c29a4b;
-    --clay: #b5572e;
-    --clay-deep: #8a3f20;
+    --caramel: #9c6b2e;
+    --caramel-deep: #6f4a1c;
     --text-on-paper: #2a241c;
     --muted-on-paper: rgba(42,36,28,0.55);
     --max: 1080px;
@@ -90,17 +89,13 @@
 
   .hero{ max-width: 62ch; margin: 0 0 2.5rem; }
   h1.title{
-    font-family: "Fraunces", serif; font-weight: 500; font-style: italic;
-    font-size: clamp(2.6rem, 9vw, 4.25rem); line-height: 1;
-    margin: 0 0 0.9rem; color: var(--clay-deep);
-  }
-  .hero p{
-    font-size: 0.92rem; line-height: 1.7;
-    color: var(--muted-on-paper); margin: 0 0 0.4rem;
+    font-weight: 500;
+    font-size: clamp(3rem, 12vw, 5rem); line-height: 1;
+    margin: 0 0 0.9rem;
   }
   .hero .meta{
     font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--clay);
+    color: var(--caramel);
   }
 
   .grid{
@@ -155,7 +150,7 @@
     color: var(--text-on-paper); text-decoration: none;
     border-bottom: 1px solid transparent;
   }
-  .footer-site:hover{ border-bottom-color: var(--clay); }
+  .footer-site:hover{ border-bottom-color: var(--caramel); }
 </style>
 </head>
 <body>
@@ -163,14 +158,14 @@
 <header class="site-header">
   <div class="wrap">
     <a class="back-link" href="https://blog.varunagarwal.com"><span class="arrow">←</span>lucidité</a>
-    <a class="back-link" href="cookie/">🍪</a>
+    <a class="back-link" href="../">🐾</a>
   </div>
 </header>
 
 <main>
   <div class="wrap">
     <div class="hero">
-      <h1 class="title">Vanilluuu.</h1>
+      <h1 class="title">🍪</h1>
       <span class="meta" id="photo-count"></span>
     </div>
 
@@ -185,15 +180,15 @@
 
 <script>
 const DATA = [
-  {id:2, img:'img/02-ride-home.jpg', caption:'The ride back', date:'Oct 2021'},
-  {id:3, img:'img/03-keeping-watch.jpg', caption:'Keeping watch', date:'Dec 2023'},
-  {id:4, img:'img/04-morning-walk.jpg', caption:'Morning walk', date:'Aug 2024'},
-  {id:5, img:'img/05-toy-excavation.jpg', caption:'Toy excavation', date:'Aug 2024'},
-  {id:6, img:'img/06-face-licking.jpg', caption:'Unrequested kisses', date:'Aug 2024'},
-  {id:7, img:'img/07-backseat.jpg', caption:'Backseat', date:'Aug 2025'},
-  {id:8, img:'img/08-floor-moment.jpg', caption:'Floor moment', date:'Aug 2025'},
-  {id:9, img:'img/09-waiting.jpg', caption:'Waiting by the door', date:'May 2025'},
-  {id:10, img:'img/10-recent-closeup.jpg', caption:'Still going strong', date:'Jan 2026'},
+  {id:1, img:'img/01-first-day.jpg', caption:'First day', date:'May 2025'},
+  {id:2, img:'img/02-settling-in.jpg', caption:'Settling in', date:'Jul 2025'},
+  {id:3, img:'img/03-held.jpg', caption:'Held', date:'Jul 2025'},
+  {id:4, img:'img/04-wide-awake.jpg', caption:'Wide awake', date:'Jul 2025'},
+  {id:5, img:'img/05-sprawled-out.jpg', caption:'Sprawled out', date:'Jul 2025'},
+  {id:6, img:'img/06-hiding-spot.jpg', caption:'Hiding spot', date:'Jul 2025'},
+  {id:7, img:'img/07-napping.jpg', caption:'Napping', date:'Aug 2025'},
+  {id:8, img:'img/08-playing.jpg', caption:'Playing', date:'Aug 2025'},
+  {id:9, img:'img/09-curled-up.jpg', caption:'Curled up', date:'2025'},
 ];
 
 const grid = document.getElementById('grid');
