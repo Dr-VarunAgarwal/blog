@@ -56,6 +56,7 @@
     --rule-strong: rgba(42,36,28,0.28);
     --hover: var(--oxblood);
     --max: 760px;
+    --max-wide: 1140px;       /* cards + Recently filed side column, ≥1000px */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -70,6 +71,8 @@
     max-width:var(--max); margin:0 auto;
     padding:1.1rem 1.5rem 0.9rem;
     border-bottom:1px solid var(--rule);
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    position:relative; z-index:10;
   }
   .wordmark{
     font-family:"Fraunces", serif; font-weight:480;
@@ -77,13 +80,22 @@
     color:inherit; text-decoration:none;
   }
   @media(min-width:640px){
-    header.site-header{ padding:2.5rem 1.5rem 1.5rem; }
+    header.site-header{ padding:1.6rem 1.5rem 1.1rem; }
   }
 
-  main{max-width:var(--max); margin:0 auto; padding:1.5rem 1.5rem 1.25rem;}
+  /* main column (hero + cards) and, on wide screens, Recently filed beside it */
+  .layout{ max-width:var(--max); margin:0 auto; padding:1.5rem 1.5rem 1.25rem; }
   @media(min-width:640px){
-    main{ padding:4rem 1.5rem 3rem; }
+    .layout{ padding:2.5rem 1.5rem 3rem; }
   }
+  @media(min-width:1000px){
+    header.site-header, .layout, footer{ max-width:var(--max-wide); }
+    .layout{
+      display:grid; grid-template-columns:minmax(0,1fr) 270px; gap:3.5rem;
+      align-items:start;
+    }
+  }
+  main{ min-width:0; }
 
   h1.title, h1.title .title-script{
     background-image:
@@ -99,29 +111,34 @@
     --grain-color:var(--title-blue);
     font-family:"Honera", serif; font-weight:400;
     text-transform:uppercase; letter-spacing:0.01em;
-    font-size:clamp(4rem, 22vw, 7.5rem); line-height:0.9;
-    width:fit-content; margin:0 auto 3.25rem;
+    font-size:clamp(3.6rem, 20vw, 6.5rem); line-height:0.9;
+    width:fit-content; margin:0 auto 2.6rem;
   }
   @media(min-width:640px){
-    h1.title{ margin:0 auto 6.5rem; }
+    h1.title{ margin:0 auto 4.2rem; }
   }
+  /* The grain fill (background-clip:text) only paints inside the element's
+     box, so the script's swashes and the "g" descender used to get cut off.
+     Padding grows the box around them; equal negative margins keep the
+     glyphs (and the rotation centre) exactly where they were. */
   h1.title .title-script{
     position:absolute; left:2%; top:58%;
-    display:block; width:96%;
+    display:block; width:96%; box-sizing:content-box;
+    padding:0.15em 0.3em 0.35em; margin:-0.15em 0 0 -0.3em;
     --grain-color:var(--title-orange);
     text-transform:none; letter-spacing:normal;
     font-family:"Honera Script", cursive; font-weight:400; font-style:normal;
-    font-size:clamp(2.4rem, 13.5vw, 4.1rem); line-height:1;
+    font-size:clamp(2.2rem, 12.3vw, 3.55rem); line-height:1;
     transform:rotate(-5deg);
     white-space:nowrap;
   }
 
   .intro{
     color:var(--muted-on-paper); font-size:0.9rem; line-height:1.6;
-    max-width:52ch; margin:0 0 1.5rem;
+    max-width:52ch; margin:0 0 1.25rem;
   }
   @media(min-width:640px){
-    .intro{ line-height:1.8; margin:0 0 4rem; }
+    .intro{ line-height:1.8; margin:0 0 2.25rem; }
   }
 
   .sections{
@@ -283,20 +300,22 @@
   .footer-rss:hover{ color:var(--hover); border-bottom-color:var(--hover); }
 
   /* ---- search: one box, every site. Index is filed.json, built by tools/build-index.mjs ---- */
-  .search{ position:relative; margin:0 0 1.75rem; }
-  @media(min-width:640px){ .search{ margin:-2rem 0 3rem; } }
+  /* sits in the header's right corner; results drop down as a panel */
+  .search{ position:relative; flex:0 1 12.5rem; min-width:0; }
+  @media(min-width:640px){ .search{ flex-basis:15rem; } }
   .search-field{
-    display:flex; align-items:center; gap:0.6rem;
-    border-bottom:1.5px solid var(--rule-strong);
-    padding:0.35rem 0;
+    display:flex; align-items:center; gap:0.5rem;
+    border-bottom:1px solid var(--rule-strong);
+    padding:0.2rem 0;
   }
   .search-field:focus-within{ border-bottom-color:var(--text-on-paper); }
-  .search-field svg{ width:16px; height:16px; flex-shrink:0; color:var(--muted-on-paper); }
+  .search-field svg{ width:14px; height:14px; flex-shrink:0; color:var(--muted-on-paper); }
   .search input{
     flex:1; min-width:0; border:0; background:transparent; outline:none;
     font:inherit; font-size:16px; color:var(--text-on-paper);
-    padding:0.2rem 0;
+    padding:0.15rem 0;
   }
+  @media(min-width:640px) and (hover:hover){ .search input{ font-size:0.8rem; } }
   .search input::placeholder{ color:var(--muted-on-paper); }
   .search input::-webkit-search-cancel-button{ -webkit-appearance:none; }
   .search kbd{
@@ -304,7 +323,14 @@
     border:1px solid var(--rule-strong); border-radius:3px; padding:0 0.35rem;
   }
   @media (hover:none){ .search kbd{ display:none; } }
-  .search-results{ list-style:none; margin:0; padding:0.3rem 0 0; }
+  .search-results{
+    list-style:none; margin:0; padding:0.35rem;
+    position:absolute; right:0; top:calc(100% + 0.7rem);
+    width:min(26rem, calc(100vw - 2rem));
+    max-height:min(70vh, 34rem); overflow-y:auto;
+    background:var(--paper); border:1px solid var(--rule-strong); border-radius:6px;
+    box-shadow:0 14px 34px -12px rgba(27,33,25,0.35);
+  }
   .search-results a{
     display:grid; grid-template-columns:4.2rem minmax(0,1fr); gap:0.2rem 0.75rem;
     padding:0.55rem 0.4rem; border-radius:4px;
@@ -325,7 +351,9 @@
 
   /* ---- recently filed: newest things across every site, dated from git ---- */
   .filed{ margin:2.25rem 0 0; }
-  @media(min-width:640px){ .filed{ margin:3.25rem 0 0; } }
+  @media(min-width:640px){ .filed{ margin:3rem 0 0; } }
+  /* wide screens: a side column next to the cards, stays put while scrolling */
+  @media(min-width:1000px){ .filed{ margin:0; position:sticky; top:1.5rem; } }
   .filed-head{
     display:flex; justify-content:space-between; align-items:baseline;
     border-bottom:1px solid var(--rule); padding-bottom:0.5rem;
@@ -336,20 +364,22 @@
   .filed-list{ list-style:none; margin:0; padding:0; }
   .filed-list li{ border-bottom:1px dotted var(--rule-strong); }
   .filed-list a{
-    display:grid; grid-template-columns:3.6rem minmax(0,1fr) auto; align-items:center; gap:0.85rem;
-    padding:0.7rem 0; color:inherit; text-decoration:none;
+    display:grid; grid-template-columns:44px minmax(0,1fr); align-items:center; gap:0.8rem;
+    padding:0.6rem 0; color:inherit; text-decoration:none;
   }
-  .filed-date{ font-size:0.68rem; color:var(--muted-on-paper); white-space:nowrap; }
-  .filed-section{
+  .filed-meta{
     display:block; font-size:0.58rem; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--sec-color); margin-bottom:0.15rem;
+    color:var(--muted-on-paper); margin-bottom:0.15rem; white-space:nowrap;
   }
-  .filed-title{ font-family:"Fraunces", serif; font-size:1.02rem; line-height:1.25; }
+  .filed-section{ color:var(--sec-color); }
+  .filed-title{ display:block; font-family:"Fraunces", serif; font-size:0.98rem; line-height:1.25; }
   .filed-list a:hover .filed-title{ color:var(--hover); }
   .filed-thumb{
     width:44px; height:44px; object-fit:cover; border-radius:3px; display:block;
     background:var(--paper-soft);
   }
+  /* no photo (notes, book batches): a plain tile in the section's colour */
+  .filed-thumb.is-blank{ background:var(--sec-color); opacity:0.22; }
   .filed-more{
     margin:0.8rem 0 0; padding:0; border:0; background:none; cursor:pointer;
     font:inherit; font-size:0.68rem; letter-spacing:0.06em; text-transform:uppercase;
@@ -367,21 +397,21 @@
 
 <header class="site-header">
   <a class="wordmark" href="https://blog.varunagarwal.com">lucidité</a>
-</header>
-
-<main>
-  <h1 class="title">Varun<span class="title-script">Agarwal.</span></h1>
-  <p class="intro" data-edit="intro">    i made a digital diary of things i found fun. browse around and see!
-  </p>
-
   <form class="search" role="search" action="#" onsubmit="return false">
     <div class="search-field">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
-      <input id="q" type="search" placeholder="a place, a book, a band…" aria-label="Search every site" autocomplete="off" spellcheck="false" aria-controls="search-results">
+      <input id="q" type="search" placeholder="search" aria-label="Search every site" autocomplete="off" spellcheck="false" aria-controls="search-results">
       <kbd>/</kbd>
     </div>
     <ul class="search-results" id="search-results" role="listbox" hidden></ul>
   </form>
+</header>
+
+<div class="layout">
+<main>
+  <h1 class="title">Varun<span class="title-script">Agarwal.</span></h1>
+  <p class="intro" data-edit="intro">    i made a digital diary of things i found fun. browse around and see!
+  </p>
 
   <div class="sections">
     <a class="section-card section-card--books" href="https://books.varunagarwal.com">
@@ -430,15 +460,6 @@
     </a>
   </div>
 
-  <section class="filed" id="filed" hidden>
-    <div class="filed-head">
-      <span class="filed-tag">Recently filed</span>
-      <a class="filed-rss" href="feed.xml">RSS</a>
-    </div>
-    <ol class="filed-list" id="filed-list"></ol>
-    <button class="filed-more" id="filed-more" type="button" hidden>Older</button>
-  </section>
-
   <div class="upcoming-card">
     <span class="upcoming-tag">Coming soon</span>
     <div class="upcoming-items">
@@ -453,6 +474,16 @@
     </div>
   </div>
 </main>
+
+<aside class="filed" id="filed" aria-label="Recently filed" hidden>
+  <div class="filed-head">
+    <span class="filed-tag">Recently filed</span>
+    <a class="filed-rss" href="feed.xml">RSS</a>
+  </div>
+  <ol class="filed-list" id="filed-list"></ol>
+  <button class="filed-more" id="filed-more" type="button" hidden>Older</button>
+</aside>
+</div>
 
 <footer>
   <div class="footer-links">
@@ -536,11 +567,11 @@
   const list = document.getElementById('filed-list');
   const more = document.getElementById('filed-more');
   const recent = data.recent || [];
-  const SHOW = 5;
+  // the side column (wide screens) has room for more rows than the stacked phone layout
+  const SHOW = matchMedia('(min-width:1000px)').matches ? 8 : 5;
   const row = i => `<li><a href="${esc(i.url)}" data-sec="${esc(i.section)}">
-      <span class="filed-date">${fmtDate(i.date)}</span>
-      <span><span class="filed-section">${LABEL[i.section] || ''}</span><span class="filed-title">${esc(i.title)}</span></span>
-      ${i.cover ? `<img class="filed-thumb" src="${esc(i.cover)}" alt="" loading="lazy">` : '<span></span>'}
+      ${i.cover ? `<img class="filed-thumb" src="${esc(i.cover)}" alt="" loading="lazy">` : '<span class="filed-thumb is-blank"></span>'}
+      <span><span class="filed-meta"><span class="filed-section">${LABEL[i.section] || ''}</span> · ${fmtDate(i.date)}</span><span class="filed-title">${esc(i.title)}</span></span>
     </a></li>`;
   if (recent.length) {
     list.innerHTML = recent.slice(0, SHOW).map(row).join('');
@@ -622,6 +653,11 @@
     }
     else if (e.key === 'Escape') { input.value = ''; render(); input.blur(); }
   });
+  // results are a dropdown now — close on a click/tap anywhere else, reopen on focus
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search')) out.hidden = true;
+  });
+  input.addEventListener('focus', () => { if (input.value.trim()) render(); });
   document.addEventListener('keydown', e => {
     const a = document.activeElement;
     if (e.key === '/' && a !== input && !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !a.isContentEditable) {
