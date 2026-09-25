@@ -50,6 +50,12 @@
   bounce and reveal that pet's name on hover (`.corner-pet`), colored
   to that pet's own accent — all 4 accent vars declared here even
   though this page only uses --rust itself.
+
+  MORE FUN (2026-09-25, second pass) — corner icons idle-bob even
+  without hovering; click the h1 or any photo for a little paw-print
+  confetti burst (`pawBurst()`, same helper as every other page —
+  keep them in sync if it's ever tuned); the photo count ticks up
+  from 0 instead of just appearing.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,6 +116,13 @@
   .corner-pet-icon{
     font-size: 1.5rem; line-height: 1; display: inline-block;
     transition: transform .15s ease;
+    animation: pet-idle-bob 2.6s ease-in-out infinite;
+  }
+  .corner-pet:nth-child(2) .corner-pet-icon{ animation-delay: .3s; }
+  .corner-pet:nth-child(3) .corner-pet-icon{ animation-delay: .6s; }
+  @keyframes pet-idle-bob{
+    0%,100%{ transform: translateY(0) rotate(0); }
+    50%{ transform: translateY(-3px) rotate(4deg); }
   }
   .corner-pet:hover .corner-pet-icon{ animation: pet-bounce .55s ease; }
   @keyframes pet-bounce{
@@ -144,9 +157,11 @@
     font-family: "Baloo 2", sans-serif; font-weight: 800;
     font-size: clamp(2.8rem, 12vw, 4.75rem); line-height: 1;
     margin: 0 0 0.4rem; color: var(--rust);
-    display: inline-block; transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    display: inline-block; cursor: pointer; user-select: none;
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
   }
   h1.title:hover{ transform: rotate(-2deg) scale(1.03); }
+  h1.title:active{ transform: rotate(-2deg) scale(0.96); }
   .hero .tagline{
     font-family: "Baloo 2", sans-serif; font-weight: 600;
     font-size: 1.05rem; color: var(--ink); margin: 0 0 0.6rem;
@@ -179,11 +194,16 @@
     background: var(--bg-soft);
     border: 3px solid var(--ink);
     box-shadow: 3px 3px 0 0 var(--ink);
+    cursor: pointer;
     transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease;
   }
   figure.photo:hover .frame{
     transform: translateY(-3px) rotate(-1deg);
     box-shadow: 5px 6px 0 0 var(--ink);
+  }
+  figure.photo .frame:active{
+    transform: translateY(0) scale(0.97) rotate(0deg) !important;
+    box-shadow: 1px 1px 0 0 var(--ink) !important;
   }
   figure.photo img{
     display: block; width: 100%; height: auto;
@@ -234,7 +254,7 @@
 <main>
   <div class="wrap">
     <div class="hero">
-      <h1 class="title">Dexter.</h1>
+      <h1 class="title" id="pageTitle">Dexter.</h1>
       <p class="tagline">Arrived tiny. Left no shoe unchewed.</p>
       <span class="meta" id="photo-count"></span>
     </div>
@@ -283,7 +303,42 @@ grid.innerHTML = DATA.map(p => `
   </figure>
 `).join('');
 
-document.getElementById('photo-count').textContent = DATA.length + ' photos';
+/* count-up instead of just appearing — sets the real value first so a
+   backgrounded tab (rAF never ticks while hidden) still shows the
+   right count, then animates on top of it when rAF does fire */
+(function animateCount(el, target, suffix){
+  el.textContent = target + suffix;
+  const start = performance.now(), dur = 650;
+  function tick(now){
+    const p = Math.min(1, (now - start) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(eased * target) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})(document.getElementById('photo-count'), DATA.length, ' photos');
+
+/* click the title or any photo for a little paw-print confetti burst
+   — same helper copied onto every Paws page, keep in sync if tuned */
+function pawBurst(x, y){
+  for(let i=0; i<12; i++){
+    const el = document.createElement('span');
+    el.textContent = '🐾';
+    el.style.cssText = `position:fixed; left:${x}px; top:${y}px; font-size:${12+Math.random()*12}px; pointer-events:none; z-index:999; opacity:1; transition:transform .7s cubic-bezier(.2,.8,.2,1), opacity .7s ease;`;
+    document.body.appendChild(el);
+    const angle = Math.random()*Math.PI*2, dist = 50+Math.random()*70;
+    requestAnimationFrame(() => {
+      el.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist-30}px) rotate(${Math.random()*360}deg)`;
+      el.style.opacity = '0';
+    });
+    setTimeout(() => el.remove(), 750);
+  }
+}
+document.getElementById('pageTitle').addEventListener('click', (e) => pawBurst(e.clientX, e.clientY));
+grid.addEventListener('click', (e) => {
+  const frame = e.target.closest('.frame');
+  if (frame) pawBurst(e.clientX, e.clientY);
+});
 </script>
 
 </body>

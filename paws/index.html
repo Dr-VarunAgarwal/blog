@@ -55,6 +55,12 @@
   page comments) — only the shared chrome around them changed. Same
   swap applies on all 4 pet subpages, including a new bouncy
   corner-icon / name-reveal treatment on their header cross-links.
+
+  MORE FUN (2026-09-25, second pass, per Varun: "add more fun") —
+  click "Paws." for a little paw-print confetti burst (same helper
+  copied onto every pet subpage, click their own h1); a "🎲 Surprise
+  me" button below the tagline jumps to a random live pet; cards get
+  a satisfying squish on `:active`, not just a hover tilt.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -118,13 +124,27 @@
     font-family: "Baloo 2", sans-serif; font-weight: 800;
     font-size: clamp(2.8rem, 10vw, 4.5rem); line-height: 1;
     margin: 0 0 0.6rem; color: var(--clay);
-    display: inline-block; transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    display: inline-block; cursor: pointer; user-select: none;
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
   }
   h1.title:hover{ transform: rotate(-2deg) scale(1.03); }
+  h1.title:active{ transform: rotate(-2deg) scale(0.96); }
   .hero p{
     font-size: 1rem; font-weight: 600; line-height: 1.7;
-    color: var(--ink-soft); margin: 0;
+    color: var(--ink-soft); margin: 0 0 1.4rem;
   }
+  .surprise-btn{
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.95rem;
+    background: var(--ink); color: var(--bg);
+    border: none; border-radius: 999px; padding: 0.6rem 1.3rem;
+    cursor: pointer; box-shadow: 3px 3px 0 0 var(--clay);
+    transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  }
+  .surprise-btn:hover{ transform: translateY(-2px) rotate(-2deg); box-shadow: 4px 5px 0 0 var(--clay); }
+  .surprise-btn:active{ transform: translateY(0) scale(0.95) rotate(0); box-shadow: 1px 1px 0 0 var(--clay); }
+  .surprise-btn .die{ display: inline-block; transition: transform .4s ease; }
+  .surprise-btn:hover .die{ transform: rotate(25deg); }
 
   .pets{
     display: flex; gap: 0.85rem; align-items: flex-start;
@@ -164,6 +184,10 @@
   .pet-card:nth-child(even):hover{ transform: translateY(-6px) rotate(2deg); }
   .pet-card:hover{
     box-shadow: 7px 8px 0 0 var(--ink);
+  }
+  .pet-card:active{
+    transform: translateY(-1px) scale(0.97) !important;
+    box-shadow: 2px 2px 0 0 var(--ink) !important;
   }
   .pet-cover-wrap{ position: relative; line-height: 0; }
   .pet-cover{ width: 100%; height: auto; display: block; aspect-ratio: 4/5; object-fit: cover; }
@@ -236,8 +260,9 @@
 <main>
   <div class="wrap">
     <div class="hero">
-      <h1 class="title">Paws.</h1>
+      <h1 class="title" id="pawsTitle">Paws.</h1>
       <p>All good ones, no exceptions.</p>
+      <button class="surprise-btn" id="surpriseBtn"><span class="die">🎲</span> Surprise me</button>
     </div>
   </div>
 
@@ -290,6 +315,31 @@
   <a class="footer-site" href="https://varunagarwal.com">varunagarwal.com</a>
   <p style="margin:0.6rem 0 0;">lucidité, by Varun Agarwal</p>
 </footer>
+
+<script>
+/* click "Paws." for a little paw-print confetti burst — same helper
+   copied onto every pet subpage's own h1.title */
+function pawBurst(x, y){
+  for(let i=0; i<12; i++){
+    const el = document.createElement('span');
+    el.textContent = '🐾';
+    el.style.cssText = `position:fixed; left:${x}px; top:${y}px; font-size:${12+Math.random()*12}px; pointer-events:none; z-index:999; opacity:1; transition:transform .7s cubic-bezier(.2,.8,.2,1), opacity .7s ease;`;
+    document.body.appendChild(el);
+    const angle = Math.random()*Math.PI*2, dist = 50+Math.random()*70;
+    requestAnimationFrame(() => {
+      el.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist-30}px) rotate(${Math.random()*360}deg)`;
+      el.style.opacity = '0';
+    });
+    setTimeout(() => el.remove(), 750);
+  }
+}
+document.getElementById('pawsTitle').addEventListener('click', (e) => pawBurst(e.clientX, e.clientY));
+
+document.getElementById('surpriseBtn').addEventListener('click', () => {
+  const pets = ['vanilla/', 'cookie/', 'scrappy/', 'dexter/'];
+  window.location.href = pets[Math.floor(Math.random()*pets.length)];
+});
+</script>
 
 </body>
 </html>
