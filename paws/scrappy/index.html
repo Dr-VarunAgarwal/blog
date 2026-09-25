@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scrappy — lucidité</title>
 <meta name="description" content="Scrappy, a Labrador retriever — photos by Varun Agarwal.">
-<meta name="theme-color" content="#f1e7d2">
+<meta name="theme-color" content="#fdf1e0">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="lucidité">
 <meta property="og:url" content="https://blog.varunagarwal.com/paws/scrappy/">
@@ -44,31 +44,45 @@
   Drop the image into img/, then scroll to the DATA array below, copy
   an existing entry, paste it as a new line, give it the next id, and
   fill in img / caption / date. Save, commit. No redeploy step needed.
+
+  THEME — Baloo 2 + Quicksand on a paw-print-watermarked cream, own
+  thing entirely from the main blog hub's Fraunces/Space Mono paper
+  look (2026-09-25, see ../index.html). Header sibling-link icons
+  bounce and reveal that pet's name on hover (`.corner-pet`), colored
+  to that pet's own accent — all 4 accent vars declared here even
+  though this page only uses --denim itself.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,480;0,9..144,600;1,9..144,400;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --ink: #1b2119;
-    --paper: #f1e7d2;
-    --paper-soft: #e6d9bd;
-    --gold: #c29a4b;
+    --bg: #fdf1e0;
+    --bg-soft: #f7e2bf;
+    --surface: #fffaf1;
+    --ink: #2b2013;
+    --ink-soft: rgba(43,32,19,0.6);
+    --line: rgba(43,32,19,0.16);
+    --gold: #d69a3a;
+    --clay: #b5572e;
+    --caramel: #9c6b2e;
     --denim: #3f5c6e;
     --denim-deep: #2c4250;
-    --text-on-paper: #2a241c;
-    --muted-on-paper: rgba(42,36,28,0.55);
+    --rust: #a1402e;
     --max: 1080px;
   }
   *{ box-sizing: border-box; }
   html{ scroll-behavior: smooth; }
   body{
     margin: 0;
-    background: var(--paper);
-    color: var(--text-on-paper);
-    font-family: "Space Mono", monospace;
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='%232b2013' opacity='0.05'%3E%3Cellipse cx='32' cy='42' rx='10' ry='7.5'/%3E%3Cellipse cx='20' cy='26' rx='4.4' ry='5.6'/%3E%3Cellipse cx='31' cy='21' rx='4.6' ry='6'/%3E%3Cellipse cx='42' cy='26' rx='4.4' ry='5.6'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 64px 64px;
+    color: var(--ink);
+    font-family: "Quicksand", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   a{ color: inherit; }
@@ -77,16 +91,48 @@
 
   header.site-header{
     padding: 1.1rem 1.5rem 0.9rem;
-    border-bottom: 1px solid rgba(42,36,28,0.16);
+    border-bottom: 2px dashed var(--line);
   }
   header.site-header .wrap{ display: flex; justify-content: space-between; align-items: baseline; }
   .back-link{
-    font-family: "Fraunces", serif; font-weight: 480;
+    font-family: "Baloo 2", sans-serif; font-weight: 600;
     font-size: 1.15rem; letter-spacing: -0.01em;
     text-decoration: none; color: inherit;
+    display: inline-block; transition: transform .2s ease;
   }
-  .back-link .arrow{ color: var(--muted-on-paper); margin-right: 0.35rem; }
-  .sibling-links{ display: flex; gap: 0.75rem; }
+  a.back-link:hover{ transform: translateX(-3px); }
+  .back-link .arrow{ color: var(--ink-soft); margin-right: 0.35rem; }
+  .sibling-links{ display: flex; gap: 0.9rem; }
+
+  .corner-pet{
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    text-decoration: none; padding: 2px;
+  }
+  .corner-pet-icon{
+    font-size: 1.5rem; line-height: 1; display: inline-block;
+    transition: transform .15s ease;
+  }
+  .corner-pet:hover .corner-pet-icon{ animation: pet-bounce .55s ease; }
+  @keyframes pet-bounce{
+    0%{ transform: translateY(0) scale(1) rotate(0); }
+    30%{ transform: translateY(-9px) scale(1.15) rotate(-8deg); }
+    55%{ transform: translateY(0) scale(0.94) rotate(6deg); }
+    75%{ transform: translateY(-3px) scale(1.04) rotate(-2deg); }
+    100%{ transform: translateY(0) scale(1) rotate(0); }
+  }
+  .corner-pet-name{
+    position: absolute; top: 100%; left: 50%; margin-top: 6px;
+    transform: translateX(-50%) translateY(-4px);
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.68rem;
+    white-space: nowrap; color: var(--pet-color, var(--ink));
+    background: var(--surface); padding: 3px 10px; border-radius: 999px;
+    border: 1.5px solid var(--pet-color, var(--ink));
+    opacity: 0; pointer-events: none; z-index: 5;
+    transition: opacity .16s ease, transform .16s ease;
+  }
+  .corner-pet:hover .corner-pet-name{
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
   @media(min-width:640px){
     header.site-header{ padding: 2.5rem 1.5rem 1.5rem; }
   }
@@ -96,16 +142,19 @@
 
   .hero{ max-width: 62ch; margin: 0 0 2.5rem; }
   h1.title{
-    font-family: "Fraunces", serif; font-weight: 500; font-style: italic;
-    font-size: clamp(3rem, 12vw, 5rem); line-height: 1;
-    margin: 0 0 0.5rem; color: var(--denim);
+    font-family: "Baloo 2", sans-serif; font-weight: 800;
+    font-size: clamp(2.8rem, 12vw, 4.75rem); line-height: 1;
+    margin: 0 0 0.4rem; color: var(--denim);
+    display: inline-block; transition: transform .25s cubic-bezier(.34,1.56,.64,1);
   }
+  h1.title:hover{ transform: rotate(-2deg) scale(1.03); }
   .hero .tagline{
-    font-family: "Fraunces", serif; font-style: italic; font-weight: 480;
-    font-size: 1.05rem; color: var(--text-on-paper); margin: 0 0 0.6rem;
+    font-family: "Baloo 2", sans-serif; font-weight: 600;
+    font-size: 1.05rem; color: var(--ink); margin: 0 0 0.6rem;
   }
   .hero .meta{
-    font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+    font-family: "Baloo 2", sans-serif; font-weight: 600;
+    font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase;
     color: var(--denim);
   }
 
@@ -126,39 +175,45 @@
   }
   figure.photo .frame{
     position: relative;
-    border-radius: 6px;
+    border-radius: 16px;
     overflow: hidden;
-    background: var(--paper-soft);
-    border: 1px solid rgba(42,36,28,0.1);
+    background: var(--bg-soft);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 0 var(--ink);
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease;
+  }
+  figure.photo:hover .frame{
+    transform: translateY(-3px) rotate(-1deg);
+    box-shadow: 5px 6px 0 0 var(--ink);
   }
   figure.photo img{
     display: block; width: 100%; height: auto;
   }
   figcaption{
-    margin-top: 0.55rem;
+    margin-top: 0.6rem;
     display: flex; justify-content: space-between; align-items: baseline;
     gap: 0.75rem;
   }
   figcaption .cap{
-    font-family: "Fraunces", serif; font-style: italic; font-weight: 480;
-    font-size: 0.95rem; color: var(--text-on-paper);
+    font-family: "Baloo 2", sans-serif; font-weight: 600;
+    font-size: 0.95rem; color: var(--ink);
   }
   figcaption .date{
-    font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase;
-    color: var(--muted-on-paper); white-space: nowrap;
+    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-soft); white-space: nowrap;
   }
 
   footer{
     max-width: var(--max); margin: 2rem auto 0; padding: 1.25rem 1.5rem 1.5rem;
-    color: var(--muted-on-paper); font-size: 0.7rem; letter-spacing: 0.04em;
-    border-top: 1px solid rgba(42,36,28,0.14);
+    color: var(--ink-soft); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+    border-top: 2px dashed var(--line);
     text-align: center;
   }
   @media(min-width:640px){
     footer{ margin: 3rem auto 0; padding: 2rem 1.5rem 3.5rem; }
   }
   .footer-site{
-    color: var(--text-on-paper); text-decoration: none;
+    color: var(--ink); text-decoration: none;
     border-bottom: 1px solid transparent;
   }
   .footer-site:hover{ border-bottom-color: var(--denim); }
@@ -170,9 +225,9 @@
   <div class="wrap">
     <a class="back-link" href="../"><span class="arrow">←</span>paws</a>
     <div class="sibling-links">
-      <a class="back-link" href="../vanilla/">🐕</a>
-      <a class="back-link" href="../cookie/">🍪</a>
-      <a class="back-link" href="../dexter/">🐾</a>
+      <a class="corner-pet" href="../vanilla/" style="--pet-color:var(--clay)"><span class="corner-pet-icon">🐕</span><span class="corner-pet-name">Vanilla</span></a>
+      <a class="corner-pet" href="../cookie/" style="--pet-color:var(--caramel)"><span class="corner-pet-icon">🍪</span><span class="corner-pet-name">Cookie</span></a>
+      <a class="corner-pet" href="../dexter/" style="--pet-color:var(--rust)"><span class="corner-pet-icon">🐾</span><span class="corner-pet-name">Dexter</span></a>
     </div>
   </div>
 </header>
