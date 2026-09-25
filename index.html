@@ -82,6 +82,15 @@
   @media(min-width:640px){
     header.site-header{ padding:1.6rem 1.5rem 1.1rem; }
   }
+  /* "updated 24 Sept" — date of the newest Recently filed entry */
+  .brand{ display:flex; flex-direction:column; gap:0.1rem; min-width:0; }
+  .updated{
+    font-size:0.58rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--muted-on-paper); white-space:nowrap;
+  }
+  @media(min-width:640px){
+    .brand{ flex-direction:row; align-items:baseline; gap:0.8rem; }
+  }
 
   /* main column (hero + cards) and, on wide screens, Recently filed beside it */
   .layout{ max-width:var(--max); margin:0 auto; padding:1.5rem 1.5rem 1.25rem; }
@@ -114,8 +123,15 @@
     font-size:clamp(3.6rem, 20vw, 6.5rem); line-height:0.9;
     width:fit-content; margin:0 auto 2.6rem;
   }
+  /* name and intro: stacked + centred on phones, side by side from 640px */
+  .hero{ text-align:center; margin:0 0 1.5rem; }
   @media(min-width:640px){
-    h1.title{ margin:0 auto 4.2rem; }
+    .hero{
+      display:flex; align-items:center; gap:2.75rem;
+      text-align:left; margin:0 0 2rem;
+    }
+    /* bottom margin leaves room for the script, which hangs below the box */
+    h1.title{ margin:0 0 2.3rem; flex-shrink:0; }
   }
   /* The grain fill (background-clip:text) only paints inside the element's
      box, so the script's swashes and the "g" descender used to get cut off.
@@ -135,23 +151,38 @@
 
   .intro{
     color:var(--muted-on-paper); font-size:0.9rem; line-height:1.6;
-    max-width:52ch; margin:0 0 1.25rem;
+    max-width:52ch; margin:0 auto;
   }
   @media(min-width:640px){
-    .intro{ line-height:1.8; margin:0 0 2.25rem; }
+    .intro{ line-height:1.8; margin:0; }
   }
+  .random-link{
+    display:inline-block; margin-top:0.6rem;
+    font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--muted-on-paper); text-decoration:none;
+    border-bottom:1px dotted var(--rule-strong);
+  }
+  .random-link:hover{ color:var(--hover); border-bottom-color:var(--hover); }
 
   .sections{
-    display:flex; gap:0.85rem; align-items:flex-start;
+    display:flex; gap:0.85rem; align-items:stretch;
     overflow-x:auto; overscroll-behavior-x:contain;
     scroll-snap-type:x mandatory;
     margin:0 -1.5rem; padding:0 1.5rem 0.75rem;
   }
   @media(min-width:640px){
     .sections{
-      display:grid; grid-template-columns:1fr 1fr; align-items:start;
+      display:grid; grid-template-columns:1fr 1fr; align-items:stretch;
       overflow-x:visible; margin:0; padding:0;
     }
+  }
+  /* wide screens: all four in one row, so every card is on the first screen */
+  @media(min-width:1000px){
+    .sections{ grid-template-columns:repeat(4, 1fr); gap:0.75rem; }
+  }
+  /* two-column middle size: cards are wide, so a landscape crop keeps them short */
+  @media(min-width:640px) and (max-width:999px){
+    .sections .section-cover{ aspect-ratio:3 / 2; }
   }
 
   .section-card{
@@ -175,8 +206,11 @@
     box-shadow:5px 7px 0 0 rgba(27,33,25,0.22);
   }
   .section-cover-wrap{ position:relative; line-height:0; }
+  /* one shorter landscape crop for every cover, so all four cards fit sooner
+     and line up (the source photos are different shapes) */
   .section-cover{
     width:100%; height:auto; display:block;
+    aspect-ratio:4 / 5; object-fit:cover;
   }
   .section-name{
     position:absolute; left:0; right:0; bottom:0; margin:0;
@@ -207,9 +241,9 @@
     color:var(--muted-on-dark);
   }
 
-  /* live-pulled from wander.varunagarwal.com's own PLACES data —
-     hidden until the fetch resolves, so a slow/failed load just
-     shows the card exactly as it looks without this. */
+  /* from filed.json's `wander` block (built from wander's PLACES) —
+     hidden until it loads, so a failed load just shows the card
+     exactly as it looks without this. */
   .wander-stamp{
     position:absolute; top:10px; right:10px;
     background:var(--cream); color:var(--ink);
@@ -242,33 +276,23 @@
     .wander-ticker{ animation:none; }
   }
 
-  .upcoming-card{
-    max-width:var(--max); margin:0.85rem auto 0;
-    padding:0.85rem 1.1rem;
-    border:2px dashed var(--rule-strong);
-    border-radius:8px;
-  }
-  @media(min-width:640px){
-    .upcoming-card{ margin-top:1.25rem; padding:1.1rem 1.35rem; }
+  /* "Coming soon": a quiet line at the foot of the side column */
+  .upcoming{
+    margin:1.6rem 0 0; padding:0.8rem 0 0;
+    border-top:1px dashed var(--rule-strong);
   }
   .upcoming-tag{
     font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--muted-on-paper); display:block; margin-bottom:0.7rem;
+    color:var(--muted-on-paper); display:block; margin-bottom:0.5rem;
   }
-  .upcoming-items{
-    display:flex; flex-direction:column; gap:0.7rem;
-  }
-  @media(min-width:640px){
-    .upcoming-items{ flex-direction:row; gap:2rem; }
-  }
-  .upcoming-item{ display:flex; align-items:center; gap:0.75rem; }
+  .upcoming-item{ display:flex; align-items:center; gap:0.6rem; margin:0; }
   .upcoming-item svg{
-    width:24px; height:24px; flex-shrink:0;
+    width:18px; height:18px; flex-shrink:0;
     color:var(--muted-on-paper);
   }
   .upcoming-name{
-    font-family:"Fraunces", serif; font-weight:500; font-size:1.05rem;
-    margin:0; color:var(--text-on-paper);
+    font-family:"Fraunces", serif; font-weight:500; font-size:0.95rem;
+    color:var(--muted-on-paper);
   }
 
   footer{
@@ -378,8 +402,12 @@
     width:44px; height:44px; object-fit:cover; border-radius:3px; display:block;
     background:var(--paper-soft);
   }
-  /* no photo (notes, book batches): a plain tile in the section's colour */
-  .filed-thumb.is-blank{ background:var(--sec-color); opacity:0.22; }
+  /* no photo: the section's icon on a tile tinted with its colour */
+  .filed-thumb.is-blank{
+    display:grid; place-items:center; color:var(--sec-color);
+    background:color-mix(in srgb, var(--sec-color) 16%, transparent);
+  }
+  .filed-thumb.is-blank svg{ width:20px; height:20px; }
   .filed-more{
     margin:0.8rem 0 0; padding:0; border:0; background:none; cursor:pointer;
     font:inherit; font-size:0.68rem; letter-spacing:0.06em; text-transform:uppercase;
@@ -396,7 +424,10 @@
 <body>
 
 <header class="site-header">
-  <a class="wordmark" href="https://blog.varunagarwal.com">lucidité</a>
+  <div class="brand">
+    <a class="wordmark" href="https://blog.varunagarwal.com">lucidité</a>
+    <span class="updated" id="updated" hidden></span>
+  </div>
   <form class="search" role="search" action="#" onsubmit="return false">
     <div class="search-field">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
@@ -409,14 +440,19 @@
 
 <div class="layout">
 <main>
-  <h1 class="title">Varun<span class="title-script">Agarwal.</span></h1>
-  <p class="intro" data-edit="intro">    i made a digital diary of things i found fun. browse around and see!
-  </p>
+  <div class="hero">
+    <h1 class="title">Varun<span class="title-script">Agarwal.</span></h1>
+    <div>
+      <p class="intro" data-edit="intro">    i made a digital diary of things i found fun. browse around and see!
+      </p>
+      <a class="random-link" id="random-link" href="#" hidden>↻ something random</a>
+    </div>
+  </div>
 
   <div class="sections">
     <a class="section-card section-card--books" href="https://books.varunagarwal.com">
       <div class="section-cover-wrap">
-        <img class="section-cover" src="img/cover-books.jpg" alt="" loading="lazy">
+        <img class="section-cover" src="img/cover-books.jpg" alt="" fetchpriority="high">
         <p class="section-name">Books</p>
       </div>
       <div class="section-card-body">
@@ -426,7 +462,7 @@
     </a>
     <a class="section-card section-card--wander" href="https://wander.varunagarwal.com">
       <div class="section-cover-wrap">
-        <img class="section-cover" src="img/cover-field-notes.jpg" alt="" loading="lazy">
+        <img class="section-cover" src="img/cover-field-notes.jpg" alt="" fetchpriority="high">
         <span class="wander-stamp" id="wander-stamp" hidden></span>
         <p class="section-name">Wander</p>
       </div>
@@ -440,7 +476,7 @@
     </a>
     <a class="section-card section-card--notes" href="https://notes.varunagarwal.com">
       <div class="section-cover-wrap">
-        <img class="section-cover" src="img/cover-notes.jpg" alt="" loading="lazy">
+        <img class="section-cover" src="img/cover-notes.jpg" alt="">
         <p class="section-name">Notes</p>
       </div>
       <div class="section-card-body">
@@ -450,7 +486,7 @@
     </a>
     <a class="section-card section-card--paws" href="paws/">
       <div class="section-cover-wrap">
-        <img class="section-cover" src="img/cover-paws.jpg" alt="" loading="lazy">
+        <img class="section-cover" src="img/cover-paws.jpg" alt="">
         <p class="section-name">Paws</p>
       </div>
       <div class="section-card-body">
@@ -459,29 +495,29 @@
       </div>
     </a>
   </div>
-
-  <div class="upcoming-card">
-    <span class="upcoming-tag">Coming soon</span>
-    <div class="upcoming-items">
-      <div class="upcoming-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-          <circle cx="6" cy="18" r="2.5"/>
-          <circle cx="16" cy="16" r="2.5"/>
-          <path d="M8.5 18V6l10-2v10"/>
-        </svg>
-        <p class="upcoming-name">Playlist — music</p>
-      </div>
-    </div>
-  </div>
 </main>
 
-<aside class="filed" id="filed" aria-label="Recently filed" hidden>
-  <div class="filed-head">
-    <span class="filed-tag">Recently filed</span>
-    <a class="filed-rss" href="feed.xml">RSS</a>
+<aside class="filed" aria-label="Recently filed">
+  <div id="filed" hidden>
+    <div class="filed-head">
+      <span class="filed-tag">Recently filed</span>
+      <a class="filed-rss" href="feed.xml">RSS</a>
+    </div>
+    <ol class="filed-list" id="filed-list"></ol>
+    <button class="filed-more" id="filed-more" type="button" hidden>Older</button>
   </div>
-  <ol class="filed-list" id="filed-list"></ol>
-  <button class="filed-more" id="filed-more" type="button" hidden>Older</button>
+
+  <div class="upcoming">
+    <span class="upcoming-tag">Coming soon</span>
+    <p class="upcoming-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="6" cy="18" r="2.5"/>
+        <circle cx="16" cy="16" r="2.5"/>
+        <path d="M8.5 18V6l10-2v10"/>
+      </svg>
+      <span class="upcoming-name">Playlist — music</span>
+    </p>
+  </div>
 </aside>
 </div>
 
@@ -499,47 +535,6 @@
 </footer>
 
 <script>
-// Pull the Wander card's stamp count + ticker live from wander.varunagarwal.com's
-// own PLACES array, so it never goes stale as that site grows. Fails silently —
-// the card looks exactly as it does without this if the fetch/parse doesn't work.
-(async function(){
-  try {
-    const res = await fetch('https://wander.varunagarwal.com/', {cache:'no-store'});
-    if (!res.ok) return;
-    const text = await res.text();
-    const marker = 'const PLACES = [';
-    const start = text.indexOf(marker);
-    if (start === -1) return;
-    let i = start + marker.length - 1, depth = 0, end = -1;
-    for (; i < text.length; i++) {
-      if (text[i] === '[') depth++;
-      else if (text[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
-    }
-    if (end === -1) return;
-    const PLACES = new Function('return ' + text.slice(start + marker.length - 1, end + 1))();
-
-    const count = PLACES.filter(p => p.status === 'live' || p.status === 'story').length;
-    const stamp = document.getElementById('wander-stamp');
-    if (stamp && count) {
-      stamp.textContent = count + ' places';
-      stamp.hidden = false;
-    }
-
-    const tickerNames = PLACES.flatMap(p => p.tickerNames || [p.name]);
-    const ticker = document.getElementById('wander-ticker');
-    const tickerWrap = document.getElementById('wander-ticker-wrap');
-    if (ticker && tickerWrap && tickerNames.length) {
-      const items = tickerNames.map(n => `<span>${n}<span class="dot">·</span></span>`).join('');
-      ticker.innerHTML = items + items;
-      tickerWrap.hidden = false;
-    }
-  } catch (e) {
-    // network/CORS/parse failure — leave the card as-is
-  }
-})();
-</script>
-
-<script>
 // Recently filed + search, both from filed.json (regenerate with
 // `node tools/build-index.mjs`). If it fails to load, both stay hidden
 // and the page looks exactly as it did before they existed.
@@ -552,6 +547,14 @@
   } catch (e) { return; }
 
   const LABEL = {wander:'Wander', books:'Books', notes:'Notes', paws:'Paws', site:'Site'};
+  // Recently filed rows with no picture get their section's icon instead
+  const svg = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    wander: svg('<path d="M12 21s-6-5.4-6-10.5a6 6 0 0 1 12 0C18 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/>'),
+    books:  svg('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>'),
+    notes:  svg('<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/>'),
+    paws:   svg('<ellipse cx="12" cy="16.5" rx="4.5" ry="3.8"/><circle cx="6" cy="10" r="1.8"/><circle cx="10" cy="6.5" r="1.8"/><circle cx="14" cy="6.5" r="1.8"/><circle cx="18" cy="10" r="1.8"/>'),
+  };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const thisYear = new Date().getFullYear();
@@ -570,10 +573,14 @@
   // the side column (wide screens) has room for more rows than the stacked phone layout
   const SHOW = matchMedia('(min-width:1000px)').matches ? 8 : 5;
   const row = i => `<li><a href="${esc(i.url)}" data-sec="${esc(i.section)}">
-      ${i.cover ? `<img class="filed-thumb" src="${esc(i.cover)}" alt="" loading="lazy">` : '<span class="filed-thumb is-blank"></span>'}
-      <span><span class="filed-meta"><span class="filed-section">${LABEL[i.section] || ''}</span> · ${fmtDate(i.date)}</span><span class="filed-title">${esc(i.title)}</span></span>
+      ${i.cover ? `<img class="filed-thumb" src="${esc(i.cover)}" alt="" loading="lazy">` : `<span class="filed-thumb is-blank">${ICON[i.section] || ''}</span>`}
+      <span><span class="filed-meta"><span class="filed-section">${LABEL[i.section] || ''}</span> · ${fmtDate(i.date)}${i.count ? ` · ${i.count} pages` : ''}</span><span class="filed-title">${esc(i.title)}</span></span>
     </a></li>`;
   if (recent.length) {
+    // "updated 24 Sept" beside the wordmark = newest thing filed
+    const updated = document.getElementById('updated');
+    updated.textContent = 'updated ' + fmtDate(recent[0].date);
+    updated.hidden = false;
     list.innerHTML = recent.slice(0, SHOW).map(row).join('');
     if (recent.length > SHOW) {
       more.hidden = false;
@@ -585,10 +592,35 @@
     filed.hidden = false;
   }
 
+  // ---- Wander card: place count + ticker (built from wander's PLACES) ----
+  if (data.wander) {
+    const stamp = document.getElementById('wander-stamp');
+    if (data.wander.count) { stamp.textContent = data.wander.count + ' places'; stamp.hidden = false; }
+    const names = data.wander.ticker || [];
+    if (names.length) {
+      const items = names.map(n => `<span>${esc(n)}<span class="dot">·</span></span>`).join('');
+      document.getElementById('wander-ticker').innerHTML = items + items;
+      document.getElementById('wander-ticker-wrap').hidden = false;
+    }
+  }
+
+  // ---- something random: any page from the search index, one per address ----
+  const pages = [...new Map((data.search || [])
+    .filter(i => i.section !== 'site' && /^https:\/\/([a-z]+\.)?varunagarwal\.com\//.test(i.url))
+    .map(i => [i.url.split('#')[0], i])).values()];
+  if (pages.length) {
+    const randomLink = document.getElementById('random-link');
+    randomLink.addEventListener('click', e => {
+      e.preventDefault();
+      location.href = pages[Math.floor(Math.random() * pages.length)].url;
+    });
+    randomLink.hidden = false;
+  }
+
   // ---- search ----
   const input = document.getElementById('q');
   const out = document.getElementById('search-results');
-  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const index = (data.search || []).map(i => ({
     ...i,
     _t: norm(i.title),

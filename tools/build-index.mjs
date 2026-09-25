@@ -65,6 +65,16 @@ function metaDescription(html) {
   return m ? decode(m[1]) : '';
 }
 
+// a page's picture for its Recently filed thumbnail: og:image, else its first <img>
+function pageImage(html, pageUrl) {
+  const og = (html.match(/<meta property="og:image" content="([^"]+)"/) || [])[1];
+  const first = (html.match(/<img[^>]+src="([^"]+)"/) || [])[1];
+  const src = og || first;
+  if (!src || src.startsWith('data:')) return null;
+  return new URL(src, pageUrl).href;
+}
+
+let wanderCard = null;
 const items = [];   // everything searchable
 const add = o => items.push({ blurb: '', ...o });
 
@@ -80,7 +90,13 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
 {
   const hub = 'index.html';
   const src = show('wander', hub);
-  const PLACES = extractArray(src, 'PLACES').filter(p => p.status === 'live');
+  const ALL = extractArray(src, 'PLACES');
+  const PLACES = ALL.filter(p => p.status === 'live');
+  // the hub's Wander card (stamp + ticker) — same rules wander's own page uses
+  wanderCard = {
+    count: ALL.filter(p => p.status === 'live' || p.status === 'story').length,
+    ticker: ALL.flatMap(p => p.tickerNames || [p.name]),
+  };
   // the page file's first commit wins; the hub-link date is only a fallback
   // for things with no page of their own (e.g. STRAAT, a filtered view).
   // (A slug can sit in PLACES as a draft long before its page exists.)
@@ -91,13 +107,16 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
     const secs = p.sections || [];
     const landing = `${p.slug}/`;
     const landingIsSection = secs.some(s => s.href === landing);
+    // a place with sections folds into one row in Recently filed (see below)
+    const group = secs.length ? { group: p.name,
+      groupUrl: landingIsSection ? REPOS.wander.base : REPOS.wander.base + landing } : {};
     if (!landingIsSection && exists('wander', `${p.slug}/index.html`)) {
       add({
         section: 'wander', title: p.name, url: REPOS.wander.base + landing,
         keywords: [p.slug, ...(p.tickerNames || [])].join(' '),
         blurb: p.blurb || '', meta: [p.count, p.region].filter(Boolean).join(' · '),
         cover: p.cover ? REPOS.wander.base + p.cover : null,
-        date: pageDate(landing, `slug:'${p.slug}'`),
+        date: pageDate(landing, `slug:'${p.slug}'`), ...group,
       });
     }
     for (const s of secs) {
@@ -106,7 +125,7 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
         keywords: [s.label, s.href.replace(/[/?=]+/g, ' ')].join(' '),
         blurb: s.desc || '', meta: s.count || '',
         cover: s.cover ? REPOS.wander.base + s.cover : null,
-        date: pageDate(s.href, `href:'${s.href}'`),
+        date: pageDate(s.href, `href:'${s.href}'`), ...group,
       });
     }
   }
@@ -114,7 +133,8 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
   for (const [dir, title] of [['street-art', 'Street art']]) {
     const html = show('wander', `${dir}/index.html`);
     if (html) add({ section: 'wander', title, url: `${REPOS.wander.base}${dir}/`,
-      blurb: metaDescription(html), date: firstAdded('wander', `${dir}/index.html`) });
+      blurb: metaDescription(html), cover: pageImage(html, `${REPOS.wander.base}${dir}/`),
+      date: firstAdded('wander', `${dir}/index.html`) });
   }
   // concerts: every artist searchable (not dated — they're not separate pages)
   const CONCERTS = extractArray(show('wander', 'concerts/index.html'), 'DATA');
@@ -147,7 +167,7 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
     if (e.status === 'live') {
       const html = show('notes', `${e.slug}/index.html`);
       add({ section: 'notes', title: e.name, url: `${REPOS.notes.base}${e.slug}/`, keywords: e.slug,
-        blurb: e.blurb || metaDescription(html),
+        blurb: e.blurb || metaDescription(html), cover: pageImage(html, `${REPOS.notes.base}${e.slug}/`),
         date: firstAdded('notes', `${e.slug}/index.html`) || firstSeen('notes', file, `slug:'${e.slug}'`) });
       // one level of sub-pages (e.g. individual conversations)
       const subs = git('notes', ['ls-tree', '-d', '--name-only', REF, `${e.slug}/`]).split('\n').filter(Boolean);
@@ -156,7 +176,7 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
         if (!subHtml || sub.endsWith('/img') || sub.endsWith('/assets')) continue;
         const t = (subHtml.match(/<title>([^<]*)<\/title>/) || [])[1] || sub;
         add({ section: 'notes', title: decode(t).replace(/^★\s*|\s*★$/g, '').split(' — ')[0],
-          url: `${REPOS.notes.base}${sub}/`, blurb: metaDescription(subHtml),
+          url: `${REPOS.notes.base}${sub}/`, blurb: metaDescription(subHtml), cover: pageImage(subHtml, `${REPOS.notes.base}${sub}/`),
           date: firstAdded('notes', `${sub}/index.html`) });
       }
     } else if (e.status === 'locked') {
@@ -191,7 +211,7 @@ for (const i of dated) {
   if (i.kind === 'book') {
     const day = i.date.slice(0, 10);
     if (!bookDays.has(day)) {
-      const entry = { section: 'books', title: '', url: REPOS.books.base, date: i.date, books: [] };
+      const entry = { section: 'books', title: '', url: REPOS.books.base, date: i.date, cover: i.cover, books: [] };
       bookDays.set(day, entry);
       recent.push(entry);
     }
@@ -206,13 +226,34 @@ for (const e of bookDays.values()) {
   delete e.books;
 }
 
+// Hub only: a place's pages (eUrope's sections, London's two walks) collapse
+// into one row dated by its newest page, so one trip doesn't fill the list.
+// The RSS feed keeps them separate — a reader wants each new page.
+const recentHub = [];
+const groups = new Map();
+for (const i of recent) {
+  if (!i.group) { recentHub.push(i); continue; }
+  if (!groups.has(i.group)) {
+    const g = { section: i.section, title: i.group, url: i.groupUrl, date: i.date, cover: i.cover, parts: [] };
+    groups.set(i.group, g);
+    recentHub.push(g);
+  }
+  groups.get(i.group).parts.push(i.title.replace(i.group + ': ', ''));
+}
+for (const g of groups.values()) {
+  if (g.parts.length > 1) { g.count = g.parts.length; g.blurb = g.parts.join(', '); }
+  else { const only = recent.find(i => i.group === g.title); Object.assign(g, { title: only.title, url: only.url, blurb: only.blurb }); }
+  delete g.parts;
+}
+
 const strip = o => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== '' && v !== undefined));
 const out = {
   _note: 'Generated by tools/build-index.mjs. Do not hand-edit; re-run the script.',
   generated: new Date().toISOString(),
-  recent: recent.slice(0, 40).map(({ keywords, ...rest }) => strip(rest)),
+  recent: recentHub.slice(0, 30).map(({ keywords, group, groupUrl, ...rest }) => strip(rest)),
+  wander: wanderCard,
   // keywords: search-only terms (slugs, city names) never shown on the page
-  search: items.map(({ date, cover, ...rest }) => strip(rest)),
+  search: items.map(({ date, cover, group, groupUrl, ...rest }) => strip(rest)),
 };
 writeFileSync(path.join(BLOG, 'filed.json'), JSON.stringify(out) + '\n');
 
