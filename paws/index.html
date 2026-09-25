@@ -58,9 +58,41 @@
 
   MORE FUN (2026-09-25, second pass, per Varun: "add more fun") —
   click "Paws." for a little paw-print confetti burst (same helper
-  copied onto every pet subpage, click their own h1); a "🎲 Surprise
-  me" button below the tagline jumps to a random live pet; cards get
-  a satisfying squish on `:active`, not just a hover tilt.
+  copied onto every pet subpage, click their own h1); cards get a
+  satisfying squish on `:active`, not just a hover tilt.
+
+  THIRD PASS (2026-09-25, per Varun's feedback in one message):
+  - Colours — swapped the 4 per-pet accents for more saturated
+    versions at roughly the same lightness (so white card-body text
+    and h1-on-cream contrast both still hold) — "muddy brown/grey"
+    read as not fun; kept the same CSS var names so every page's own
+    accent choice (still grounded in that pet's real photos) didn't
+    need re-deriving, just brighter paint.
+  - "🎲 Surprise me" now jumps to one random PHOTO, not just a random
+    pet's hub page — picks a random pet + a random index within a
+    small hardcoded `{slug: photoCount}` map (kept in sync by hand;
+    there's no shared manifest across these self-contained pages) and
+    lands on `<pet>/?p=<n>`, which every gallery page now reads on
+    load to auto-open its lightbox (see each page's own comment).
+  - Scrappy's cover swapped from `12-on-the-rocks.jpg` (a nice view,
+    but no clear look at him) to `07-in-harness.jpg` — sitting,
+    attentive, looking at camera; better "meet Scrappy" material.
+  - Desktop-only cursor trail of small 🐾 following the mouse, gated
+    on `(hover: hover) and (pointer: fine)` so touch devices (no real
+    cursor to trail) don't get it — same snippet on every page.
+
+  FOURTH PASS (2026-09-25, same day, Varun sent this mid-edit) — the
+  hero paragraph is now his own words, replacing the placeholder
+  tagline: "A place for all the 4-legged friends that gave me the
+  privilege of their company. Here and beyond the rainbow bridge...".
+  Confirms what Cookie's page already implied (she'd died) and extends
+  it — some others here may have too; nothing on any page states that
+  outright per-pet unless Varun says so himself, this line is the one
+  place it's acknowledged, in his words. Each pet subpage got its own
+  real tagline the same way (see each page's own comment) — replacing
+  the AI-drafted placeholders. Photo grids also went denser/smaller
+  (2 cols mobile up to 5 at desktop, was 1-3) per his note that the
+  photos read too large.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,11 +108,11 @@
     --ink-soft: rgba(43,32,19,0.6);
     --ink-faint: rgba(43,32,19,0.4);
     --line: rgba(43,32,19,0.16);
-    --gold: #d69a3a;
-    --clay: #b5572e;
-    --caramel: #9c6b2e;
-    --denim: #3f5c6e;
-    --rust: #a1402e;
+    --gold: #e8a93a;
+    --clay: #d2551a;
+    --caramel: #b8790e;
+    --denim: #1d6f72;
+    --rust: #c23018;
     --max: 760px;
   }
   *{ box-sizing: border-box; }
@@ -261,7 +293,7 @@
   <div class="wrap">
     <div class="hero">
       <h1 class="title" id="pawsTitle">Paws.</h1>
-      <p>All good ones, no exceptions.</p>
+      <p>A place for all the 4-legged friends that gave me the privilege of their company. Here and beyond the rainbow bridge. You might have known a few of them if you've been around me.</p>
       <button class="surprise-btn" id="surpriseBtn"><span class="die">🎲</span> Surprise me</button>
     </div>
   </div>
@@ -289,7 +321,7 @@
     </a>
     <a class="pet-card pet-card--scrappy" href="scrappy/">
       <div class="pet-cover-wrap">
-        <img class="pet-cover" src="scrappy/img/12-on-the-rocks.jpg" alt="" loading="lazy">
+        <img class="pet-cover" src="scrappy/img/07-in-harness.jpg" alt="" loading="lazy">
         <p class="pet-name">Scrappy.</p>
       </div>
       <div class="pet-card-body">
@@ -335,10 +367,38 @@ function pawBurst(x, y){
 }
 document.getElementById('pawsTitle').addEventListener('click', (e) => pawBurst(e.clientX, e.clientY));
 
+/* "surprise me" lands on one random photo, not just a random pet's
+   hub page — hand-kept counts since there's no shared manifest
+   across these self-contained pages (recheck this map when a page
+   gains/loses photos). */
 document.getElementById('surpriseBtn').addEventListener('click', () => {
-  const pets = ['vanilla/', 'cookie/', 'scrappy/', 'dexter/'];
-  window.location.href = pets[Math.floor(Math.random()*pets.length)];
+  const pets = { 'vanilla/': 18, 'cookie/': 9, 'scrappy/': 14, 'dexter/': 18 };
+  const keys = Object.keys(pets);
+  const pet = keys[Math.floor(Math.random()*keys.length)];
+  const idx = Math.floor(Math.random()*pets[pet]) + 1;
+  window.location.href = pet + '?p=' + idx;
 });
+
+/* desktop-only cursor trail of little paw prints — gated on a real
+   mouse (`hover:hover` + `pointer:fine`) so touch devices, which have
+   no cursor to trail, don't get it. Same snippet on every Paws page. */
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  let lastPaw = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastPaw < 120) return;
+    lastPaw = now;
+    const paw = document.createElement('span');
+    paw.textContent = '🐾';
+    paw.style.cssText = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; font-size:13px; pointer-events:none; z-index:9999; opacity:0.55; transform:translate(-50%,-50%) rotate(${Math.random()*50-25}deg); transition:opacity 1s ease, transform 1s ease;`;
+    document.body.appendChild(paw);
+    requestAnimationFrame(() => {
+      paw.style.opacity = '0';
+      paw.style.transform += ' scale(0.4) translateY(6px)';
+    });
+    setTimeout(() => paw.remove(), 1000);
+  });
+}
 </script>
 
 </body>

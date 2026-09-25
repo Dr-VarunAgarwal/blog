@@ -56,6 +56,18 @@
   confetti burst (`pawBurst()`, same helper as every other page —
   keep them in sync if it's ever tuned); the photo count ticks up
   from 0 instead of just appearing.
+
+  THIRD PASS (2026-09-25) — accent colours swapped for more saturated
+  versions (see ../index.html for the full reasoning). Clicking a
+  photo now opens a lightbox instead of just bursting confetti (burst
+  still fires too) — ‹›/arrow keys/swipe move between photos, `?p=N`
+  opens straight to one on load, which is how the hub's "Surprise me"
+  now deep-links to a single photo. Corner icons also flash on
+  `:active` (a touch tap fires that before the link navigates, giving
+  mobile a brief preview `:hover` alone wouldn't). Desktop-only
+  cursor trail (see ../index.html) plus a `buzz()` haptic helper on
+  photo taps/lightbox nav. Tagline is now Varun's own words, not an
+  AI placeholder — "chaotic, rowdy little boy, wildest of them all."
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,12 +82,12 @@
     --ink: #2b2013;
     --ink-soft: rgba(43,32,19,0.6);
     --line: rgba(43,32,19,0.16);
-    --gold: #d69a3a;
-    --clay: #b5572e;
-    --caramel: #9c6b2e;
-    --denim: #3f5c6e;
-    --rust: #a1402e;
-    --rust-deep: #742c1f;
+    --gold: #e8a93a;
+    --clay: #d2551a;
+    --caramel: #b8790e;
+    --denim: #1d6f72;
+    --rust: #c23018;
+    --rust-deep: #7a2410;
     --max: 1080px;
   }
   *{ box-sizing: border-box; }
@@ -124,7 +136,7 @@
     0%,100%{ transform: translateY(0) rotate(0); }
     50%{ transform: translateY(-3px) rotate(4deg); }
   }
-  .corner-pet:hover .corner-pet-icon{ animation: pet-bounce .55s ease; }
+  .corner-pet:hover .corner-pet-icon, .corner-pet:active .corner-pet-icon{ animation: pet-bounce .55s ease; }
   @keyframes pet-bounce{
     0%{ transform: translateY(0) scale(1) rotate(0); }
     30%{ transform: translateY(-9px) scale(1.15) rotate(-8deg); }
@@ -142,7 +154,7 @@
     opacity: 0; pointer-events: none; z-index: 5;
     transition: opacity .16s ease, transform .16s ease;
   }
-  .corner-pet:hover .corner-pet-name{
+  .corner-pet:hover .corner-pet-name, .corner-pet:active .corner-pet-name{
     opacity: 1; transform: translateX(-50%) translateY(0);
   }
   @media(min-width:640px){
@@ -174,14 +186,17 @@
 
   .grid{
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media(min-width:480px){
+    .grid{ grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; }
   }
   @media(min-width:640px){
-    .grid{ grid-template-columns: 1fr 1fr; gap: 1.75rem 1.5rem; }
+    .grid{ grid-template-columns: repeat(4, 1fr); gap: 1.35rem 1.2rem; }
   }
   @media(min-width:960px){
-    .grid{ grid-template-columns: 1fr 1fr 1fr; }
+    .grid{ grid-template-columns: repeat(5, 1fr); }
   }
 
   figure.photo{
@@ -222,6 +237,56 @@
     color: var(--ink-soft); white-space: nowrap;
   }
 
+  /* lightbox — click any photo to enlarge it; ‹ › / arrow keys / swipe
+     move between photos; ?p=N on the URL deep-links straight to one
+     (used by the hub's "Surprise me" button and shareable on its own) */
+  .lightbox{
+    position: fixed; inset: 0; z-index: 900;
+    background: rgba(43,32,19,0.9);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3.5rem 1rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .lightbox.open{ opacity: 1; pointer-events: auto; }
+  .lb-content{
+    max-width: min(900px, 92vw); max-height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    transform: scale(0.92); transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .lightbox.open .lb-content{ transform: scale(1); }
+  .lb-content img{
+    max-width: 100%; max-height: 74vh; display: block;
+    border-radius: 16px; border: 4px solid var(--surface);
+    box-shadow: 0 14px 44px rgba(0,0,0,0.4);
+    touch-action: pan-y;
+  }
+  .lb-caption{ margin-top: 1rem; text-align: center; color: var(--surface); }
+  .lb-cap{ font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 1.15rem; display: block; }
+  .lb-date{ font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.7; }
+  .lb-close, .lb-nav{
+    position: fixed; border: none; border-radius: 50%;
+    background: var(--surface); color: var(--ink); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 901; transition: transform .15s cubic-bezier(.34,1.56,.64,1);
+  }
+  .lb-close{
+    top: 1rem; right: 1rem; width: 42px; height: 42px;
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 1.05rem;
+  }
+  .lb-close:hover{ transform: rotate(90deg) scale(1.1); }
+  .lb-nav{
+    top: 50%; transform: translateY(-50%); width: 48px; height: 48px; font-size: 1.6rem;
+  }
+  .lb-nav:hover{ transform: translateY(-50%) scale(1.15); }
+  .lb-nav:active{ transform: translateY(-50%) scale(0.9); }
+  .lb-prev{ left: 0.75rem; }
+  .lb-next{ right: 0.75rem; }
+  @media(max-width:640px){
+    .lb-nav{ width: 40px; height: 40px; font-size: 1.3rem; }
+    .lb-close{ width: 36px; height: 36px; font-size: 0.95rem; }
+  }
+
   footer{
     max-width: var(--max); margin: 2rem auto 0; padding: 1.25rem 1.5rem 1.5rem;
     color: var(--ink-soft); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
@@ -255,7 +320,7 @@
   <div class="wrap">
     <div class="hero">
       <h1 class="title" id="pageTitle">Dexter.</h1>
-      <p class="tagline">Arrived tiny. Left no shoe unchewed.</p>
+      <p class="tagline">Chaotic, rowdy little boy. Wildest of them all.</p>
       <span class="meta" id="photo-count"></span>
     </div>
 
@@ -267,6 +332,19 @@
   <a class="footer-site" href="https://varunagarwal.com">varunagarwal.com</a>
   <p style="margin:0.6rem 0 0;">lucidité, by Varun Agarwal</p>
 </footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous photo">‹</button>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next photo">›</button>
+  <div class="lb-content">
+    <img id="lbImg" src="" alt="">
+    <div class="lb-caption">
+      <span class="lb-cap" id="lbCap"></span>
+      <span class="lb-date" id="lbDate"></span>
+    </div>
+  </div>
+</div>
 
 <script>
 const DATA = [
@@ -291,8 +369,8 @@ const DATA = [
 ];
 
 const grid = document.getElementById('grid');
-grid.innerHTML = DATA.map(p => `
-  <figure class="photo">
+grid.innerHTML = DATA.map((p, i) => `
+  <figure class="photo" data-idx="${i}">
     <div class="frame">
       <img src="${p.img}" alt="${p.caption}" loading="lazy">
     </div>
@@ -335,10 +413,94 @@ function pawBurst(x, y){
   }
 }
 document.getElementById('pageTitle').addEventListener('click', (e) => pawBurst(e.clientX, e.clientY));
-grid.addEventListener('click', (e) => {
-  const frame = e.target.closest('.frame');
-  if (frame) pawBurst(e.clientX, e.clientY);
+
+/* lightbox — click a photo to enlarge it; ‹ › / arrow keys / swipe
+   move between photos; ?p=N deep-links straight to one (the hub's
+   "Surprise me" uses this, and it's shareable on its own) */
+const lb = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbCap = document.getElementById('lbCap');
+const lbDate = document.getElementById('lbDate');
+let lbIndex = -1;
+
+function buzz(ms){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+function openLightbox(idx){
+  lbIndex = (idx + DATA.length) % DATA.length;
+  const item = DATA[lbIndex];
+  lbImg.src = item.img;
+  lbImg.alt = item.caption;
+  lbCap.textContent = item.caption;
+  lbDate.textContent = item.date || '';
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const url = new URL(window.location);
+  url.searchParams.set('p', lbIndex + 1);
+  history.replaceState(null, '', url);
+}
+function closeLightbox(){
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+  const url = new URL(window.location);
+  url.searchParams.delete('p');
+  history.replaceState(null, '', url);
+}
+function navLightbox(delta){
+  buzz(8);
+  openLightbox(lbIndex + delta);
+}
+
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', () => navLightbox(-1));
+document.getElementById('lbNext').addEventListener('click', () => navLightbox(1));
+lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
+document.addEventListener('keydown', (e) => {
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
 });
+let lbTouchX = 0;
+lb.addEventListener('touchstart', (e) => { lbTouchX = e.touches[0].clientX; }, {passive:true});
+lb.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 50) navLightbox(dx > 0 ? -1 : 1);
+}, {passive:true});
+
+grid.addEventListener('click', (e) => {
+  const fig = e.target.closest('.photo');
+  if (!fig) return;
+  pawBurst(e.clientX, e.clientY);
+  buzz(12);
+  openLightbox(parseInt(fig.dataset.idx, 10));
+});
+
+/* deep link: ?p=N opens straight to that photo on load */
+(function(){
+  const p = parseInt(new URLSearchParams(window.location.search).get('p'), 10);
+  if (!isNaN(p) && p >= 1 && p <= DATA.length) openLightbox(p - 1);
+})();
+
+/* desktop-only cursor trail of little paw prints — gated on a real
+   mouse so touch devices (no cursor to trail) don't get it. Same
+   snippet on every Paws page. */
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  let lastPaw = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastPaw < 120) return;
+    lastPaw = now;
+    const paw = document.createElement('span');
+    paw.textContent = '🐾';
+    paw.style.cssText = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; font-size:13px; pointer-events:none; z-index:9999; opacity:0.55; transform:translate(-50%,-50%) rotate(${Math.random()*50-25}deg); transition:opacity 1s ease, transform 1s ease;`;
+    document.body.appendChild(paw);
+    requestAnimationFrame(() => {
+      paw.style.opacity = '0';
+      paw.style.transform += ' scale(0.4) translateY(6px)';
+    });
+    setTimeout(() => paw.remove(), 1000);
+  });
+}
 </script>
 
 </body>
