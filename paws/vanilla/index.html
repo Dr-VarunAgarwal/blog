@@ -23,7 +23,7 @@
 
 <!--
   PAWS PAGE — lives at blog.varunagarwal.com/paws/vanilla/, a sibling
-  of /paws/cookie/ (and /paws/scrappy/, /paws/dexter/ once built)
+  of /paws/cookie/ and /paws/scrappy/ (and /paws/dexter/ once built)
   under the /paws/ family hub. Not its own subdomain/repo — corrected
   2026-09-09, see ../../DECISIONS.md. Plain HTML/CSS/JS, no build
   step, same DIY convention as the rest of the family (see
@@ -82,6 +82,7 @@
     text-decoration: none; color: inherit;
   }
   .back-link .arrow{ color: var(--muted-on-paper); margin-right: 0.35rem; }
+  .sibling-links{ display: flex; gap: 0.75rem; }
   @media(min-width:640px){
     header.site-header{ padding: 2.5rem 1.5rem 1.5rem; }
   }
@@ -164,7 +165,10 @@
 <header class="site-header">
   <div class="wrap">
     <a class="back-link" href="../"><span class="arrow">←</span>paws</a>
-    <a class="back-link" href="../cookie/">🍪</a>
+    <div class="sibling-links">
+      <a class="back-link" href="../cookie/">🍪</a>
+      <a class="back-link" href="../scrappy/">🦮</a>
+    </div>
   </div>
 </header>
 

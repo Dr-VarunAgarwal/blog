@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🍪 — lucidité</title>
-<meta name="description" content="A cat, remembered with a cookie emoji — photos by Varun Agarwal.">
+<title>Scrappy — lucidité</title>
+<meta name="description" content="Scrappy, a Labrador retriever — photos by Varun Agarwal.">
 <meta name="theme-color" content="#f1e7d2">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="lucidité">
-<meta property="og:url" content="https://blog.varunagarwal.com/paws/cookie/">
-<meta property="og:title" content="🍪 — lucidité">
-<meta property="og:description" content="A cat, remembered with a cookie emoji — photos by Varun Agarwal.">
-<meta property="og:image" content="https://blog.varunagarwal.com/paws/cookie/img/04-wide-awake.jpg">
+<meta property="og:url" content="https://blog.varunagarwal.com/paws/scrappy/">
+<meta property="og:title" content="Scrappy — lucidité">
+<meta property="og:description" content="Scrappy, a Labrador retriever — photos by Varun Agarwal.">
+<meta property="og:image" content="https://blog.varunagarwal.com/paws/scrappy/img/12-on-the-rocks.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="🍪 — lucidité">
-<meta name="twitter:description" content="A cat, remembered with a cookie emoji — photos by Varun Agarwal.">
+<meta name="twitter:title" content="Scrappy — lucidité">
+<meta name="twitter:description" content="Scrappy, a Labrador retriever — photos by Varun Agarwal.">
 <link rel="icon" href="../../favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="../../favicon-192.png">
@@ -22,17 +22,23 @@
 <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
 
 <!--
-  COOKIE PAGE — lives at blog.varunagarwal.com/paws/cookie/, a sibling
-  of the Vanilla gallery at /paws/. Same plain HTML/CSS/JS convention,
-  same DATA-array-add-a-photo pattern (see ../index.html, wander/SETUP.md).
+  SCRAPPY PAGE — lives at blog.varunagarwal.com/paws/scrappy/, a sibling
+  of /paws/vanilla/ and /paws/cookie/ under the /paws/ family hub. Same
+  plain HTML/CSS/JS convention, same DATA-array-add-a-photo pattern.
 
-  She wasn't given a name — Varun remembers her by the cookie emoji,
-  so that's the page title, not a name. She lived a short while
-  (roughly May-Aug 2025, per the real photo timestamps); a couple of
-  photos were added to the source album later (with an upload date,
-  not a capture date) and are dated only "2025" here rather than
-  guessing a false precision. No narrative/intro copy on this page by
-  design — captions are short and factual, same restraint as /paws/.
+  Photos pulled from web/assess/ (a local raw dump, not a shared Google
+  Photos album like Vanilla/Cookie) — 15 photos found, 14 used (one
+  near-duplicate of the "falling asleep together" pair dropped). Real
+  EXIF dates span Jun 2017 - Apr 2018, well before Vanilla's own 2021
+  start — a separate, earlier dog, not an alternate Vanilla batch
+  despite the similar cream coloring. Several photos show him in what
+  reads as a service/guide-dog harness, hence the header's 🦮 glyph
+  (chosen from the photos themselves, not assumed). No lifespan/status
+  claim made anywhere on this page — only the source folder said
+  "Scrappy," nothing about when or whether he's still around, so the
+  blurb sticks to the photo date range rather than guessing. Captions
+  are short and factual (AI-drafted placeholders); Varun should feel
+  free to rewrite them in his own voice.
 
   TO ADD A PHOTO:
   Drop the image into img/, then scroll to the DATA array below, copy
@@ -50,8 +56,8 @@
     --paper: #f1e7d2;
     --paper-soft: #e6d9bd;
     --gold: #c29a4b;
-    --caramel: #9c6b2e;
-    --caramel-deep: #6f4a1c;
+    --denim: #3f5c6e;
+    --denim-deep: #2c4250;
     --text-on-paper: #2a241c;
     --muted-on-paper: rgba(42,36,28,0.55);
     --max: 1080px;
@@ -90,13 +96,13 @@
 
   .hero{ max-width: 62ch; margin: 0 0 2.5rem; }
   h1.title{
-    font-weight: 500;
+    font-family: "Fraunces", serif; font-weight: 500;
     font-size: clamp(3rem, 12vw, 5rem); line-height: 1;
     margin: 0 0 0.9rem;
   }
   .hero .meta{
     font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--caramel);
+    color: var(--denim);
   }
 
   .grid{
@@ -151,7 +157,7 @@
     color: var(--text-on-paper); text-decoration: none;
     border-bottom: 1px solid transparent;
   }
-  .footer-site:hover{ border-bottom-color: var(--caramel); }
+  .footer-site:hover{ border-bottom-color: var(--denim); }
 </style>
 </head>
 <body>
@@ -161,7 +167,7 @@
     <a class="back-link" href="../"><span class="arrow">←</span>paws</a>
     <div class="sibling-links">
       <a class="back-link" href="../vanilla/">🐕</a>
-      <a class="back-link" href="../scrappy/">🦮</a>
+      <a class="back-link" href="../cookie/">🍪</a>
     </div>
   </div>
 </header>
@@ -169,7 +175,7 @@
 <main>
   <div class="wrap">
     <div class="hero">
-      <h1 class="title">🍪</h1>
+      <h1 class="title">Scrappy</h1>
       <span class="meta" id="photo-count"></span>
     </div>
 
@@ -184,15 +190,20 @@
 
 <script>
 const DATA = [
-  {id:1, img:'img/01-first-day.jpg', caption:'First day', date:'May 2025'},
-  {id:2, img:'img/02-settling-in.jpg', caption:'Settling in', date:'Jul 2025'},
-  {id:3, img:'img/03-held.jpg', caption:'Held', date:'Jul 2025'},
-  {id:4, img:'img/04-wide-awake.jpg', caption:'Wide awake', date:'Jul 2025'},
-  {id:5, img:'img/05-sprawled-out.jpg', caption:'Sprawled out', date:'Jul 2025'},
-  {id:6, img:'img/06-hiding-spot.jpg', caption:'Hiding spot', date:'Jul 2025'},
-  {id:7, img:'img/07-napping.jpg', caption:'Napping', date:'Aug 2025'},
-  {id:8, img:'img/08-playing.jpg', caption:'Playing', date:'Aug 2025'},
-  {id:9, img:'img/09-curled-up.jpg', caption:'Curled up', date:'2025'},
+  {id:1, img:'img/01-floor-nap.jpg', caption:'Floor nap', date:'Jun 2017'},
+  {id:2, img:'img/02-muzzle-down.jpg', caption:'Muzzle down', date:'Jul 2017'},
+  {id:3, img:'img/03-dog-print-blanket.jpg', caption:'On the dog-print blanket', date:'Jul 2017'},
+  {id:4, img:'img/04-curled-up.jpg', caption:'Curled up', date:'Jul 2017'},
+  {id:5, img:'img/05-falling-asleep-together.jpg', caption:'Falling asleep together', date:'Nov 2017'},
+  {id:6, img:'img/06-chin-scratches.jpg', caption:'Chin scratches', date:'Dec 2017'},
+  {id:7, img:'img/07-in-harness.jpg', caption:'In harness', date:'Dec 2017'},
+  {id:8, img:'img/08-portrait.jpg', caption:'Portrait', date:'Jan 2018'},
+  {id:9, img:'img/09-held.jpg', caption:'Held', date:'Feb 2018'},
+  {id:10, img:'img/10-by-the-blue-door.jpg', caption:'By the blue door', date:'Feb 2018'},
+  {id:11, img:'img/11-river-day.jpg', caption:'River day', date:'Feb 2018'},
+  {id:12, img:'img/12-on-the-rocks.jpg', caption:'On the rocks', date:'Feb 2018'},
+  {id:13, img:'img/13-settling-in-for-the-night.jpg', caption:'Settling in for the night', date:'Feb 2018'},
+  {id:14, img:'img/14-watching-the-view.jpg', caption:'Watching the view', date:'Apr 2018'},
 ];
 
 const grid = document.getElementById('grid');
