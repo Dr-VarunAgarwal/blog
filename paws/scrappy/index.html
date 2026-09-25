@@ -96,9 +96,13 @@
 
   .hero{ max-width: 62ch; margin: 0 0 2.5rem; }
   h1.title{
-    font-family: "Fraunces", serif; font-weight: 500;
+    font-family: "Fraunces", serif; font-weight: 500; font-style: italic;
     font-size: clamp(3rem, 12vw, 5rem); line-height: 1;
-    margin: 0 0 0.9rem;
+    margin: 0 0 0.5rem; color: var(--denim);
+  }
+  .hero .tagline{
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 480;
+    font-size: 1.05rem; color: var(--text-on-paper); margin: 0 0 0.6rem;
   }
   .hero .meta{
     font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
@@ -168,6 +172,7 @@
     <div class="sibling-links">
       <a class="back-link" href="../vanilla/">🐕</a>
       <a class="back-link" href="../cookie/">🍪</a>
+      <a class="back-link" href="../dexter/">🐾</a>
     </div>
   </div>
 </header>
@@ -175,7 +180,8 @@
 <main>
   <div class="wrap">
     <div class="hero">
-      <h1 class="title">Scrappy</h1>
+      <h1 class="title">Scrappy.</h1>
+      <p class="tagline">Mostly horizontal.</p>
       <span class="meta" id="photo-count"></span>
     </div>
 
@@ -190,18 +196,18 @@
 
 <script>
 const DATA = [
-  {id:1, img:'img/01-floor-nap.jpg', caption:'Floor nap', date:'Jun 2017'},
+  {id:1, img:'img/01-floor-nap.jpg', caption:'Out cold', date:'Jun 2017'},
   {id:2, img:'img/02-muzzle-down.jpg', caption:'Muzzle down', date:'Jul 2017'},
   {id:3, img:'img/03-dog-print-blanket.jpg', caption:'On the dog-print blanket', date:'Jul 2017'},
   {id:4, img:'img/04-curled-up.jpg', caption:'Curled up', date:'Jul 2017'},
   {id:5, img:'img/05-falling-asleep-together.jpg', caption:'Falling asleep together', date:'Nov 2017'},
   {id:6, img:'img/06-chin-scratches.jpg', caption:'Chin scratches', date:'Dec 2017'},
-  {id:7, img:'img/07-in-harness.jpg', caption:'In harness', date:'Dec 2017'},
-  {id:8, img:'img/08-portrait.jpg', caption:'Portrait', date:'Jan 2018'},
+  {id:7, img:'img/07-in-harness.jpg', caption:'Ready for duty', date:'Dec 2017'},
+  {id:8, img:'img/08-portrait.jpg', caption:'Camera-ready', date:'Jan 2018'},
   {id:9, img:'img/09-held.jpg', caption:'Held', date:'Feb 2018'},
   {id:10, img:'img/10-by-the-blue-door.jpg', caption:'By the blue door', date:'Feb 2018'},
   {id:11, img:'img/11-river-day.jpg', caption:'River day', date:'Feb 2018'},
-  {id:12, img:'img/12-on-the-rocks.jpg', caption:'On the rocks', date:'Feb 2018'},
+  {id:12, img:'img/12-on-the-rocks.jpg', caption:'Peak performance', date:'Feb 2018'},
   {id:13, img:'img/13-settling-in-for-the-night.jpg', caption:'Settling in for the night', date:'Feb 2018'},
   {id:14, img:'img/14-watching-the-view.jpg', caption:'Watching the view', date:'Apr 2018'},
 ];

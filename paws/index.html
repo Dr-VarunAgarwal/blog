@@ -23,19 +23,25 @@
 
 <!--
   PAWS HUB — lives at blog.varunagarwal.com/paws/. Lists every pet as
-  its own sibling gallery (vanilla/, cookie/, scrappy/, and eventually
-  dexter/), same pattern as the main blog hub one level up listing
+  its own sibling gallery (vanilla/, cookie/, scrappy/, dexter/), same
+  pattern as the main blog hub one level up listing
   books/wander/notes/paws. Plain HTML, no build step, no DATA array —
   short enough (a handful of pets) that a new entry is just a copy of
   an existing <a class="pet-card"> block, or a new <li> in the
-  "Coming soon" list for one not built yet.
+  "Coming soon" list for one not built yet (no dashed box currently —
+  re-add one, matching the markup in git history, whenever a next pet
+  is announced but not yet built).
 
   TO ADD A LIVE PET:
   Copy an existing .pet-card block, point href/img at the new
   gallery, pick a --card-color not already used by a sibling card.
+  Grid widens at 640/900/1200px — recheck those breakpoints still
+  read cleanly once there are more than 4 cards.
 
   TO ADD A "COMING SOON" PET:
-  Add a new <li> to the .upcoming-items list.
+  Add a new <li> to the .upcoming-items list (re-add the surrounding
+  .upcoming-card wrap if it isn't there — removed 2026-09-25 when its
+  last placeholder, Dexter, went live).
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +57,7 @@
     --clay: #b5572e;
     --caramel: #9c6b2e;
     --denim: #3f5c6e;
+    --rust: #a1402e;
     --text-on-paper: #2a241c;
     --muted-on-paper: rgba(42,36,28,0.55);
     --muted-on-dark: rgba(241,231,210,0.68);
@@ -112,6 +119,9 @@
   @media(min-width:900px){
     .pets{ grid-template-columns: 1fr 1fr 1fr; }
   }
+  @media(min-width:1200px){
+    .pets{ grid-template-columns: 1fr 1fr 1fr 1fr; }
+  }
 
   .pet-card{
     display: block; text-decoration: none; color: inherit;
@@ -126,6 +136,7 @@
   .pet-card--vanilla{ --card-color: var(--clay); }
   .pet-card--cookie{ --card-color: var(--caramel); }
   .pet-card--scrappy{ --card-color: var(--denim); }
+  .pet-card--dexter{ --card-color: var(--rust); }
   .pet-card:hover{
     transform: translateY(-3px);
     box-shadow: 5px 7px 0 0 rgba(27,33,25,0.22);
@@ -200,7 +211,7 @@
   <div class="wrap">
     <div class="hero">
       <h1 class="title">Paws.</h1>
-      <p>The pets.</p>
+      <p>All good ones, no exceptions.</p>
     </div>
   </div>
 
@@ -212,7 +223,7 @@
       </div>
       <div class="pet-card-body">
         <span class="pet-tag">Golden retriever</span>
-        <p class="pet-blurb">Since 2021, and still going.</p>
+        <p class="pet-blurb">Since 2021 — still going, still raiding the fridge.</p>
       </div>
     </a>
     <a class="pet-card pet-card--cookie" href="cookie/">
@@ -228,32 +239,25 @@
     <a class="pet-card pet-card--scrappy" href="scrappy/">
       <div class="pet-cover-wrap">
         <img class="pet-cover" src="scrappy/img/12-on-the-rocks.jpg" alt="" loading="lazy">
-        <p class="pet-name">Scrappy</p>
+        <p class="pet-name">Scrappy.</p>
       </div>
       <div class="pet-card-body">
         <span class="pet-tag">Labrador retriever</span>
-        <p class="pet-blurb">Photos from 2017-2018.</p>
+        <p class="pet-blurb">2017-2018, mostly asleep.</p>
+      </div>
+    </a>
+    <a class="pet-card pet-card--dexter" href="dexter/">
+      <div class="pet-cover-wrap">
+        <img class="pet-cover" src="dexter/img/17-against-the-sky.jpg" alt="" loading="lazy">
+        <p class="pet-name">Dexter.</p>
+      </div>
+      <div class="pet-card-body">
+        <span class="pet-tag">Indie dog</span>
+        <p class="pet-blurb">2018-2019. Arrived tiny, left no shoe unchewed.</p>
       </div>
     </a>
   </div>
 
-  <div class="wrap">
-    <div class="upcoming-card">
-      <span class="upcoming-tag">Coming soon</span>
-      <ul class="upcoming-items">
-        <li class="upcoming-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <ellipse cx="12" cy="16.5" rx="5" ry="4.2"/>
-            <ellipse cx="5.5" cy="9" rx="2" ry="2.6"/>
-            <ellipse cx="10" cy="5.5" rx="2" ry="2.6"/>
-            <ellipse cx="15" cy="5.5" rx="2" ry="2.6"/>
-            <ellipse cx="19.5" cy="9" rx="2" ry="2.6"/>
-          </svg>
-          <p class="upcoming-name">Dexter</p>
-        </li>
-      </ul>
-    </div>
-  </div>
 </main>
 
 <footer>
