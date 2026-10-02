@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '6';
+  const BUILD = '7';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -584,7 +584,7 @@
   const help = $('#help');
   const helpOpen = () => !help.hidden;
   function toggleHelp(v) { help.hidden = !(v === undefined ? help.hidden : v); }
-  $('#help-open').addEventListener('click', () => { toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); });
+  $('#help-open').addEventListener('click', () => { showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); });
   $('#help-close').addEventListener('click', () => toggleHelp(false));
   help.addEventListener('click', e => { if (e.target === help) toggleHelp(false); });
   $('#help-games').innerHTML = GAMES.map((d, i) => '<li><b>' + String(i + 1).padStart(2, '0') + '</b> ' + d.name + '</li>').join('');
@@ -679,14 +679,17 @@
     }
     return COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || COLOURS[0];
   }
-  function applyLook() {
-    const c = currentColour(), root = document.documentElement.style, light = lum(c.body) > .2;
-    const vars = {
+  function colourVars(c) {
+    const light = lum(c.body) > .2;
+    return {
       '--body': c.body, '--body-hi': mix(c.body, '#ffffff', light ? .22 : .13), '--body-lo': mix(c.body, '#000000', .55),
       '--key': c.key, '--key-rim': mix(c.key, '#000000', .16), '--key-side': mix(c.key, '#000000', .48),
-      '--ink': c.ink, '--decal': c.decal
+      '--ink': c.ink, '--decal': c.decal, '--alt': c.alt || c.key
     };
-    vars['--alt'] = c.alt || c.key;
+  }
+  function applyLook() {
+    const c = currentColour(), root = document.documentElement.style;
+    const vars = colourVars(c);
     for (const k in vars) root.setProperty(k, vars[k]);
     device.dataset.layout = look.layout;
     document.documentElement.dataset.layout = look.layout;
@@ -715,6 +718,46 @@
     const b = e.target.closest('button[data-layout]'); if (!b) return;
     look.layout = b.dataset.layout; applyLook();
   });
+
+  /* ------------------ skins: one-tap complete looks ------------------ */
+  const PV = {
+    a: bg => '<svg viewBox="0 0 40 78" aria-hidden="true"><rect class="pv-body" width="40" height="78" rx="7"/><rect x="5" y="5" width="30" height="31" fill="' + bg + '"/><circle class="pv-key" cx="14" cy="45" r="2.4"/><circle class="pv-key" cx="20" cy="45" r="2.4"/><circle class="pv-key" cx="26" cy="45" r="2.4"/><circle class="pv-key" cx="32" cy="45" r="2.4"/><circle class="pv-key" cx="13" cy="55" r="3.2"/><circle class="pv-key" cx="6.5" cy="62" r="3.2"/><circle class="pv-key" cx="19.5" cy="62" r="3.2"/><circle class="pv-key" cx="13" cy="69" r="3.2"/><circle class="pv-key" cx="31" cy="62" r="6"/></svg>',
+    b: bg => '<svg viewBox="0 0 40 78" aria-hidden="true"><path class="pv-body" d="M7 0H33a7 7 0 0 1 7 7V54Q40 78 20 78H7a7 7 0 0 1-7-7V7a7 7 0 0 1 7-7Z"/><rect x="3" y="4" width="34" height="34" fill="' + bg + '"/><path class="pv-key" d="M10 45h6v5h5v6h-5v5h-6v-5H5v-6h5Z"/><circle class="pv-key" cx="29" cy="48" r="4.5"/><circle class="pv-key" cx="29" cy="58" r="4"/><rect class="pv-key" x="22" y="64" width="3.4" height="9" rx="1.7"/><rect class="pv-key" x="17.5" y="64" width="3.4" height="9" rx="1.7"/></svg>',
+    c: bg => '<svg viewBox="0 0 40 78" aria-hidden="true"><rect class="pv-body" width="40" height="78" rx="2"/><rect x="6" y="4" width="28" height="32" fill="none" stroke="#fff" stroke-width="1"/><rect x="9" y="8" width="22" height="25" fill="' + bg + '"/><circle class="pv-key" cx="14" cy="48" r="3.4"/><circle class="pv-key" cx="8" cy="57" r="3.4"/><circle class="pv-key" cx="20" cy="57" r="3.4"/><circle class="pv-key" cx="14" cy="66" r="3.4"/><circle class="pv-key" cx="30" cy="60" r="6.5"/><circle class="pv-key" cx="22" cy="43" r="1.8"/><circle class="pv-key" cx="28" cy="43" r="1.8"/><circle class="pv-key" cx="34" cy="43" r="1.8"/></svg>',
+    d: bg => '<svg viewBox="0 0 40 78" aria-hidden="true"><rect class="pv-body" width="40" height="78" rx="2"/><rect x="3" y="3" width="34" height="42" fill="' + bg + '"/><circle class="pv-key" cx="14" cy="55" r="3.2"/><circle class="pv-key" cx="8.5" cy="63" r="3.2"/><circle class="pv-key" cx="19.5" cy="63" r="3.2"/><circle class="pv-key" cx="14" cy="71" r="3.2"/><circle class="pv-key" cx="30" cy="64" r="6.5"/></svg>'
+  };
+  const SKINS = [
+    { name: 'Lightning', sub: 'Black',  layout: 'a', colour: 'black',  tint: 0 },
+    { name: 'Lightning', sub: 'Red',    layout: 'a', colour: 'red',    tint: 0 },
+    { name: 'Kitty',     sub: 'Yellow', layout: 'b', colour: 'yellow', tint: 0 },
+    { name: 'Kitty',     sub: 'Pink',   layout: 'b', colour: 'pink',   tint: 0 },
+    { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
+    { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 0 },
+    { name: 'Screen',    sub: 'Black',  layout: 'd', colour: 'black',  tint: 0 },
+    { name: 'Screen',    sub: 'Olive',  layout: 'd', colour: 'gray',   tint: 3 }
+  ];
+  const skinBox = $('#skin-pick');
+  skinBox.innerHTML = SKINS.map((s, i) => {
+    const c = COLOURS.find(x => x.id === s.colour), v = colourVars(c);
+    const style = Object.keys(v).map(k => k + ':' + v[k]).join(';');
+    return '<button type="button" class="skin" data-skin="' + i + '" style="' + style + '" aria-label="' + s.name + ' ' + s.sub + '">' + PV[s.layout](PALETTES[s.tint].bg) + s.name + '<small>' + s.sub + '</small></button>';
+  }).join('');
+  skinBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-skin]'); if (!b) return;
+    const s = SKINS[+b.dataset.skin];
+    look.layout = s.layout; look.colour = s.colour; look.custom = null;
+    palIdx = s.tint; store.set('pal', palIdx); applyPalette();
+    applyLook();
+  });
+
+  /* sheet tabs */
+  const tabsBox = $('#help-tabs');
+  function showTab(name) {
+    tabsBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+    document.querySelectorAll('#help [data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
+  }
+  tabsBox.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
+
   function renderSheet() {
     const cur = look.colour || DEFAULT_COLOUR[look.layout];
     swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === cur)));
@@ -722,6 +765,7 @@
     tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
     layoutBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.layout === look.layout)));
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
+    skinBox.querySelectorAll('button').forEach(b => { const s = SKINS[+b.dataset.skin]; b.setAttribute('aria-pressed', String(s.layout === look.layout && s.colour === cur && s.tint === palIdx)); });
   }
   applyLook();
   /* tetromino-outline decals for the Super layout (generic block shapes, drawn here so there is nothing to download) */
