@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "5";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "6";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
