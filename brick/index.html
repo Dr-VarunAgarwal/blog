@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Brick Game — lucidité</title>
+<meta name="description" content="A playable rebuild of the classic handheld Brick Game: Tetris and eleven more cartridges, speeds and levels, on your phone.">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brick Game">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="lucidité">
+<meta property="og:url" content="https://blog.varunagarwal.com/brick/">
+<meta property="og:title" content="Brick Game — lucidité">
+<meta property="og:description" content="The 9999-in-1 handheld, rebuilt for modern devices.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="brick.css">
+</head>
+<body>
+<!--
+  BRICK GAME — a rebuild of the 1990s "9999 in 1" pocket brick handheld.
+  Plain HTML/CSS/JS, no build step. games.js = the cartridges, engine.js = the console.
+  The device is laid out in a fixed 360×780 box and scaled to fit the screen.
+-->
+<main id="stage">
+  <div id="device">
+
+    <a class="corner home" href="../" aria-label="Back to lucidité" title="Back to lucidité">&#8249;</a>
+    <button class="corner helpbtn" id="help-open" aria-label="Games and controls" title="Games and controls">?</button>
+
+    <i class="bolt l"></i><i class="bolt r"></i>
+
+    <div class="lcd-frame">
+      <div class="lcd-screen">
+        <canvas id="lcd" width="500" height="520" aria-label="Brick Game LCD screen"></canvas>
+      </div>
+    </div>
+
+    <div id="label" class="classic">CLASSIC</div>
+
+    <div class="shoulder"></div>
+
+    <button class="fn" data-btn="power"  style="left:62px"  aria-label="On / Off"><i></i><span>ON/OFF</span></button>
+    <button class="fn" data-btn="sound"  style="left:122px" aria-label="Sound"><i></i><span>SOUND</span></button>
+    <button class="fn" data-btn="sp"     style="left:182px" aria-label="Start / Pause"><i></i><span>S/P</span></button>
+    <button class="fn" data-btn="reset"  style="left:242px" aria-label="Reset"><i></i><span>RESET</span></button>
+
+    <div id="dpad" role="group" aria-label="Direction pad">
+      <b class="key up"    data-dir="up"></b>
+      <b class="key right" data-dir="right"></b>
+      <b class="key down"  data-dir="down"></b>
+      <b class="key left"  data-dir="left"></b>
+      <svg class="compass" viewBox="-12 -12 24 24" aria-hidden="true">
+        <path d="M0-9 L3-4 H-3Z M0 9 L3 4 H-3Z M-9 0 L-4-3 V3Z M9 0 L4-3 V3Z" fill="#6b5600"/>
+        <circle r="1.6" fill="#6b5600"/>
+      </svg>
+    </div>
+
+    <svg class="rot-art" viewBox="-90 -90 180 180" aria-hidden="true">
+      <defs>
+        <path id="rot-arc" d="M 39.9 -47.5 A 62 62 0 0 1 47.5 39.9"/>
+        <marker id="rot-head" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10 Z" fill="#f2f2f2"/>
+        </marker>
+      </defs>
+      <path d="M -48 -14 A 50 50 0 0 1 22 -45" fill="none" stroke="#f2f2f2" stroke-width="4" stroke-linecap="round" marker-end="url(#rot-head)"/>
+      <text font-family="Impact, 'Arial Narrow', sans-serif" font-size="15" fill="#f2f2f2" letter-spacing="1">
+        <textPath href="#rot-arc" startOffset="2">ROTATE</textPath>
+      </text>
+    </svg>
+    <button class="rot" data-btn="rotate" aria-label="Rotate / Fire"></button>
+
+    <!-- brand -->
+    <svg class="mascot" viewBox="0 0 80 96" aria-hidden="true" fill="none" stroke="#f2f2f2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="28" cy="13" rx="8" ry="4.5"/><ellipse cx="52" cy="13" rx="8" ry="4.5"/>
+      <rect x="14" y="16" width="52" height="38" rx="7"/>
+      <circle cx="31" cy="33" r="3.6" fill="#f2f2f2"/><circle cx="49" cy="33" r="3.6" fill="#f2f2f2"/>
+      <path d="M30 43 Q40 51 50 43"/>
+      <path d="M14 38 L3 28 M66 38 L77 24"/>
+      <path d="M30 54 L25 76 M50 54 L58 72"/>
+      <ellipse cx="22" cy="82" rx="9" ry="5" fill="#f2f2f2"/><ellipse cx="62" cy="78" rx="9" ry="5" fill="#f2f2f2"/>
+    </svg>
+    <div class="brand"><span>BRICK</span><span>GAME</span></div>
+    <div class="nine">9999IN1</div>
+    <svg class="swoosh" viewBox="0 0 160 40" aria-hidden="true" fill="none" stroke="#f2f2f2" stroke-width="2.4" stroke-linecap="round">
+      <path d="M2 30 C 40 38, 70 6, 156 22"/>
+      <circle cx="30" cy="30" r="1.8" fill="#f2f2f2" stroke="none"/><circle cx="46" cy="31" r="1.8" fill="#f2f2f2" stroke="none"/>
+    </svg>
+  </div>
+
+  <div id="help" hidden>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button id="help-close" aria-label="Close">&times;</button>
+      <h2 id="help-title">Brick Game</h2>
+      <p class="lede">Just like the real thing: press <b>ON/OFF</b>, then pick a cartridge with <b>&larr; &rarr;</b>, a speed with <b>&uarr; &darr;</b>, a level with <b>ROTATE</b>, and hit <b>S/P</b> to start.</p>
+
+      <h3><span id="help-games-n">12</span> games</h3>
+      <ol id="help-games"></ol>
+
+      <h3>Controls</h3>
+      <table>
+        <tr><th></th><th>On the device</th><th>Keyboard</th></tr>
+        <tr><td>Move</td><td>D-pad (slide a thumb across it)</td><td>Arrows / WASD</td></tr>
+        <tr><td>Rotate / fire / drop the bar</td><td>ROTATE</td><td>Space, Z, X</td></tr>
+        <tr><td>Start / pause</td><td>S/P</td><td>Enter, P</td></tr>
+        <tr><td>Sound</td><td>SOUND</td><td>M</td></tr>
+        <tr><td>Back to the title screen</td><td>RESET</td><td>R</td></tr>
+        <tr><td>Power</td><td>ON/OFF</td><td>O, Esc</td></tr>
+      </table>
+
+      <h3>Notes</h3>
+      <ul>
+        <li><b>Speed</b> is how fast things move; <b>level</b> changes the challenge (Tetris starts with garbage rows, Snake gets obstacles, Breaker gets more bricks&hellip;). In Tetris, &uarr; is a hard drop.</li>
+        <li>Hold ROTATE in Snake or Road Fighter for a turbo boost.</li>
+        <li>Tap <b>CLASSIC</b> under the screen to change the LCD tint. High scores are saved on this device.</li>
+        <li>On iPhone the ringer switch silences web audio.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
+<script src="games.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>
