@@ -1,0 +1,186 @@
+/* Brick Game — the handheld. Fixed 360×780 design box, scaled to fit by engine.js */
+:root {
+  --lcd-bg: #c9cdbd;
+  --yellow-hi: #fff27a;
+  --yellow: #f7d51d;
+  --yellow-lo: #cfa400;
+  --body-1: #1d1d20;
+  --body-2: #0e0e10;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
+body {
+  background: radial-gradient(120% 90% at 50% 40%, #1b1c20 0%, #0b0b0d 70%);
+  color: #eee;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+#stage { position: fixed; inset: 0; }
+
+#device {
+  position: absolute; left: 50%; top: 50%;
+  width: 360px; height: 760px;
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  border-radius: 34px 34px 40px 40px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), transparent 14%),
+    linear-gradient(180deg, var(--body-1), var(--body-2) 55%, #131316);
+  box-shadow: 0 0 0 2px #26262a, 0 0 0 5px #08080a, 0 30px 60px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.08);
+  touch-action: none;
+}
+#device * { touch-action: none; }
+
+/* little corner controls (live on the bezel, scale with it) */
+.corner {
+  position: absolute; top: 4px; width: 42px; height: 42px; z-index: 3;
+  display: grid; place-items: center;
+  color: rgba(255,255,255,.34); font: 700 22px/1 system-ui, sans-serif; text-decoration: none;
+  background: none; border: 0; cursor: pointer; border-radius: 50%;
+}
+.corner:hover, .corner:focus-visible { color: rgba(255,255,255,.8); outline: none; }
+.corner.home { left: 4px; font-size: 30px; padding-bottom: 4px; }
+.corner.helpbtn { right: 4px; }
+
+/* lightning bolts */
+.bolt {
+  position: absolute; top: 74px; width: 26px; height: 138px;
+  background: linear-gradient(180deg, #f4f4f4, #a9adb3 70%, #6e7278);
+  clip-path: polygon(58% 0%, 0% 56%, 40% 56%, 18% 100%, 100% 34%, 58% 34%);
+}
+.bolt.l { left: 12px; }
+.bolt.r { right: 12px; transform: scaleX(-1); }
+
+/* LCD */
+.lcd-frame {
+  position: absolute; left: 41px; top: 26px; width: 278px; height: 280px;
+  padding: 9px; border-radius: 10px;
+  background: linear-gradient(180deg, #2c2c30, #151517);
+  box-shadow: inset 0 0 0 2px #3a3a40, inset 0 6px 10px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.1);
+}
+.lcd-screen {
+  position: relative; width: 260px; height: 262px; margin-left: 0;
+  background: var(--lcd-bg);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.5), inset 0 3px 8px rgba(0,0,0,.35);
+  overflow: hidden; border-radius: 3px;
+}
+.lcd-screen::after { /* glare */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(118deg, rgba(255,255,255,.16) 0 24%, transparent 24.5%), radial-gradient(120% 100% at 50% 0%, transparent 60%, rgba(0,0,0,.12));
+}
+#lcd { display: block; width: 250px; height: 260px; margin: 1px 5px; image-rendering: auto; }
+body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 88%, #666); }
+
+#label {
+  position: absolute; left: 0; right: 0; top: 314px; text-align: center; cursor: pointer;
+  font: 400 31px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", "Roboto Condensed", sans-serif;
+  font-stretch: condensed; letter-spacing: 1.5px; color: #f1f1f1;
+  text-shadow: 0 2px 0 rgba(0,0,0,.6);
+}
+#label.named { color: var(--yellow); }
+
+.shoulder {
+  position: absolute; left: 0; right: 0; top: 356px; height: 48px;
+  border-radius: 28px 28px 22px 22px;
+  background: linear-gradient(180deg, #2b2b30 0%, #151518 38%, #0c0c0e 70%, #1a1a1e 100%);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 6px 14px rgba(0,0,0,.55);
+}
+
+/* ON/OFF SOUND S/P RESET */
+.fn {
+  position: absolute; top: 420px; width: 56px; height: 62px; padding: 0;
+  background: none; border: 0; color: #f1f1f1; cursor: pointer;
+}
+.fn span {
+  position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+  font: 700 11px/1 Arial, sans-serif; letter-spacing: -.2px; white-space: nowrap; color: #ededed;
+}
+.fn i {
+  position: absolute; left: 50%; top: 24px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, var(--yellow-hi), var(--yellow) 55%, var(--yellow-lo));
+  box-shadow: 0 2px 0 #7a6000, 0 4px 6px rgba(0,0,0,.6);
+  transition: transform .04s, box-shadow .04s;
+}
+.fn.pressed i { transform: translateY(2px); box-shadow: 0 0 0 #7a6000, 0 1px 2px rgba(0,0,0,.6); }
+
+/* D-pad */
+#dpad { position: absolute; left: 24px; top: 488px; width: 176px; height: 176px; }
+#dpad .key {
+  position: absolute; width: 51px; height: 51px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 36% 30%, var(--yellow-hi), var(--yellow) 55%, var(--yellow-lo));
+  box-shadow: 0 3px 0 #7a6000, 0 6px 8px rgba(0,0,0,.6);
+  transition: transform .04s, box-shadow .04s;
+}
+#dpad .key.up    { left: 62.5px; top: 24.5px; }
+#dpad .key.down  { left: 62.5px; top: 100.5px; }
+#dpad .key.left  { left: 24.5px; top: 62.5px; }
+#dpad .key.right { left: 100.5px; top: 62.5px; }
+#dpad .key.pressed { transform: translateY(3px); box-shadow: 0 0 0 #7a6000, 0 2px 3px rgba(0,0,0,.6); }
+#dpad .compass { position: absolute; left: 70px; top: 70px; width: 36px; height: 36px; pointer-events: none; }
+
+/* ROTATE */
+.rot-art { position: absolute; left: 179px; top: 480px; width: 180px; height: 180px; pointer-events: none; }
+.rot {
+  position: absolute; left: 226px; top: 528px; width: 86px; height: 86px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  background: radial-gradient(circle at 36% 30%, var(--yellow-hi), var(--yellow) 55%, var(--yellow-lo));
+  box-shadow: 0 4px 0 #7a6000, 0 8px 10px rgba(0,0,0,.65);
+  transition: transform .04s, box-shadow .04s;
+}
+.rot.pressed { transform: translateY(3px); box-shadow: 0 1px 0 #7a6000, 0 2px 4px rgba(0,0,0,.6); }
+
+/* brand */
+.mascot { position: absolute; left: 18px; top: 666px; width: 60px; height: 72px; opacity: .95; pointer-events: none; }
+.brand {
+  position: absolute; left: 108px; top: 670px; transform: rotate(-9deg); transform-origin: 0 100%;
+  font: 400 31px/.86 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: 1px; color: #f1f1f1;
+  display: flex; flex-direction: column; pointer-events: none;
+}
+.brand span:last-child { margin-left: 34px; }
+.nine { position: absolute; right: 26px; top: 718px; font: 400 20px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: .5px; color: #f1f1f1; pointer-events: none; }
+.swoosh { position: absolute; left: 100px; top: 710px; width: 160px; height: 40px; opacity: .9; pointer-events: none; }
+
+/* help sheet */
+#help {
+  position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.74);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+#help .card {
+  position: relative; width: 100%; max-width: 460px; max-height: 90vh; max-height: 90dvh; overflow: auto;
+  -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  background: #17171a; border: 1px solid #2c2c32; border-radius: 16px; padding: 22px 22px 18px;
+  color: #dedcd4; font-size: 14px; line-height: 1.5; user-select: text; -webkit-user-select: text;
+}
+#help h2 { margin: 0 0 6px; font: 400 30px/1 Impact, "Arial Narrow Bold", sans-serif; letter-spacing: 1px; color: #fff; }
+#help h3 { margin: 18px 0 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--yellow); }
+#help .lede { margin: 0; color: #bdbbb2; }
+#help ol { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 12px; }
+#help li { break-inside: avoid; }
+#help ol li b { display: inline-block; width: 1.9em; color: var(--yellow); font-variant-numeric: tabular-nums; }
+#help ul { margin: 0; padding-left: 18px; }
+#help ul li { margin: 4px 0; }
+#help table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#help th { text-align: left; font-weight: 600; color: #8e8c84; padding: 2px 6px 4px 0; }
+#help td { padding: 4px 6px 4px 0; border-top: 1px solid #26262b; vertical-align: top; }
+#help td:first-child { color: #fff; }
+#help-close {
+  position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border: 0; background: none; color: #999;
+  font: 300 28px/1 system-ui; cursor: pointer; border-radius: 50%;
+}
+#help-close:hover { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) { .fn i, .rot, #dpad .key { transition: none; } }
+
+/* ---- landscape layout (touch devices held sideways): D-pad | screen | ROTATE ---- */
+#device.land { width: 800px; height: 380px; border-radius: 34px; }
+#device.land .bolt, #device.land #label, #device.land .shoulder,
+#device.land .mascot, #device.land .brand, #device.land .nine, #device.land .swoosh { display: none; }
+#device.land .lcd-frame { left: 261px; top: 12px; }
+#device.land .fn { top: 300px; }
+#device.land .fn[data-btn="power"] { left: 282px !important; }
+#device.land .fn[data-btn="sound"] { left: 342px !important; }
+#device.land .fn[data-btn="sp"]    { left: 402px !important; }
+#device.land .fn[data-btn="reset"] { left: 462px !important; }
+#device.land #dpad { left: 36px; top: 54px; }
+#device.land .rot-art { left: 603px; top: 54px; }
+#device.land .rot { left: 646px; top: 102px; }
