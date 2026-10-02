@@ -532,11 +532,8 @@
     clearTimeout(nameTimer);
     nameTimer = setTimeout(() => { labelEl.textContent = 'CLASSIC'; labelEl.classList.remove('named'); }, 2200);
   }
-  labelEl.addEventListener('click', () => {
-    palIdx = (palIdx + 1) % PALETTES.length; store.set('pal', palIdx);
-    applyPalette();
-    Sound.unlock(); Sound.fx('tick');
-  });
+  labelEl.addEventListener('click', () => { setTint((palIdx + 1) % PALETTES.length); Sound.unlock(); Sound.fx('tick'); });
+  function setTint(i) { palIdx = i; store.set('pal', palIdx); applyPalette(); renderSheet(); }
   function applyPalette() {
     document.documentElement.style.setProperty('--lcd-bg', PALETTES[palIdx].bg);
   }
@@ -571,6 +568,72 @@
   window.addEventListener('resize', fit);
   window.addEventListener('orientationchange', () => setTimeout(fit, 150));
   if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+
+  /* ------------------ console look: layout + colour ------------------ */
+  const COLOURS = [
+    { id: 'black',  name: 'Black',  body: '#17171a', key: '#f5d31c', ink: '#f1f1f1', decal: '#d9dce0' },
+    { id: 'yellow', name: 'Yellow', body: '#f4c60f', key: '#fbfbf8', ink: '#1b1a14', decal: '#fff6dc' },
+    { id: 'red',    name: 'Red',    body: '#d63a30', key: '#fbfbf8', ink: '#ffffff', decal: '#ffd9d4' },
+    { id: 'blue',   name: 'Blue',   body: '#2f6fd8', key: '#fbfbf8', ink: '#ffffff', decal: '#d3e3ff' },
+    { id: 'green',  name: 'Green',  body: '#2f9d5c', key: '#fbfbf8', ink: '#ffffff', decal: '#d6f3e0' },
+    { id: 'pink',   name: 'Pink',   body: '#f08cb8', key: '#fbfbf8', ink: '#3b1427', decal: '#fff0f6' },
+    { id: 'purple', name: 'Purple', body: '#6b50c9', key: '#f5d31c', ink: '#ffffff', decal: '#e1d9ff' },
+    { id: 'white',  name: 'White',  body: '#e9e9e4', key: '#d63a30', ink: '#222222', decal: '#a9aeb4' },
+    { id: 'gray',   name: 'Smoke',  body: '#4b4e55', key: '#f5d31c', ink: '#f1f1f1', decal: '#c9ccd1' }
+  ];
+  const DEFAULT_COLOUR = { a: 'black', b: 'yellow' };            // what each shell wears until you pick
+  const hex = c => { c = c.replace('#', ''); return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)); };
+  const toHex = a => '#' + a.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+  const mix = (a, b, t) => { const x = hex(a), y = hex(b); return toHex(x.map((v, i) => v + (y[i] - v) * t)); };
+  const lum = c => { const [r, g, b] = hex(c).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; };
+
+  let look = store.get('look', null) || {};
+  look = { layout: look.layout === 'b' ? 'b' : 'a', colour: look.colour || null, custom: look.custom || null };
+
+  function currentColour() {
+    if (look.colour === 'custom' && look.custom) {          // any body colour: pick readable keys and print colour
+      const l = lum(look.custom);
+      return { body: look.custom, key: l < .2 ? '#f5d31c' : '#fbfbf8', ink: l > .5 ? '#1b1a14' : '#f4f4f0', decal: l < .2 ? '#d9dce0' : mix(look.custom, l > .5 ? '#000' : '#fff', .7) };
+    }
+    return COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || COLOURS[0];
+  }
+  function applyLook() {
+    const c = currentColour(), root = document.documentElement.style, light = lum(c.body) > .2;
+    const vars = {
+      '--body': c.body, '--body-hi': mix(c.body, '#ffffff', light ? .22 : .13), '--body-lo': mix(c.body, '#000000', .55),
+      '--key': c.key, '--key-rim': mix(c.key, '#000000', .16), '--key-side': mix(c.key, '#000000', .48),
+      '--ink': c.ink, '--decal': c.decal
+    };
+    for (const k in vars) root.setProperty(k, vars[k]);
+    device.dataset.layout = look.layout;
+    store.set('look', look);
+    renderSheet();
+    fit();
+  }
+
+  /* picker UI inside the sheet */
+  const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), layoutBox = $('#layout-pick');
+  swatchBox.innerHTML = COLOURS.map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + c.name + '" title="' + c.name + '" style="background:' + c.body + '"></button>').join('') +
+    '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>';
+  tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '">' + p.name[0] + p.name.slice(1).toLowerCase() + '</button>').join('');
+  swatchBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-colour]'); if (!b) return;
+    look.colour = b.dataset.colour; applyLook();
+  });
+  $('#colour-custom').addEventListener('input', e => { look.colour = 'custom'; look.custom = e.target.value; applyLook(); });
+  tintBox.addEventListener('click', e => { const b = e.target.closest('button[data-tint]'); if (b) setTint(+b.dataset.tint); });
+  layoutBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-layout]'); if (!b) return;
+    look.layout = b.dataset.layout; applyLook();
+  });
+  function renderSheet() {
+    const cur = look.colour || DEFAULT_COLOUR[look.layout];
+    swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === cur)));
+    swatchBox.querySelector('label').classList.toggle('on', cur === 'custom');
+    tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
+    layoutBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.layout === look.layout)));
+  }
+  applyLook();
   fit();
   requestAnimationFrame(frame);
 

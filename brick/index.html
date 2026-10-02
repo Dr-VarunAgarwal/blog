@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Brick Game — lucidité</title>
 <meta name="description" content="A playable rebuild of the classic handheld Brick Game: Tetris and eleven more cartridges, speeds and levels, on your phone.">
-<meta name="theme-color" content="#0b0b0d">
+<meta name="theme-color" content="#0d0d0f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,13 +25,21 @@
 <!--
   BRICK GAME — a rebuild of the 1990s "9999 in 1" pocket brick handheld.
   Plain HTML/CSS/JS, no build step. games.js = the cartridges, engine.js = the console.
-  The device is laid out in a fixed 360×780 box and scaled to fit the screen.
+  The device is laid out in a fixed 360×760 box and scaled to fit the screen.
+
+  There are two shells (data-layout="a" lightning, "b" kitty). They share the same controls;
+  CSS decides how each one looks and where it sits. Colours come from CSS variables that
+  engine.js sets from the chosen console colour.
 -->
 <main id="stage">
-  <div id="device">
+  <div id="device" data-layout="a">
 
     <a class="corner home" href="../" aria-label="Back to lucidité" title="Back to lucidité">&#8249;</a>
-    <button class="corner helpbtn" id="help-open" aria-label="Games and controls" title="Games and controls">?</button>
+    <button class="corner cfgbtn" id="help-open" aria-label="Customise and help" title="Customise and help">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"/><circle cx="8" cy="6" r="2.4" fill="var(--body)"/><circle cx="16" cy="12" r="2.4" fill="var(--body)"/><circle cx="10" cy="18" r="2.4" fill="var(--body)"/>
+      </svg>
+    </button>
 
     <i class="bolt l"></i><i class="bolt r"></i>
 
@@ -41,55 +49,77 @@
       </div>
     </div>
 
-    <div id="label" class="classic">CLASSIC</div>
-
+    <div id="label">CLASSIC</div>
     <div class="shoulder"></div>
 
-    <button class="fn" data-btn="power"  style="left:62px"  aria-label="On / Off"><i></i><span>ON/OFF</span></button>
-    <button class="fn" data-btn="sound"  style="left:122px" aria-label="Sound"><i></i><span>SOUND</span></button>
-    <button class="fn" data-btn="sp"     style="left:182px" aria-label="Start / Pause"><i></i><span>S/P</span></button>
-    <button class="fn" data-btn="reset"  style="left:242px" aria-label="Reset"><i></i><span>RESET</span></button>
+    <button class="fn" data-btn="power" aria-label="On / Off"><i></i><span>ON/OFF</span></button>
+    <button class="fn" data-btn="sound" aria-label="Sound"><i></i><span>SOUND</span></button>
+    <button class="fn" data-btn="sp"    aria-label="Start / Pause"><i></i><span>S/P</span></button>
+    <button class="fn" data-btn="reset" aria-label="Reset"><i></i><span>RESET</span></button>
 
     <div id="dpad" role="group" aria-label="Direction pad">
+      <!-- layout a: four round keys -->
+      <svg class="cross" viewBox="0 0 140 140" aria-hidden="true">
+        <path class="cross-body" d="M54 6 H86 a8 8 0 0 1 8 8 V54 H126 a8 8 0 0 1 8 8 V78 a8 8 0 0 1 -8 8 H94 V126 a8 8 0 0 1 -8 8 H54 a8 8 0 0 1 -8 -8 V86 H14 a8 8 0 0 1 -8 -8 V62 a8 8 0 0 1 8 -8 H46 V14 a8 8 0 0 1 8 -8 Z"/>
+        <circle class="cross-dimple" cx="70" cy="70" r="15"/>
+      </svg>
       <b class="key up"    data-dir="up"></b>
       <b class="key right" data-dir="right"></b>
       <b class="key down"  data-dir="down"></b>
       <b class="key left"  data-dir="left"></b>
       <svg class="compass" viewBox="-12 -12 24 24" aria-hidden="true">
-        <path d="M0-9 L3-4 H-3Z M0 9 L3 4 H-3Z M-9 0 L-4-3 V3Z M9 0 L4-3 V3Z" fill="#6b5600"/>
-        <circle r="1.6" fill="#6b5600"/>
+        <path d="M0-9 L3-4 H-3Z M0 9 L3 4 H-3Z M-9 0 L-4-3 V3Z M9 0 L4-3 V3Z"/>
+        <circle r="1.6"/>
       </svg>
+      <span class="dlab u">UP</span><span class="dlab l">LEFT</span><span class="dlab r">RIGHT</span><span class="dlab d">DOWN</span>
     </div>
 
-    <svg class="rot-art" viewBox="-90 -90 180 180" aria-hidden="true">
+    <svg class="rot-art" viewBox="-90 -90 180 180" aria-hidden="true" fill="currentColor">
       <defs>
         <path id="rot-arc" d="M 39.9 -47.5 A 62 62 0 0 1 47.5 39.9"/>
         <marker id="rot-head" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-          <path d="M0 0 L10 5 L0 10 Z" fill="#f2f2f2"/>
+          <path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/>
         </marker>
       </defs>
-      <path d="M -48 -14 A 50 50 0 0 1 22 -45" fill="none" stroke="#f2f2f2" stroke-width="4" stroke-linecap="round" marker-end="url(#rot-head)"/>
-      <text font-family="Impact, 'Arial Narrow', sans-serif" font-size="15" fill="#f2f2f2" letter-spacing="1">
+      <path d="M -48 -14 A 50 50 0 0 1 22 -45" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" marker-end="url(#rot-head)"/>
+      <text font-family="Impact, 'Arial Narrow', sans-serif" font-size="15" letter-spacing="1">
         <textPath href="#rot-arc" startOffset="2">ROTATE</textPath>
       </text>
     </svg>
     <button class="rot" data-btn="rotate" aria-label="Rotate / Fire"></button>
+    <button class="rot rot2" data-btn="rotate" aria-label="Rotate / Fire (second button)"></button>
+    <span class="rotlab">ROTATE</span>
 
-    <!-- brand -->
-    <svg class="mascot" viewBox="0 0 80 96" aria-hidden="true" fill="none" stroke="#f2f2f2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- brand art (a: little brick buddy + swoosh, b: kitty) -->
+    <svg class="mascot" viewBox="0 0 80 96" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
       <ellipse cx="28" cy="13" rx="8" ry="4.5"/><ellipse cx="52" cy="13" rx="8" ry="4.5"/>
       <rect x="14" y="16" width="52" height="38" rx="7"/>
-      <circle cx="31" cy="33" r="3.6" fill="#f2f2f2"/><circle cx="49" cy="33" r="3.6" fill="#f2f2f2"/>
+      <circle cx="31" cy="33" r="3.6" fill="currentColor"/><circle cx="49" cy="33" r="3.6" fill="currentColor"/>
       <path d="M30 43 Q40 51 50 43"/>
       <path d="M14 38 L3 28 M66 38 L77 24"/>
       <path d="M30 54 L25 76 M50 54 L58 72"/>
-      <ellipse cx="22" cy="82" rx="9" ry="5" fill="#f2f2f2"/><ellipse cx="62" cy="78" rx="9" ry="5" fill="#f2f2f2"/>
+      <ellipse cx="22" cy="82" rx="9" ry="5" fill="currentColor"/><ellipse cx="62" cy="78" rx="9" ry="5" fill="currentColor"/>
+    </svg>
+    <svg class="cat" viewBox="0 0 130 140" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M31 36 L27 8 L53 23 M93 36 L97 8 L71 23"/>
+      <ellipse cx="62" cy="49" rx="38" ry="29"/>
+      <path d="M62 21 v9 M53 23 l2 8 M71 23 l-2 8"/>
+      <ellipse class="eye" cx="46" cy="50" rx="3.4" ry="4.8"/><ellipse class="eye" cx="78" cy="50" rx="3.4" ry="4.8"/>
+      <path d="M55 60 q7 7 14 0"/><path d="M62 67 v5" /><ellipse cx="62" cy="75" rx="4" ry="3.2"/>
+      <path d="M37 76 C20 94 22 119 40 125 H84 C102 119 104 94 87 76"/>
+      <ellipse cx="50" cy="127" rx="11" ry="5.5"/><ellipse cx="76" cy="127" rx="11" ry="5.5"/>
+      <path d="M93 116 C120 120 126 96 113 86"/>
+      <circle cx="86" cy="101" r="13"/><path d="M86 94 l6 4.5 -2.3 7 h-7.4 l-2.3 -7 Z"/>
+      <ellipse cx="48" cy="100" rx="7" ry="5.5"/>
     </svg>
     <div class="brand"><span>BRICK</span><span>GAME</span></div>
     <div class="nine">9999IN1</div>
-    <svg class="swoosh" viewBox="0 0 160 40" aria-hidden="true" fill="none" stroke="#f2f2f2" stroke-width="2.4" stroke-linecap="round">
+    <svg class="swoosh" viewBox="0 0 160 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
       <path d="M2 30 C 40 38, 70 6, 156 22"/>
-      <circle cx="30" cy="30" r="1.8" fill="#f2f2f2" stroke="none"/><circle cx="46" cy="31" r="1.8" fill="#f2f2f2" stroke="none"/>
+      <circle cx="30" cy="30" r="1.8" fill="currentColor" stroke="none"/><circle cx="46" cy="31" r="1.8" fill="currentColor" stroke="none"/>
+    </svg>
+    <svg class="grip" viewBox="0 0 64 50" aria-hidden="true" fill="none" stroke-width="4.5" stroke-linecap="round">
+      <path d="M6 46 L26 6 M20 46 L40 6 M34 46 L54 6 M48 46 L68 6" clip-path="inset(0)"/>
     </svg>
   </div>
 
@@ -98,6 +128,29 @@
       <button id="help-close" aria-label="Close">&times;</button>
       <h2 id="help-title">Brick Game</h2>
       <p class="lede">Just like the real thing: press <b>ON/OFF</b>, then pick a cartridge with <b>&larr; &rarr;</b>, a speed with <b>&uarr; &darr;</b>, a level with <b>ROTATE</b>, and hit <b>S/P</b> to start.</p>
+
+      <h3>Your console</h3>
+      <div class="opt">
+        <div class="optl">Layout</div>
+        <div class="layouts" id="layout-pick">
+          <button type="button" data-layout="a" aria-label="Lightning layout">
+            <svg viewBox="0 0 40 78" aria-hidden="true"><rect class="pv-body" width="40" height="78" rx="7"/><rect x="5" y="5" width="30" height="31" fill="#c9cdbd"/><circle class="pv-key" cx="9" cy="46" r="2.6"/><circle class="pv-key" cx="16" cy="46" r="2.6"/><circle class="pv-key" cx="24" cy="46" r="2.6"/><circle class="pv-key" cx="31" cy="46" r="2.6"/><circle class="pv-key" cx="13" cy="57" r="3"/><circle class="pv-key" cx="7" cy="63" r="3"/><circle class="pv-key" cx="19" cy="63" r="3"/><circle class="pv-key" cx="13" cy="69" r="3"/><circle class="pv-key" cx="30" cy="62" r="6"/></svg>
+            <span>Lightning</span>
+          </button>
+          <button type="button" data-layout="b" aria-label="Kitty layout">
+            <svg viewBox="0 0 40 78" aria-hidden="true"><path class="pv-body" d="M7 0H33a7 7 0 0 1 7 7V54Q40 78 20 78H7a7 7 0 0 1-7-7V7a7 7 0 0 1 7-7Z"/><rect x="3" y="4" width="34" height="34" fill="#c9cdbd"/><path class="pv-key" d="M10 45h6v5h5v6h-5v5h-6v-5H5v-6h5Z"/><circle class="pv-key" cx="29" cy="48" r="4.5"/><circle class="pv-key" cx="29" cy="58" r="4"/><rect class="pv-key" x="22" y="64" width="3.4" height="9" rx="1.7"/><rect class="pv-key" x="17.5" y="64" width="3.4" height="9" rx="1.7"/></svg>
+            <span>Kitty</span>
+          </button>
+        </div>
+      </div>
+      <div class="opt">
+        <div class="optl">Colour</div>
+        <div class="swatches" id="colour-pick"></div>
+      </div>
+      <div class="opt">
+        <div class="optl">Screen</div>
+        <div class="seg" id="tint-pick"></div>
+      </div>
 
       <h3><span id="help-games-n">12</span> games</h3>
       <ol id="help-games"></ol>
@@ -117,7 +170,7 @@
       <ul>
         <li><b>Speed</b> is how fast things move; <b>level</b> changes the challenge (Tetris starts with garbage rows, Snake gets obstacles, Breaker gets more bricks&hellip;). In Tetris, &uarr; is a hard drop.</li>
         <li>Hold ROTATE in Snake or Road Fighter for a turbo boost.</li>
-        <li>Tap <b>CLASSIC</b> under the screen to change the LCD tint. High scores are saved on this device.</li>
+        <li>Your layout, colour and high scores are saved on this device.</li>
         <li>On iPhone the ringer switch silences web audio.</li>
       </ul>
     </div>
