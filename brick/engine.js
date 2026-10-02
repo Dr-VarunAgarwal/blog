@@ -212,7 +212,7 @@
 
   function btnDown(btn) {
     Sound.unlock();
-    if (btn === 'power') return powerToggle();
+    if (btn === 'power') { if (state === OFF && window.__brickFsOnPower) window.__brickFsOnPower(); return powerToggle(); }
     if (state === OFF) return;
     if (btn === 'sound') {
       Sound.set(!Sound.enabled);
@@ -333,7 +333,8 @@
   const PALETTES = [
     { name: 'CLASSIC', bg: '#c9cdbd', ink: '#141912', ghost: 'rgba(30,38,24,.085)', soft: 'rgba(20,25,18,.55)' },
     { name: 'MOSS',    bg: '#a8b98b', ink: '#18240f', ghost: 'rgba(24,36,15,.10)',  soft: 'rgba(24,36,15,.55)' },
-    { name: 'AMBER',   bg: '#d3c58e', ink: '#2b2208', ghost: 'rgba(43,34,8,.09)',   soft: 'rgba(43,34,8,.55)' }
+    { name: 'AMBER',   bg: '#d3c58e', ink: '#2b2208', ghost: 'rgba(43,34,8,.09)',   soft: 'rgba(43,34,8,.55)' },
+    { name: 'OLIVE',   bg: '#6c7955', ink: '#0d1109', ghost: 'rgba(8,12,4,.15)',    soft: 'rgba(8,12,4,.6)' }
   ];
   let palIdx = store.get('pal', 0) % PALETTES.length;
 
@@ -543,7 +544,7 @@
   const help = $('#help');
   const helpOpen = () => !help.hidden;
   function toggleHelp(v) { help.hidden = !(v === undefined ? help.hidden : v); }
-  $('#help-open').addEventListener('click', () => toggleHelp(true));
+  $('#help-open').addEventListener('click', () => { toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); });
   $('#help-close').addEventListener('click', () => toggleHelp(false));
   help.addEventListener('click', e => { if (e.target === help) toggleHelp(false); });
   $('#help-games').innerHTML = GAMES.map((d, i) => '<li><b>' + String(i + 1).padStart(2, '0') + '</b> ' + d.name + '</li>').join('');
@@ -552,13 +553,20 @@
   // fit the whole handheld to the viewport
   const device = $('#device');
   const coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)') : { matches: false };
+  const probe = $('#stage');
   function fit() {
     const vv = window.visualViewport;
     const vw = vv ? vv.width : window.innerWidth, vh = vv ? vv.height : window.innerHeight;
+    // keep clear of the notch / status bar / home indicator when the page draws edge to edge
+    const cs = getComputedStyle(probe);
+    const inT = parseFloat(cs.paddingTop) || 0, inB = parseFloat(cs.paddingBottom) || 0, inL = parseFloat(cs.paddingLeft) || 0, inR = parseFloat(cs.paddingRight) || 0;
+    const aw = vw - inL - inR, ah = vh - inT - inB;
     const land = vw > vh * 1.2 && (coarse.matches || /[?&]land\b/.test(location.search));
     device.classList.toggle('land', land);
     const DW = land ? 800 : 360, DH = land ? 380 : 760;
-    const s = Math.min(vw / DW, vh / DH, 1.6);
+    const s = Math.min(aw / DW, ah / DH, 1.6);
+    device.style.left = (inL + aw / 2) + 'px';
+    device.style.top = (inT + ah / 2) + 'px';
     device.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     const r = cv.getBoundingClientRect();
@@ -568,6 +576,37 @@
   window.addEventListener('resize', fit);
   window.addEventListener('orientationchange', () => setTimeout(fit, 150));
   if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+
+  /* ------------------------------ full screen ------------------------------ */
+  // Android / desktop browsers allow it from a tap. iPhone Safari does not (only the installed home-screen app is bar-free).
+  const fsRoot = document.documentElement;
+  const fsEnabled = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  let wantFs = !!store.get('fs', false);
+  function enterFs() {
+    if (!fsEnabled || isFs()) return;
+    const req = fsRoot.requestFullscreen || fsRoot.webkitRequestFullscreen;
+    try { const p = req.call(fsRoot, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => { }); } catch (_) { /* needs a user gesture */ }
+  }
+  function exitFs() {
+    const ex = document.exitFullscreen || document.webkitExitFullscreen;
+    if (isFs() && ex) { try { const p = ex.call(document); if (p && p.catch) p.catch(() => { }); } catch (_) { /* ignore */ } }
+  }
+  function renderFs() {
+    const row = $('#fs-row');
+    row.hidden = !fsEnabled;
+    $('#fs-note').hidden = fsEnabled;
+    row.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.fs === '1') === isFs())));
+  }
+  $('#fs-pick').addEventListener('click', e => {
+    const b = e.target.closest('button[data-fs]'); if (!b) return;
+    wantFs = b.dataset.fs === '1'; store.set('fs', wantFs);
+    if (wantFs) enterFs(); else exitFs();
+    setTimeout(renderFs, 150);
+  });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { renderFs(); fit(); }));
+  window.__brickFsOnPower = () => { if (wantFs) enterFs(); };
+  window.__brickRenderFs = renderFs;
 
   /* ------------------ console look: layout + colour ------------------ */
   const COLOURS = [
@@ -579,7 +618,9 @@
     { id: 'pink',   name: 'Pink',   body: '#f08cb8', key: '#fbfbf8', ink: '#3b1427', decal: '#fff0f6' },
     { id: 'purple', name: 'Purple', body: '#6b50c9', key: '#f5d31c', ink: '#ffffff', decal: '#e1d9ff' },
     { id: 'white',  name: 'White',  body: '#e9e9e4', key: '#d63a30', ink: '#222222', decal: '#a9aeb4' },
-    { id: 'gray',   name: 'Smoke',  body: '#4b4e55', key: '#f5d31c', ink: '#f1f1f1', decal: '#c9ccd1' }
+    { id: 'gray',   name: 'Smoke',  body: '#4b4e55', key: '#f5d31c', ink: '#f1f1f1', decal: '#c9ccd1' },
+    { id: 'cream',  name: 'Cream',  body: '#efe7d2', key: '#f6c80f', ink: '#1f2c63', decal: '#3d63c9' },
+    { id: 'royal',  name: 'Royal',  body: '#2f5fb8', key: '#f7d51d', ink: '#ffffff', decal: '#e8f0ff' }
   ];
   const DEFAULT_COLOUR = { a: 'black', b: 'yellow' };            // what each shell wears until you pick
   const hex = c => { c = c.replace('#', ''); return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)); };
