@@ -8,7 +8,14 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '5';
+  const BUILD = '6';
+  // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
+  if (/[?&]reset\b/.test(location.search)) {
+    const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
+    Promise.resolve(regs).then(() => (window.caches ? caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k)))) : null))
+      .catch(() => { }).then(() => location.replace(location.pathname + '?v=' + Date.now()));
+    return;
+  }
   try {
     const seen = getComputedStyle(document.documentElement).getPropertyValue('--build').replace(/["'\s]/g, '');
     if (seen !== BUILD && !sessionStorage.getItem('brick.healed')) {
