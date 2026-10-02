@@ -1,6 +1,6 @@
 /* Brick Game service worker — makes it work offline once visited.
    Network-first (so updates show up), cache as fallback. Bump VERSION to force a refresh. */
-const VERSION = 'brick-v2';
+const VERSION = 'brick-v3';
 const FILES = ['./', 'index.html', 'brick.css', 'games.js', 'engine.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', e => {

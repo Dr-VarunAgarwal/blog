@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Brick Game — lucidité</title>
-<meta name="description" content="A playable rebuild of the classic handheld Brick Game: Tetris and eleven more cartridges, speeds and levels, on your phone.">
+<meta name="description" content="A playable rebuild of the classic pocket Brick Game handheld: twelve cartridges, ten speeds, ten levels, on your phone.">
 <meta name="theme-color" content="#0d0d0f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -151,6 +151,14 @@
         <div class="optl">Screen</div>
         <div class="seg" id="tint-pick"></div>
       </div>
+      <div class="opt" id="fs-row">
+        <div class="optl">Display</div>
+        <div class="seg" id="fs-pick">
+          <button type="button" data-fs="0">Windowed</button>
+          <button type="button" data-fs="1">Full screen</button>
+        </div>
+      </div>
+      <p class="fsnote" id="fs-note" hidden>On iPhone, Safari can&rsquo;t go full screen from a web page. Use Share &rarr; Add to Home Screen and open it from there: no browser bars.</p>
 
       <h3><span id="help-games-n">12</span> games</h3>
       <ol id="help-games"></ol>
@@ -168,8 +176,8 @@
 
       <h3>Notes</h3>
       <ul>
-        <li><b>Speed</b> is how fast things move; <b>level</b> changes the challenge (Tetris starts with garbage rows, Snake gets obstacles, Breaker gets more bricks&hellip;). In Tetris, &uarr; is a hard drop.</li>
-        <li>Hold ROTATE in Snake or Road Fighter for a turbo boost.</li>
+        <li><b>Speed</b> is how fast things move; <b>level</b> changes the challenge (Brick Fall starts with garbage rows, Snake gets obstacles, Brick Breaker gets more bricks&hellip;). In Brick Fall, &uarr; is a hard drop.</li>
+        <li>Hold ROTATE in Snake or Road Racer for a turbo boost.</li>
         <li>Your layout, colour and high scores are saved on this device.</li>
         <li>On iPhone the ringer switch silences web audio.</li>
       </ul>

@@ -32,7 +32,7 @@
   const hbar = (g, x, y, w, v = 1) => { for (let i = 0; i < w; i++) g.set(x + i, y, v); };
 
   /* =====================================================================
-   * 1. BRICK FALL (Tetris)
+   * 1. BRICK FALL (falling-block puzzle)
    * ===================================================================== */
   const SHAPES = [
     { n: 4, c: [[0, 1], [1, 1], [2, 1], [3, 1]] },   // I
@@ -229,7 +229,7 @@
   }
 
   /* =====================================================================
-   * 3. ROAD FIGHTER (racing)
+   * 3. ROAD RACER (racing)
    * ===================================================================== */
   const CAR = ['.X.', 'XXX', '.X.', 'X.X'];
   const RACE_MS = [140, 120, 105, 90, 78, 68, 58, 50, 43, 37];
@@ -753,7 +753,7 @@
   }
 
   /* =====================================================================
-   * 9. STACKER
+   * 9. BLOCK TOWER (stacking)
    * ===================================================================== */
   const STACK_MS = [130, 115, 100, 88, 76, 66, 57, 49, 42, 36];
   function stacker(g) {
@@ -876,13 +876,13 @@
   window.BRICK_GAMES = [
     { id: 'tetris',   name: 'Brick Fall',     make: tetris,                       attract: attractTetris },
     { id: 'snake',    name: 'Snake',          make: g => snake(g, false),         attract: attractSnake },
-    { id: 'racing',   name: 'Road Fighter',   make: racing,                       attract: attractRacing },
+    { id: 'racing',   name: 'Road Racer',   make: racing,                       attract: attractRacing },
     { id: 'tanks',    name: 'Tank Battle',    make: tanks,                        attract: attractTanks },
     { id: 'breakout', name: 'Brick Breaker',  make: breakout,                     attract: attractBreakout },
     { id: 'shooter',  name: 'Star Shooter',   make: shooter,                      attract: attractShooter },
     { id: 'frogger',  name: 'Hopper',         make: frogger,                      attract: attractFrogger },
     { id: 'pong',     name: 'Ping-Pong',      make: g => pong(g, false),          attract: attractPong },
-    { id: 'stacker',  name: 'Stacker',        make: stacker,                      attract: attractStacker },
+    { id: 'stacker',  name: 'Block Tower',        make: stacker,                      attract: attractStacker },
     { id: 'dodge',    name: 'Meteor Dodge',   make: dodge,                        attract: attractDodge },
     { id: 'snake2',   name: 'Snake II (wrap)', make: g => snake(g, true),         attract: attractSnake },
     { id: 'squash',   name: 'Squash',         make: g => pong(g, true),           attract: attractSquash }
