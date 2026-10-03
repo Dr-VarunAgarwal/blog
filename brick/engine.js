@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '21';
+  const BUILD = '22';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -832,10 +832,10 @@
     { id: 'cream',  name: 'Cream',  body: '#efe7d2', key: '#f6c80f', ink: '#1f2c63', decal: '#3d63c9', alt: '#c2410c' },
     { id: 'royal',  name: 'Royal',  body: '#2f5fb8', key: '#f7d51d', ink: '#ffffff', decal: '#e8f0ff', alt: '#f7d51d' },
     // see-through shells: a few tints over the circuit board (Finish > Glass tint). Only the first shows in the Body strip.
-    { id: 'clear',       name: 'Smoke', shell: 'clear', body: '#8ea2ad', key: '#f5d31c', ink: '#f4f7f9', decal: '#e6eef2', alt: '#f5d31c', glass: 'rgba(140,160,172,.56)', swatch: 'linear-gradient(135deg, #9db0bb 0 50%, #1d7a4c 50%)' },
-    { id: 'clear-ice',   name: 'Ice',   shell: 'clear', body: '#6fa9d8', key: '#fbfbf8', ink: '#ffffff', decal: '#e3f1ff', alt: '#ffe08a', glass: 'rgba(96,170,235,.52)',  swatch: 'linear-gradient(135deg, #7db6e6 0 50%, #1d7a4c 50%)' },
-    { id: 'clear-grape', name: 'Grape', shell: 'clear', body: '#9a78cf', key: '#f7d51d', ink: '#ffffff', decal: '#eee6ff', alt: '#f7d51d', glass: 'rgba(150,100,215,.54)', swatch: 'linear-gradient(135deg, #a98adb 0 50%, #1d7a4c 50%)' },
-    { id: 'clear-lime',  name: 'Lime',  shell: 'clear', body: '#5fae45', key: '#fbfbf8', ink: '#ffffff', decal: '#e8f7de', alt: '#f7d51d', glass: 'rgba(120,205,95,.5)',   swatch: 'linear-gradient(135deg, #7fcf62 0 50%, #1d7a4c 50%)' }
+    { id: 'clear',       name: 'Smoke', shell: 'clear', body: '#8ea2ad', key: '#f5d31c', ink: '#f4f7f9', decal: '#e6eef2', alt: '#f5d31c', glass: 'rgba(140,160,172,.74)', swatch: 'linear-gradient(135deg, #9db0bb 0 50%, #1d7a4c 50%)' },
+    { id: 'clear-ice',   name: 'Ice',   shell: 'clear', body: '#6fa9d8', key: '#fbfbf8', ink: '#ffffff', decal: '#e3f1ff', alt: '#ffe08a', glass: 'rgba(96,170,235,.72)',  swatch: 'linear-gradient(135deg, #7db6e6 0 50%, #1d7a4c 50%)' },
+    { id: 'clear-grape', name: 'Grape', shell: 'clear', body: '#9a78cf', key: '#f7d51d', ink: '#ffffff', decal: '#eee6ff', alt: '#f7d51d', glass: 'rgba(150,100,215,.72)', swatch: 'linear-gradient(135deg, #a98adb 0 50%, #1d7a4c 50%)' },
+    { id: 'clear-lime',  name: 'Lime',  shell: 'clear', body: '#5fae45', key: '#fbfbf8', ink: '#ffffff', decal: '#e8f7de', alt: '#f7d51d', glass: 'rgba(120,205,95,.7)',   swatch: 'linear-gradient(135deg, #7fcf62 0 50%, #1d7a4c 50%)' }
   ];
   const isClearId = id => ((COLOURS.find(c => c.id === id) || {}).shell === 'clear');
   const DEFAULT_COLOUR = { a: 'black', b: 'yellow', c: 'royal', d: 'black' };            // what each shell wears until you pick
@@ -865,7 +865,7 @@
       '--body': c.body, '--body-hi': mix(c.body, '#ffffff', light ? .22 : .13), '--body-lo': mix(c.body, '#000000', .55),
       '--key': c.key, '--key-rim': mix(c.key, '#000000', .16), '--key-side': mix(c.key, '#000000', .48),
       '--ink': c.ink, '--decal': c.decal, '--alt': c.alt || c.key,
-      '--glass': c.glass || 'rgba(140, 160, 172, .56)'
+      '--glass': c.glass || 'rgba(140, 160, 172, .74)'
     };
   }
   function applyLook() {

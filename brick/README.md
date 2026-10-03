@@ -32,5 +32,5 @@ When you change any file, bump `VERSION` in `sw.js` so installed copies refresh.
 
 ## Credits
 
-- The glossy epoxy chip visible through the **Clear** shell (embedded in `pcb.svg`) is cropped from the public-domain (CC0) photograph "MARIO CHIP 1 COB.jpg" by Furrtek on Wikimedia Commons. Only the black epoxy blob is used; the rest of the board, parts and silkscreen in `pcb.svg` are drawn for this project.
+- The DIP microcontroller visible through the **Clear** shell (embedded in `pcb.svg`) is adapted from the photograph "Intel P8085AH-2.jpg" by Stefan506, via Wikimedia Commons (https://commons.wikimedia.org/wiki/File:Intel_P8085AH-2.jpg), licensed CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/). Changes: background removed, the printed manufacturer markings replaced with plain plastic and new made-up markings, scaled. The adapted chip image is shared under the same licence. The rest of the board, parts and silkscreen in `pcb.svg` are drawn for this project.
 - Orbitron (Self-hosted, SIL Open Font License 1.1): `fonts/OFL-orbitron.txt`.
