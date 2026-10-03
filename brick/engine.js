@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '26';
+  const BUILD = '27';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -1022,7 +1022,7 @@
   const TEMPLATE = device.cloneNode(true);          // pristine copy of the shell, taken before any live state is applied
 
   /* ------------- miniature consoles: scaled clones of the real shell, so previews are exactly what you get ------------- */
-  let mockN = 0;
+  let mockN = 0, svgClone = 0;
   function lcdMock(layout, P) {
     const prof = (layout === 'c' || layout === 'd') ? PROFILES.tall : PROFILES.classic;
     const { LW, LH, CW, CH, ps, px, py } = prof, uid = 'pvg' + (++mockN);
@@ -1052,7 +1052,13 @@
     wrap.style.setProperty('--pvs', scale);
     wrap.style.width = (360 * scale) + 'px'; wrap.style.height = (DIMS[layout] * scale) + 'px';
     const dev = TEMPLATE.cloneNode(true);
-    dev.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));      // clones are decoration: no duplicate ids
+    // clones are decoration: no duplicate ids (but art masks inside inline SVG keep working under a fresh name)
+    const sfx = '-p' + (++svgClone);
+    dev.querySelectorAll('svg [id]').forEach(el => {
+      const id = el.id; el.id = id + sfx;
+      dev.querySelectorAll('[mask="url(#' + id + ')"]').forEach(u => u.setAttribute('mask', 'url(#' + id + sfx + ')'));
+    });
+    dev.querySelectorAll('[id]').forEach(el => { if (!el.closest('svg')) el.removeAttribute('id'); });
     dev.removeAttribute('id'); dev.removeAttribute('style'); dev.classList.remove('land'); dev.classList.add('pvdev');
     dev.dataset.layout = layout; dev.dataset.shell = c.shell === 'clear' ? 'clear' : '';
     dev.querySelectorAll('button, a').forEach(el => { el.tabIndex = -1; });
