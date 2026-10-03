@@ -56,7 +56,7 @@ body {
 html[data-tex="off"] { --grain: none; --sheen: none; }
 html[data-tex="off"] :is(.fn i, .rot, #dpad .key, .dpad .key) { background: var(--key); }
 /* clear shell: see-through smoky plastic over a (made-up) circuit board */
-:root { --pcb: url('pcb.svg'); --glass: rgba(140, 160, 172, .56); }
+:root { --pcb: url('pcb.svg'); --glass: rgba(140, 160, 172, .74); }
 :is(#device, #back, .pvdev)[data-shell="clear"] { background: var(--sheen), var(--grain), linear-gradient(var(--glass), var(--glass)), var(--pcb) center / 100% 100% no-repeat, #0d2a1c; }
 html[data-shell="clear"][data-layout="c"] body, html[data-shell="clear"][data-layout="d"] body { background: var(--sheen), var(--grain), var(--body); }
 
