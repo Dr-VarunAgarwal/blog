@@ -8,7 +8,7 @@
   /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
-  --build: "26";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "27";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -290,7 +290,7 @@ html[data-layout="c"] body, html[data-layout="d"] body { background: var(--sheen
 :is(#device, #back, .pvdev)[data-layout="c"] :is(#label, .lbl).named { color: var(--alt); font-size: 20px; top: 22px; }
 :is(#device, #back, .pvdev)[data-layout="c"] .brand {
   left: 200px; top: calc(var(--cy) + 214px); transform: rotate(-7deg); transform-origin: 0 100%;
-  font: 900 21px/1 "Arial Black", Impact, sans-serif; letter-spacing: 0; color: transparent; -webkit-text-stroke: 1.2px var(--ink);
+  font: 900 21px/1 "Arial Black", Impact, sans-serif; letter-spacing: 0; color: var(--ink); text-shadow: 1.5px 1.5px 0 var(--body-lo);
   display: flex; flex-direction: row; gap: 7px; white-space: nowrap;
 }
 :is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="b"], [data-layout="d"]) :is(.sframe, .decals) { display: none; }
@@ -616,13 +616,16 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 .bk-slot.rev .spring path { transform: scaleY(-1); transform-box: fill-box; transform-origin: 50% 50%; }
 .bk-slot.rev .plate { top: auto; bottom: 9px; }
 /* easter egg inside the bay */
-.bk-egg { position: absolute; left: 0; right: 0; bottom: 86px; height: 92px; opacity: 0; transition: opacity .6s .5s; pointer-events: none; }
+.bk-lower { position: absolute; left: 0; right: 0; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 20px; }
+.bk-hint { margin: 0; text-align: center; font: 13px/1.35 system-ui, sans-serif; color: #cfcdc5; }
+/* easter egg inside the bay: a stamp and a sticky note side by side, never on top of each other */
+.bk-egg { display: flex; align-items: center; gap: 14px; width: 100%; opacity: 0; transition: opacity .6s .5s; pointer-events: none; }
 .bk-bay.peek .bk-egg { opacity: 1; pointer-events: auto; }
-.bk-qc { position: absolute; left: 36px; top: 6px; width: 62px; height: 62px; border-radius: 50%; background: #e9e4cf; color: #b13a2c; border: 2px solid #b13a2c; transform: rotate(-14deg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: Arial, sans-serif; line-height: 1; box-shadow: 0 1px 0 rgba(0,0,0,.4); }
-.bk-qc b { font-size: 20px; } .bk-qc span { font-size: 8.5px; font-weight: 800; letter-spacing: .08em; margin-top: 2px; } .bk-qc em { font-size: 9px; font-style: normal; font-weight: 700; margin-top: 3px; border-top: 1px solid currentColor; padding-top: 2px; }
-.bk-note { position: absolute; left: 126px; top: 14px; width: 150px; padding: 8px 10px; border: 0; cursor: pointer; text-align: left; background: #f1e9a8; color: #3a3a2a; transform: rotate(3deg); box-shadow: 0 2px 0 rgba(0,0,0,.35); font: 700 17px/1.15 "Bradley Hand", "Segoe Print", "Comic Sans MS", "Chalkboard SE", cursive; }
-.bk-note small { display: block; margin-top: 3px; font-size: 13px; font-weight: 400; opacity: .85; }
-.bk-note:active { transform: rotate(3deg) translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,.35); }
+.bk-qc { flex: none; width: 60px; height: 60px; border-radius: 50%; background: #e9e4cf; color: #b13a2c; border: 2px solid #b13a2c; transform: rotate(-12deg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: Arial, sans-serif; line-height: 1; box-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.bk-qc b { font-size: 19px; } .bk-qc span { font-size: 8px; font-weight: 800; letter-spacing: .08em; margin-top: 2px; } .bk-qc em { font-size: 9px; font-style: normal; font-weight: 700; margin-top: 3px; border-top: 1px solid currentColor; padding-top: 2px; }
+.bk-note { flex: 1; min-width: 0; min-height: 54px; padding: 7px 10px; border: 0; cursor: pointer; text-align: left; background: #f1e9a8; color: #3a3a2a; transform: rotate(2deg); box-shadow: 0 2px 0 rgba(0,0,0,.35); font: 700 15px/1.15 "Bradley Hand", "Segoe Print", "Comic Sans MS", "Chalkboard SE", cursive; overflow-wrap: anywhere; }
+.bk-note small { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; opacity: .85; }
+.bk-note:active { transform: rotate(2deg) translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,.35); }
 /* two cells from two (made-up) brands */
 .bk-bat {
   position: absolute; width: 48px; height: 132px; padding: 0; cursor: pointer; border: 2px solid rgba(255, 255, 255, .16); border-radius: 7px 7px 6px 6px;
@@ -639,13 +642,10 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 .bk-bat .spec { position: absolute; left: 0; right: 0; top: 84px; text-align: center; color: #d6d4cc; font-size: 8.5px; font-weight: 700; letter-spacing: .03em; }
 .bk-bat .pl, .bk-bat .mi { position: absolute; left: 0; right: 0; text-align: center; color: #fff; font-weight: 900; font-size: 13px; line-height: 1; text-decoration: none; }
 .bk-bat .pl { top: 6px; } .bk-bat .mi { bottom: 6px; }
-.bk-bat.out[data-i="0"] { left: 46px; top: 236px; transform: rotate(-12deg); }
-.bk-bat.out[data-i="1"] { left: 206px; top: 240px; transform: rotate(10deg); }
+.bk-bat.out[data-i="0"] { left: 46px; top: 218px; transform: rotate(-12deg); }
+.bk-bat.out[data-i="1"] { left: 206px; top: 222px; transform: rotate(10deg); }
+.bk-ver2 { color: #cfcdc5; }
 .bk-ver { margin: 0; font: 11px/1 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; opacity: .5; }
-.bk-ver2 { position: absolute; left: 0; right: 0; bottom: 68px; text-align: center; color: #cfcdc5; }
-.bk-hint { position: absolute; left: 12px; right: 12px; top: 374px; margin: 0; text-align: center; font: 13px/1.4 system-ui, sans-serif; color: #cfcdc5; }
-.bk-bay .bk-btn { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); }
-.bk-bay .bk-btn:active { transform: translateX(-50%) translateY(2px); }
 
 #back.land .bk-door, #back.land .bk-bay { left: 24px; top: 52px; width: 752px; height: 296px; }
 #back.land .bk-door { display: grid; grid-auto-flow: column; grid-template-rows: repeat(4, auto); column-gap: 28px; align-content: center; justify-items: center; padding: 14px 30px; }
@@ -654,7 +654,7 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #back.land .bk-slots { left: 232px; right: 232px; top: 22px; height: 150px; }
 #back.land .bk-bat { top: 32px; left: 268px; height: 120px; } #back.land .bk-bat[data-i="1"] { left: 436px; }
 #back.land .bk-bat.out[data-i="0"] { left: 70px; top: 80px; } #back.land .bk-bat.out[data-i="1"] { left: 634px; top: 84px; }
-#back.land .bk-hint { top: 196px; }
+#back.land .bk-lower { bottom: 12px; gap: 6px; }
 #back.land .bk-ver2 { display: none; }
 #back.land .bk-egg { display: none; }
 

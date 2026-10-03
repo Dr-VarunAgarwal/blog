@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=26">
+<link rel="stylesheet" href="brick.css?v=27">
 </head>
 <body>
 <!--
@@ -87,24 +87,32 @@
 
     <!-- brand art (a: little brick buddy + swoosh, b: kitty) -->
     <svg class="mascot" viewBox="0 0 80 96" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-      <ellipse cx="28" cy="13" rx="8" ry="4.5"/><ellipse cx="52" cy="13" rx="8" ry="4.5"/>
+      <ellipse cx="28" cy="10" rx="8" ry="4"/><ellipse cx="52" cy="10" rx="8" ry="4"/>
+      <path d="M20 10 V16 M36 10 V16 M44 10 V16 M60 10 V16"/>
       <rect x="14" y="16" width="52" height="38" rx="7"/>
-      <circle cx="31" cy="33" r="3.6" fill="currentColor"/><circle cx="49" cy="33" r="3.6" fill="currentColor"/>
+      <circle cx="31" cy="33" r="3.6" fill="currentColor" stroke="none"/><circle cx="49" cy="33" r="3.6" fill="currentColor" stroke="none"/>
       <path d="M30 43 Q40 51 50 43"/>
-      <path d="M14 38 L3 28 M66 38 L77 24"/>
+      <path d="M14 40 L3 30 M66 40 L77 26"/>
       <path d="M30 54 L25 76 M50 54 L58 72"/>
-      <ellipse cx="22" cy="82" rx="9" ry="5" fill="currentColor"/><ellipse cx="62" cy="78" rx="9" ry="5" fill="currentColor"/>
+      <ellipse cx="22" cy="82" rx="9" ry="5" fill="currentColor" stroke="none"/><ellipse cx="62" cy="78" rx="9" ry="5" fill="currentColor" stroke="none"/>
     </svg>
     <svg class="cat" viewBox="0 0 130 140" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M31 36 L27 8 L53 23 M93 36 L97 8 L71 23"/>
+      <defs>
+        <mask id="catm-tail" maskUnits="userSpaceOnUse" x="0" y="0" width="130" height="140"><rect width="130" height="140" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="5"><path d="M38 68 C20 94 22 119 40 125 H84 C102 119 104 94 86 68 Z"/><circle cx="86" cy="101" r="13"/></g></mask>
+        <mask id="catm-body" maskUnits="userSpaceOnUse" x="0" y="0" width="130" height="140"><rect width="130" height="140" fill="#fff"/><g fill="#000" stroke="#000" stroke-width="5"><ellipse cx="62" cy="49" rx="38" ry="29"/><circle cx="86" cy="101" r="13"/><ellipse cx="48" cy="100" rx="7" ry="5.5"/><ellipse cx="50" cy="127" rx="11" ry="5.5"/><ellipse cx="76" cy="127" rx="11" ry="5.5"/></g></mask>
+        <mask id="catm-ears" maskUnits="userSpaceOnUse" x="0" y="0" width="130" height="140"><rect width="130" height="140" fill="#fff"/><ellipse cx="62" cy="49" rx="38" ry="29" fill="#000" stroke="#000" stroke-width="5"/></mask>
+      </defs>
+      <path mask="url(#catm-tail)" d="M90 118 C118 122 126 98 112 86"/>
+      <path mask="url(#catm-body)" d="M38 68 C20 94 22 119 40 125 H84 C102 119 104 94 86 68"/>
+      <path mask="url(#catm-ears)" d="M31 40 L27 8 L55 24 M93 40 L97 8 L69 24"/>
       <ellipse cx="62" cy="49" rx="38" ry="29"/>
-      <path d="M62 21 v9 M53 23 l2 8 M71 23 l-2 8"/>
-      <ellipse class="eye" cx="46" cy="50" rx="3.4" ry="4.8"/><ellipse class="eye" cx="78" cy="50" rx="3.4" ry="4.8"/>
-      <path d="M55 60 q7 7 14 0"/><path d="M62 67 v5" /><ellipse cx="62" cy="75" rx="4" ry="3.2"/>
-      <path d="M37 76 C20 94 22 119 40 125 H84 C102 119 104 94 87 76"/>
+      <path d="M62 24 v7 M54 26 l2 6 M70 26 l-2 6"/>
+      <ellipse class="eye" cx="47" cy="46" rx="3.4" ry="4.8"/><ellipse class="eye" cx="77" cy="46" rx="3.4" ry="4.8"/>
+      <path class="nose" d="M59.5 54 h5 l-2.5 3.4 Z" fill="currentColor"/>
+      <path d="M62 57.4 v3 M62 60.4 q-4 4 -8 1.2 M62 60.4 q4 4 8 1.2"/>
+      <path d="M40 56 l-12 -3 M40 61 l-12 3 M84 56 l12 -3 M84 61 l12 3"/>
       <ellipse cx="50" cy="127" rx="11" ry="5.5"/><ellipse cx="76" cy="127" rx="11" ry="5.5"/>
-      <path d="M93 116 C120 120 126 96 113 86"/>
-      <circle cx="86" cy="101" r="13"/><path d="M86 94 l6 4.5 -2.3 7 h-7.4 l-2.3 -7 Z"/>
+      <circle cx="86" cy="101" r="13"/><path d="M86 94 l6 4.5 -2.3 7 h-7.4 l-2.3 -7 Z M86 94 v-5 M92 98.5 l5.5 -3 M89.7 105.5 l3.8 5 M82.3 105.5 l-3.8 5 M80 98.5 l-5.5 -3"/>
       <ellipse cx="48" cy="100" rx="7" ry="5.5"/>
     </svg>
     <div class="brand"><span>BRICK</span><span>GAME</span></div>
@@ -131,13 +139,15 @@
         </div>
         <button type="button" class="bk-bat" data-i="0" data-brand="voltix" aria-label="Voltix AA battery, tap to remove"><span class="in"><i class="nub"></i><i class="band"></i><u class="pl">+</u><b class="bname">VOLTIX</b><b class="spec">AA 1.5V</b><u class="mi">&minus;</u></span></button>
         <button type="button" class="bk-bat" data-i="1" data-brand="zapcell" aria-label="Zapcell AA battery, tap to remove"><span class="in"><i class="nub"></i><i class="band"></i><u class="pl">+</u><b class="bname">ZAPCELL</b><b class="spec">AA 1.5V</b><u class="mi">&minus;</u></span></button>
-        <div class="bk-egg" id="bk-egg">
-          <div class="bk-qc" aria-hidden="true"><b>QC</b><span>PASSED</span><em>No. 7</em></div>
-          <button type="button" class="bk-note" id="bk-note" aria-label="Handwritten note inside the battery bay. Tap for another.">9999 in 1*<small>*12, honestly</small></button>
+        <div class="bk-lower">
+          <p class="bk-hint" id="bk-hint">Tap a battery to take it out.</p>
+          <div class="bk-egg" id="bk-egg">
+            <div class="bk-qc" aria-hidden="true"><b>QC</b><span>PASSED</span><em>No. 7</em></div>
+            <button type="button" class="bk-note" id="bk-note" aria-label="Handwritten note inside the battery bay. Tap for another.">9999 in 1*<small>*12, honestly</small></button>
+          </div>
+          <p class="bk-ver bk-ver2">Version <span class="ver-n">?</span></p>
+          <button type="button" class="bk-btn" id="bk-close">Close the door</button>
         </div>
-        <p class="bk-ver bk-ver2">Version <span class="ver-n">?</span></p>
-        <p class="bk-hint" id="bk-hint">Tap a battery to take it out.</p>
-        <button type="button" class="bk-btn" id="bk-close">Close the door</button>
       </div>
       <div class="bk-door" id="bk-door">
         <div class="bk-ridges"><em></em><em></em><em></em></div>
@@ -248,10 +258,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=26"></script>
-<script src="mascots.js?v=26"></script>
-<script src="engine.js?v=26"></script>
-<script src="back.js?v=26"></script>
-<script src="welcome.js?v=26"></script>
+<script src="games.js?v=27"></script>
+<script src="mascots.js?v=27"></script>
+<script src="engine.js?v=27"></script>
+<script src="back.js?v=27"></script>
+<script src="welcome.js?v=27"></script>
 </body>
 </html>
