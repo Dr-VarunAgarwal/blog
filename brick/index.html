@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=13">
+<link rel="stylesheet" href="brick.css?v=14">
 </head>
 <body>
 <!--
@@ -123,10 +123,14 @@
     <div class="shell">
       <div class="bk-bay" id="bk-bay">
         <div class="bk-slots">
-          <div class="bk-slot"><i>+</i><i>&minus;</i></div><div class="bk-slot"><i>+</i><i>&minus;</i></div>
+          <div class="bk-slot"><i>+</i><i>&minus;</i><svg class="spring" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 38 V34 L9 31 L31 26 L9 21 L31 16 L9 11 L31 6 L20 3 V1"/></svg><s class="plate"></s></div><div class="bk-slot"><i>+</i><i>&minus;</i><svg class="spring" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 38 V34 L9 31 L31 26 L9 21 L31 16 L9 11 L31 6 L20 3 V1"/></svg><s class="plate"></s></div>
         </div>
         <button type="button" class="bk-bat" data-i="0" aria-label="AA battery 1, tap to remove"><i class="nub"></i><i class="band"></i><b>AA</b></button>
         <button type="button" class="bk-bat" data-i="1" aria-label="AA battery 2, tap to remove"><i class="nub"></i><i class="band"></i><b>AA</b></button>
+        <div class="bk-egg" id="bk-egg">
+          <div class="bk-qc" aria-hidden="true"><b>QC</b><span>PASSED</span><em>No. 7</em></div>
+          <button type="button" class="bk-note" id="bk-note" aria-label="Handwritten note inside the battery bay. Tap for another.">9999 in 1*<small>*12, honestly</small></button>
+        </div>
         <p class="bk-hint" id="bk-hint">Tap a battery to take it out.</p>
         <button type="button" class="bk-btn" id="bk-close">Close the door</button>
       </div>
@@ -209,7 +213,7 @@
 
       <section data-pane="help" hidden>
         <p class="lede">Just like the real thing: press <b>ON/OFF</b>, pick a game, speed and level on the title screen (see <i>Title keys</i> under Play), and hit <b>S/P</b> to start.</p>
-        <button type="button" class="linkbtn" id="replay-welcome">Replay the welcome tour</button>
+        <button type="button" class="linkbtn" id="replay-welcome">Play the welcome tour</button>
         <h3><span id="help-games-n">12</span> games</h3>
         <ol id="help-games"></ol>
         <h3>Controls</h3>
@@ -235,10 +239,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=13"></script>
-<script src="mascots.js?v=13"></script>
-<script src="engine.js?v=13"></script>
-<script src="back.js?v=13"></script>
-<script src="welcome.js?v=13"></script>
+<script src="games.js?v=14"></script>
+<script src="mascots.js?v=14"></script>
+<script src="engine.js?v=14"></script>
+<script src="back.js?v=14"></script>
+<script src="welcome.js?v=14"></script>
 </body>
 </html>

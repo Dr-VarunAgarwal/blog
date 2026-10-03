@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "13";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "14";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -164,7 +164,7 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 }
 :is(#device, #back, .pvdev)[data-layout="a"] .brand span:last-child { margin-left: 34px; }
 :is(#device, #back, .pvdev)[data-layout="a"] .nine { right: 26px; top: 718px; font: 400 20px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: .5px; color: var(--ink); }
-:is(#device, #back, .pvdev)[data-layout="a"] .swoosh { left: 100px; top: 710px; width: 160px; height: 40px; color: var(--ink); }
+:is(#device, #back, .pvdev)[data-layout="a"] .swoosh { left: 96px; top: 710px; width: 140px; height: 40px; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="a"] .cat, :is(#device, #back, .pvdev)[data-layout="a"] .grip { display: none; }
 
 /* =====================================================================
@@ -260,7 +260,8 @@ html[data-layout="c"] body, html[data-layout="d"] body { background: var(--body)
 }
 
 /* C: outlined screen frame with the title in its top edge, tetromino decals down both sides */
-:is(#device, #back, .pvdev)[data-layout="c"] { height: calc(600px + var(--shift)); --cy: 362px; }
+:is(#device, #back, .pvdev)[data-layout="c"] { --shift: 0px; height: 660px; --cy: 392px; }
+:is(#device, #back, .pvdev)[data-layout="c"] .corner { top: 14px; }
 :is(#device, #back, .pvdev)[data-layout="c"] .sframe { left: 50px; top: 30px; width: 260px; height: 312px; border: 2.5px solid var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="c"] .decals { display: block; width: 36px; height: 312px; top: 30px; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="c"] .decals.dl { left: 8px; }
@@ -271,11 +272,10 @@ html[data-layout="c"] body, html[data-layout="d"] body { background: var(--body)
 :is(#device, #back, .pvdev)[data-layout="c"] :is(#label, .lbl) { left: 50%; right: auto; top: 20px; transform: translateX(-50%); padding: 0 10px; background: var(--body); font: 900 24px/1 "Arial Black", Impact, sans-serif; letter-spacing: .5px; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="c"] :is(#label, .lbl).named { color: var(--alt); font-size: 20px; top: 22px; }
 :is(#device, #back, .pvdev)[data-layout="c"] .brand {
-  left: 146px; top: calc(var(--cy) + 160px); transform: rotate(-26deg); transform-origin: 50% 50%;
-  font: 900 22px/.86 "Arial Black", Impact, sans-serif; letter-spacing: 0; color: transparent; -webkit-text-stroke: 1.2px var(--ink);
-  display: flex; flex-direction: column;
+  left: 200px; top: calc(var(--cy) + 214px); transform: rotate(-7deg); transform-origin: 0 100%;
+  font: 900 21px/1 "Arial Black", Impact, sans-serif; letter-spacing: 0; color: transparent; -webkit-text-stroke: 1.2px var(--ink);
+  display: flex; flex-direction: row; gap: 7px; white-space: nowrap;
 }
-:is(#device, #back, .pvdev)[data-layout="c"] .brand span:last-child { margin-left: 14px; }
 :is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="b"], [data-layout="d"]) :is(.sframe, .decals) { display: none; }
 .sframe, .decals { position: absolute; pointer-events: none; }
 :is(#device, #back, .pvdev):not([data-layout="c"]) .sframe { display: none; }
@@ -556,6 +556,18 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 .bk-slot { position: relative; flex: 1; border-radius: 10px; border: 2px dashed rgba(255, 255, 255, .2); }
 .bk-slot i { position: absolute; left: 50%; transform: translateX(-50%); font: 700 14px/1 system-ui; color: rgba(255, 255, 255, .4); font-style: normal; }
 .bk-slot i:first-child { top: 6px; } .bk-slot i:last-child { bottom: 6px; }
+/* the spring that presses on the flat (minus) end of a cell, and the plate that touches the nub (plus end) */
+.bk-slot .spring { position: absolute; left: 50%; bottom: 17px; width: 40px; height: 46px; margin-left: -20px; color: #c8ccd2; transform-origin: 50% 100%; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1); }
+.bk-slot:not(.empty) .spring { transform: scaleY(.42); }
+.bk-slot .plate { position: absolute; left: 50%; top: 20px; width: 22px; height: 6px; margin-left: -11px; border-radius: 3px; background: #c8ccd2; }
+/* easter egg inside the bay */
+.bk-egg { position: absolute; left: 0; right: 0; top: 428px; height: 150px; opacity: 0; transition: opacity .6s .5s; pointer-events: none; }
+.bk-bay.peek .bk-egg { opacity: 1; pointer-events: auto; }
+.bk-qc { position: absolute; left: 36px; top: 6px; width: 62px; height: 62px; border-radius: 50%; background: #e9e4cf; color: #b13a2c; border: 2px solid #b13a2c; transform: rotate(-14deg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: Arial, sans-serif; line-height: 1; box-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.bk-qc b { font-size: 20px; } .bk-qc span { font-size: 8.5px; font-weight: 800; letter-spacing: .08em; margin-top: 2px; } .bk-qc em { font-size: 9px; font-style: normal; font-weight: 700; margin-top: 3px; border-top: 1px solid currentColor; padding-top: 2px; }
+.bk-note { position: absolute; left: 126px; top: 14px; width: 150px; padding: 8px 10px; border: 0; cursor: pointer; text-align: left; background: #f1e9a8; color: #3a3a2a; transform: rotate(3deg); box-shadow: 0 2px 0 rgba(0,0,0,.35); font: 700 17px/1.15 "Bradley Hand", "Segoe Print", "Comic Sans MS", "Chalkboard SE", cursive; }
+.bk-note small { display: block; margin-top: 3px; font-size: 13px; font-weight: 400; opacity: .85; }
+.bk-note:active { transform: rotate(3deg) translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,.35); }
 .bk-bat {
   position: absolute; width: 48px; height: 132px; padding: 0; cursor: pointer; border: 2px solid #3a3a40; border-radius: 7px 7px 6px 6px; background: #26262a;
   left: 62px; top: 50px; transition: left .45s cubic-bezier(.3, 1.3, .5, 1), top .45s cubic-bezier(.3, 1.3, .5, 1), transform .45s;
@@ -578,6 +590,7 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #back.land .bk-bat { top: 32px; left: 268px; height: 120px; } #back.land .bk-bat[data-i="1"] { left: 436px; }
 #back.land .bk-bat.out[data-i="0"] { left: 70px; top: 80px; } #back.land .bk-bat.out[data-i="1"] { left: 634px; top: 84px; }
 #back.land .bk-hint { top: 196px; }
+#back.land .bk-egg { display: none; }
 
 #toast {
   position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom)); z-index: 120; max-width: min(92vw, 380px);

@@ -350,7 +350,26 @@
       }
       const nx = e.x + DV[d][0], ny = e.y + DV[d][1];
       if (free(nx, ny, d, e)) { e.d = d; e.x = nx; e.y = ny; }
-      if (g.rnd(100) < 18 && bullets.filter(b => b.own === 'e').length < 2) fire(e, 'e');
+      if (g.rnd(100) < 10 && bullets.filter(b => b.own === 'e').length < 3) fire(e, 'e');
+    }
+    // does the barrel point straight at the player with no wall in between?
+    function aimed(e) {
+      if (!player || dying) return false;
+      const [dx, dy] = DV[e.d];
+      for (let x = e.x + dx * 2, y = e.y + dy * 2; x >= 0 && x < W && y >= 0 && y < H; x += dx, y += dy) {
+        if (walls[y * W + x]) return false;
+        if (inTank(player, x, y)) return true;
+      }
+      return false;
+    }
+    // turn to face a player who is lined up on the same row or column and clear of walls
+    function lineUp(e) {
+      if (!player || dying) return;
+      for (let d = 0; d < 4; d++) {
+        const o = e.d; e.d = d;
+        if (aimed(e)) { if (!free(e.x, e.y, d, e)) e.d = o; return; }
+        e.d = o;
+      }
     }
     function stepBullets() {
       for (const b of bullets) {
@@ -360,7 +379,7 @@
         if (b.own === 'p') {
           const e = enemies.find(t => inTank(t, b.x, b.y));
           if (e) { e.dead = true; b.dead = true; g.add(100); g.sfx('boom'); }
-        } else if (player && !dying && !inv && inTank(player, b.x, b.y)) { b.dead = true; hurt(); }
+        } else if (player && !dying && inv <= 0 && inTank(player, b.x, b.y)) { b.dead = true; hurt(); }
       }
       for (let i = 0; i < bullets.length; i++) for (let j = i + 1; j < bullets.length; j++) {
         const a = bullets[i], c = bullets[j];
@@ -388,7 +407,15 @@
           const x = [1, 4, 8][g.rnd(3)], e = { x, y: 1, d: 2, mt: Tick(TANK_MS[g.speed - 1]) };
           if (free(x, 1, 2, e)) { enemies.push(e); spawnLeft--; }
         }
-        for (const e of enemies) { e.mt.ms = TANK_MS[g.speed - 1]; if (e.mt.step(dt)) think(e); }
+        for (const e of enemies) {
+          e.mt.ms = TANK_MS[g.speed - 1];
+          e.fc = (e.fc || 0) - dt;
+          if (e.mt.step(dt)) think(e);
+          if (e.fc <= 0 && inv <= 0) {                                   // spotted you: face you and shoot
+            if (!aimed(e)) lineUp(e);
+            if (aimed(e) && bullets.filter(b => b.own === 'e').length < 3) { fire(e, 'e'); e.fc = 900 - g.speed * 40; }
+          }
+        }
         if (bt.step(dt)) stepBullets();
         if (!spawnLeft && !enemies.length && !clearT) { clearT = 1; g.sfx('win'); }
       },

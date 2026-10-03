@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '13';
+  const BUILD = '14';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -220,7 +220,10 @@
   const listeners = {};
   const on = (evt, fn) => { (listeners[evt] = listeners[evt] || []).push(fn); };
   const emit = (evt, data) => (listeners[evt] || []).forEach(f => { try { f(data); } catch (_) { /* a listener must never break the console */ } });
-  function setState(s) { state = s; stateT = 0; emit('state', s); }
+  function setState(s) { state = s; stateT = 0; msg = null; emit('state', s); }
+  // a short line of text in the empty strip at the bottom of the LCD panel (warnings, little jokes)
+  let msg = null;
+  function lcdMsg(text, ms) { msg = { text, until: clock + (ms || 2400) }; }
 
   let batteries = true;
   let toastTimer = 0;
@@ -261,6 +264,7 @@
     game = def.make(g);
     startDelay = 750;
     setState(PLAY);
+    if (sel.speed >= 9) lcdMsg(sel.speed === 10 ? 'MAX SPEED!' : 'VERY FAST!', 2800);
     Sound.fx('start');
     if (game.music) setTimeout(() => { if (state === PLAY && game && game.music) Sound.startMusic(g.speed); }, 750);
   }
@@ -569,6 +573,7 @@
     label('PAUSE', 166, 215, pauseOn ? P.ink : P.ghost, 7.5, 'left');
     label('GAME OVER', PCX, 240, (boot || (state === OVER && slow)) ? P.ink : P.ghost, 9);
     drawSpeaker(231, 211, boot || Sound.enabled ? P.ink : P.ghost);
+    if (msg && !boot && clock < msg.until) { if (((clock / 220) | 0) % 2 === 0 || msg.until - clock > 1500) label(msg.text, PCX, 254, P.ink, 8.5); }
     ctx.restore();
   }
   function drawSpeaker(x, y, col) {
@@ -668,7 +673,7 @@
   $('#help-games-n').textContent = GAMES.length;
 
   // fit the whole handheld to the viewport
-  const DIMS = { a: 782, b: 782, c: 622, d: 690 };                // design height per layout, incl. the 22px the body sits below the corner keys
+  const DIMS = { a: 782, b: 782, c: 660, d: 690 };                // design height per layout, incl. the 22px the body sits below the corner keys
   const device = $('#device');
   const coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)') : { matches: false };
   const probe = $('#stage');
@@ -751,7 +756,7 @@
   const lum = c => { const [r, g, b] = hex(c).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; };
 
   let look = store.get('look', null) || {};
-  look = { layout: 'abcd'.includes(look.layout) && look.layout ? look.layout : 'a', colour: look.colour || null, custom: look.custom || null, menu: look.menu === 'orig' || look.menu === 'quick' ? look.menu : null, key: /^#[0-9a-f]{6}$/i.test(look.key || '') ? look.key : null };
+  look = { layout: 'abcd'.includes(look.layout) && look.layout ? look.layout : 'c', colour: look.colour || null, custom: look.custom || null, menu: look.menu === 'orig' || look.menu === 'quick' ? look.menu : null, key: /^#[0-9a-f]{6}$/i.test(look.key || '') ? look.key : null };
   const menuMode = () => look.menu || ((look.layout === 'c' || look.layout === 'd') ? 'orig' : 'quick');
 
   function baseColour() {
@@ -874,12 +879,12 @@
 
   /* ------------------ skins: one-tap complete looks ------------------ */
   const SKINS = [
+    { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
+    { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 0 },
     { name: 'Lightning', sub: 'Black',  layout: 'a', colour: 'black',  tint: 0 },
     { name: 'Lightning', sub: 'Red',    layout: 'a', colour: 'red',    tint: 0 },
     { name: 'Kitty',     sub: 'Yellow', layout: 'b', colour: 'yellow', tint: 0 },
     { name: 'Kitty',     sub: 'Pink',   layout: 'b', colour: 'pink',   tint: 0 },
-    { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
-    { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 0 },
     { name: 'Immersive', sub: 'Black', layout: 'd', colour: 'black',  tint: 0 },
     { name: 'Immersive', sub: 'Olive', layout: 'd', colour: 'gray',   tint: 3 }
   ];
@@ -948,8 +953,7 @@
 
   /* button colour: Auto (follows the body colour) or any colour you like */
   const KEYCOLS = [
-    ['#f5d31c', 'Yellow'], ['#fbfbf8', 'White'], ['#e0382d', 'Red'], ['#f08a24', 'Orange'], ['#2f9d5c', 'Green'],
-    ['#2f6fd8', 'Blue'], ['#7a5be0', 'Purple'], ['#f08cb8', 'Pink'], ['#1b1b1f', 'Black']
+    ['#f5d31c', 'Yellow'], ['#fbfbf8', 'White'], ['#e0382d', 'Red'], ['#2f9d5c', 'Green'], ['#2f6fd8', 'Blue'], ['#1b1b1f', 'Black']
   ];
   const keyBox = $('#key-pick');
   keyBox.innerHTML = '<button type="button" class="auto" data-key="auto" aria-label="Automatic button colour">Auto</button>' +
@@ -1021,7 +1025,7 @@
   const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
   const api = {
     SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
-    menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
+    lcdMsg, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
     skinPreview: (i, scale) => makeConsole(SKINS[i].layout, COLOURS.find(x => x.id === SKINS[i].colour), SKINS[i].tint, scale)
   };
   window.BrickConsole = { api, g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
