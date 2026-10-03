@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '22';
+  const BUILD = '23';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -728,7 +728,7 @@
   $('#help-games-n').textContent = GAMES.length;
 
   // fit the whole handheld to the viewport
-  const DIMS = { a: 782, b: 782, c: 660, d: 690 };                // design height per layout, incl. the 22px the body sits below the corner keys
+  const DIMS = { a: 782, b: 782, c: 660, d: 740 };                // design height per layout, incl. the 22px the body sits below the corner keys
   const device = $('#device');
   const coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)') : { matches: false };
   const probe = $('#stage');
@@ -890,7 +890,7 @@
   }
 
   /* picker UI inside the sheet */
-  const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), layoutBox = $('#layout-pick'), menuBox = $('#menu-pick');
+  const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), menuBox = $('#menu-pick');
   swatchBox.innerHTML = COLOURS.filter(c => c.id === 'clear' || !c.shell).map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + (c.shell ? 'Clear' : c.name) + '" title="' + (c.shell ? 'Clear (see-through)' : c.name) + '" style="background:' + (c.swatch || c.body) + '"></button>').join('') +
     '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>';
   tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '" aria-label="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" title="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" style="background:' + p.bg + '"></button>').join('');
@@ -901,10 +901,6 @@
   $('#colour-custom').addEventListener('input', e => { look.colour = 'custom'; look.custom = e.target.value; applyLook(); });
   tintBox.addEventListener('click', e => { const b = e.target.closest('button[data-tint]'); if (b) setTint(+b.dataset.tint); });
   menuBox.addEventListener('click', e => { const b = e.target.closest('button[data-menu]'); if (b) { look.menu = b.dataset.menu; applyLook(); } });
-  layoutBox.addEventListener('click', e => {
-    const b = e.target.closest('button[data-layout]'); if (!b) return;
-    look.layout = b.dataset.layout; applyLook();
-  });
   // Finish: shell (solid / clear) and texture
   const shellBox = $('#shell-pick'), texBox = $('#tex-pick');
   shellBox.addEventListener('click', e => {
@@ -997,7 +993,7 @@
   const SKINS = [
     { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
     { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 2 },
-    { name: 'Clear',     sub: 'Smoke',  layout: 'a', colour: 'clear',  tint: 1 },
+    { name: 'Lightning', sub: 'Clear',  layout: 'a', colour: 'clear',  tint: 1 },
     { name: 'Lightning', sub: 'Black',  layout: 'a', colour: 'black',  tint: 1 },
     { name: 'Lightning', sub: 'Red',    layout: 'a', colour: 'red',    tint: 3 },
     { name: 'Kitty',     sub: 'Yellow', layout: 'b', colour: 'yellow', tint: 0 },
@@ -1055,7 +1051,7 @@
 
   /* live preview: always shows your current console, updates as you change anything */
   const liveBox = $('#live-pv');
-  const LAYOUT_INFO = { a: ['Lightning', 'Classic black handheld with lightning bolts'], b: ['Kitty', 'Cat-print unit: big screen, cross D-pad, pill keys'], c: ['Super', 'Illustrated unit: framed screen, every key labelled'], d: ['Immersive', 'Big screen and labelled keys, no console shell'] };
+  const LAYOUT_INFO = { a: ['Lightning', 'Thumb layout: small keys in a row under the grip bar'], b: ['Kitty', 'Cat-print unit: cross D-pad, pill keys'], c: ['Super', 'Framed screen, every key labelled, keys beside the D-pad'], d: ['Immersive', 'Big screen, keys in a row along the bottom'] };
   function renderLive() {
     const info = LAYOUT_INFO[look.layout];
     const cn = look.colour === 'custom' ? 'Custom colour' : (function () { const f = COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}; return f.shell === 'clear' ? 'Clear ' + f.name.toLowerCase() : f.name; })();
@@ -1063,15 +1059,6 @@
     // big preview: fill the pinned area whatever the screen size
     const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 4) / DIMS[look.layout]) : .3;
     liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, sc));
-    renderLayoutCards();
-  }
-  function renderLayoutCards() {
-    layoutBox.replaceChildren.apply(layoutBox, ['c', 'a', 'b', 'd'].map(k => {
-      const b = document.createElement('button'); b.type = 'button'; b.dataset.layout = k; b.setAttribute('aria-pressed', String(k === look.layout));
-      b.appendChild(makeConsole(k, currentColour(), palIdx, .16));
-      b.insertAdjacentHTML('beforeend', LAYOUT_INFO[k][0] + '<small>' + LAYOUT_INFO[k][1] + '</small>');
-      return b;
-    }));
   }
   window.addEventListener('resize', () => { if (!help.hidden) renderLive(); });
 
