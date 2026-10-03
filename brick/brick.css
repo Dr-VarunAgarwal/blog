@@ -8,7 +8,7 @@
   /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
-  --build: "22";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "23";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -305,6 +305,26 @@ html[data-layout="c"] body, html[data-layout="d"] body { background: var(--sheen
 :is(#device, #back, .pvdev)[data-layout="d"] :is(#label, .lbl) { top: 14px; left: 52px; right: 52px; font: 800 18px/24px "Orbitron", "Eurostile", "Bank Gothic", "Arial Black", system-ui, sans-serif; letter-spacing: .12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity .25s; pointer-events: none; }
 :is(#device, #back, .pvdev)[data-layout="d"] :is(#label, .lbl).named { opacity: 1; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="d"] .brand, :is(#device, #back, .pvdev)[data-layout="d"] .nine { display: none; }
+
+/* Each console has its own button arrangement (portrait). Super keeps the labelled "beside the D-pad" row (shared rules above);
+ * Lightning is the thumb layout: the four small keys centred in a row right under the grip bar, D-pad and ROTATE lower;
+ * Immersive is the pad layout: D-pad and ROTATE up high, the four small keys in a row along the bottom, far from the D-pad. */
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) .fn[data-btn="power"] { left: 38px; }
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) .fn[data-btn="sp"]    { left: 118px; }
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) .fn[data-btn="sound"] { left: 198px; }
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) .fn[data-btn="reset"] { left: 278px; }
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) :is(#dpad, .dpad) { top: calc(var(--cy) + 28px); }
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) .rot:not(.rot2) { top: calc(var(--cy) + 78px); }
+:is(#device, #back, .pvdev)[data-layout="a"]:not(.land) .rotlab { top: calc(var(--cy) + 182px); }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) { height: 740px; }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .fn { top: calc(var(--cy) + 214px); }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .fn[data-btn="power"] { left: 56px; }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .fn[data-btn="sp"]    { left: 132px; }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .fn[data-btn="sound"] { left: 208px; }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .fn[data-btn="reset"] { left: 284px; }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) :is(#dpad, .dpad) { top: calc(var(--cy) - 12px); }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .rot:not(.rot2) { top: calc(var(--cy) + 30px); }
+:is(#device, #back, .pvdev)[data-layout="d"]:not(.land) .rotlab { top: calc(var(--cy) + 134px); }
 
 /* =====================================================================
  * LANDSCAPE (touch devices held sideways): D-pad | screen | ROTATE, for every layout
