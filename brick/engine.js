@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '25';
+  const BUILD = '26';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -254,6 +254,7 @@
     Sound.stopMusic(); game = null; def = null;
     g.clear(); g.n.fill(0); g.score = 0; newHi = false;
     pickMascot();
+    demo = null;
     setState(MENU);
     showName();
   }
@@ -553,7 +554,7 @@
     const bx = PCX - 18.4, by = 80, mw = 9.2, mh = 8.6;
     ctx.strokeStyle = P.soft; ctx.lineWidth = 1; ctx.strokeRect(bx - 2.5, by - 2.5, mw * 4 + 5, mh * 4 + 5);
     for (let i = 0; i < 16; i++) {
-      const on = boot || g.n[i] === 1;
+      const on = boot || (state === MENU ? demoG.n : g.n)[i] === 1;
       cell(bx + (i % 4) * mw, by + ((i / 4) | 0) * mh, mw, mh, on ? P.ink : P.ghost);
     }
 
@@ -579,7 +580,7 @@
     label('PAUSE', 173, 215, pauseOn ? P.ink : P.ghost, 7.5, 'left');
     label('GAME OVER', PCX, 240, (boot || (state === OVER && slow)) ? P.ink : P.ghost, 9);
     drawSpeaker(231, 211, boot || Sound.enabled ? P.ink : P.ghost);
-    if (msg && !boot && clock < msg.until) { if (((clock / 220) | 0) % 2 === 0 || msg.until - clock > 1500) label(msg.text, PCX, 254, P.ink, 8.5); }
+    if (!boot) drawTicker(P);
     ctx.restore();
   }
   // the little steaming coffee cup that means "paused" (take a break)
@@ -593,6 +594,45 @@
     ctx.beginPath(); ctx.arc(x + 12.2, y + 9.8, 2.2, -1.2, 1.5); ctx.stroke();                                                    // handle
     ctx.fillRect(x - 1, y + 14.2, 16, 1.3);                                                                                        // saucer
   }
+  /* ---------- the strip under the mascot: warnings, tips and little jokes ---------- */
+  const TIPS_INFO = [
+    'HOLD ROTATE FOR TURBO IN SNAKE AND ROAD RACER', 'UP IS A HARD DROP IN BRICK FALL', 'RESET TAKES YOU HOME',
+    'PICK SPEED AND LEVEL ON THE TITLE SCREEN', 'BEST SCORES ARE SAVED ON THIS DEVICE', 'HOLD ON/OFF DURING A GAME TO SWITCH OFF',
+    'THE GEAR OPENS SETTINGS', 'THE TOP-LEFT KEY TURNS THE CONSOLE OVER', 'LEVEL CHANGES THE CHALLENGE, SPEED CHANGES THE PACE'
+  ];
+  const TIPS_FUN = [
+    '9999 IN 1* (*12, HONESTLY)', 'BATTERIES NOT INCLUDED. TRY THE BACK.', 'NO ADS. NO TRACKING. 200 PIXELS.', 'PRO TIP: DO NOT HIT THE WALL',
+    'BLOW ON THE CARTRIDGE. IT HELPS. IT DOES NOT.', 'SKILL ISSUE? TRY SPEED 1.', 'THIS LCD IS NOT A TOUCHSCREEN. WE CHECKED.',
+    'ONE MORE GAME. JUST ONE.', 'THE ROBOT IS PLAYING. YOU ARE WATCHING.', 'CHEATS: NONE. SNAKES: SEVERAL.'
+  ];
+  const tk = { text: '', start: 0, w: 0, dur: 0, state: -1, n: 0, info: 0, fun: 0 };
+  function pickTicker() {
+    const hi = hiAll[GAMES[sel.game].id] || 0, first = tk.n === 0 || tk.state !== state;
+    let text;
+    if (first && state === OVER) text = newHi ? 'NEW HIGH SCORE!' : 'GAME OVER. ONE MORE GO?';
+    else if (first && state === PAUSE) text = 'PAUSED. TAKE A COFFEE.';
+    else if (first && state === MENU) text = hi ? 'BEST ' + hi + '. BEAT IT.' : 'NO SCORE YET. BE FIRST.';
+    else if (tk.n % 3 === 1) text = hi && state === MENU ? 'BEST ' + hi + '. BEAT IT.' : TIPS_INFO[tk.info++ % TIPS_INFO.length];
+    else text = tk.n % 3 === 2 ? TIPS_INFO[tk.info++ % TIPS_INFO.length] : TIPS_FUN[tk.fun++ % TIPS_FUN.length];
+    tk.n++; tk.state = state; tk.text = text; tk.start = clock;
+    ctx.font = '700 8.5px "Arial Narrow", "Roboto Condensed", Arial, sans-serif';
+    tk.w = ctx.measureText(text).width;
+    tk.dur = tk.w <= 92 ? 3800 : (tk.w + 100) / .03;
+  }
+  function drawTicker(P) {
+    if (msg && clock < msg.until) {                                                    // a warning (e.g. very high speed) beats the tips
+      if (((clock / 220) | 0) % 2 === 0 || msg.until - clock > 1500) label(msg.text, PCX, 254, P.ink, 8.5);
+      return;
+    }
+    if (state !== MENU && state !== PAUSE && state !== OVER) return;
+    if (tk.state !== state || clock - tk.start > tk.dur || clock < tk.start) pickTicker();
+    ctx.save();
+    ctx.beginPath(); ctx.rect(152, 243, 96, 16); ctx.clip();
+    ctx.font = '700 8.5px "Arial Narrow", "Roboto Condensed", Arial, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = P.ink;
+    ctx.fillText(tk.text, tk.w <= 92 ? PCX - tk.w / 2 : 247 - (clock - tk.start) * .03, 254);
+    ctx.restore();
+  }
   function drawSpeaker(x, y, col) {
     ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 1.3;
     ctx.beginPath(); ctx.moveTo(x - 6, y - 2); ctx.lineTo(x - 3, y - 2); ctx.lineTo(x + 1, y - 5.5); ctx.lineTo(x + 1, y + 5.5); ctx.lineTo(x - 3, y + 2); ctx.lineTo(x - 6, y + 2); ctx.closePath(); ctx.fill();
@@ -602,6 +642,30 @@
 
   /* what the playfield shows in each state */
   const view = new Uint8Array(N);
+  /* ---------- the title screen autoplays the selected game: the real game, played by a little robot ---------- */
+  let demoOver = 0, demoT = 0, demoKey = '', demo = null;
+  const demoG = {
+    W, H, f: new Uint8Array(N), n: new Uint8Array(16), score: 0, speed: 1, level: 1,
+    set: g.set, get: g.get, clear: g.clear, rnd: g.rnd,
+    add() { }, lives() { }, sfx() { }, held() { return false; },
+    setSpeed(s) { this.speed = Math.max(1, Math.min(10, s)); },
+    over() { demoOver = 1; }
+  };
+  function startDemo() {
+    demoKey = sel.game + ':' + sel.speed + ':' + sel.level; demoOver = 0; demoT = 0;
+    demoG.f.fill(0); demoG.n.fill(0); demoG.score = 0;
+    demoG.speed = Math.max(1, Math.min(sel.speed, 4)); demoG.level = Math.min(sel.level, 3);   // a watchable pace, whatever you picked
+    try { demo = GAMES[sel.game].make(demoG); } catch (_) { demo = null; }
+  }
+  function stepDemo(dt) {
+    if (!demo || demoKey !== sel.game + ':' + sel.speed + ':' + sel.level) startDemo();
+    if (!demo) return;
+    demoT += dt;
+    if (demoOver) { if (demoT > 2600) startDemo(); return; }
+    if (demoT > 70000) { startDemo(); return; }                                 // do not sit on a late, cluttered screen
+    try { if (demo.demo) demo.demo(dt); demo.update(dt); } catch (_) { demo = null; }
+  }
+
   // Power-on: like the real units, the field winds up into a spiral and then unwinds again before the title screen.
   const BOOT_MS = 1250, SPIRAL = (function () {
     const order = []; let x0 = 0, x1 = W - 1, y0 = 0, y1 = H - 1;
@@ -623,11 +687,11 @@
       return view;
     }
     if (state === MENU) {
-      view.fill(0);
-      const was = g.f; g.f = view;
-      GAMES[sel.game].attract(g, stateT);
-      g.f = was;
-      return view;
+      if (!demo) startDemo();
+      if (!demo) { view.fill(0); return view; }
+      demoG.clear();
+      try { demo.draw(); } catch (_) { demoG.clear(); }
+      return demoG.f;
     }
     if (state === PLAY || state === PAUSE) {
       if (game) { g.clear(); game.draw(); }
@@ -658,7 +722,7 @@
   function advance(dt) {
     clock += dt; stateT += dt;
     if (state === BOOT) { if (stateT > BOOT_MS) toMenu(); }
-    else if (state === MENU) repeats();
+    else if (state === MENU) { repeats(); stepDemo(dt); }
     else if (state === PLAY) {
       if (startDelay > 0) startDelay -= dt;
       else { repeats(); if (game) game.update(dt); }
@@ -1161,7 +1225,7 @@
   const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
   const api = {
     BUILD, SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
-    lcdMsg, powerOff() { clearTimeout(powerHold); powerHold = 0; if (state !== OFF) powerToggle(); }, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
+    demoField: () => demoG.f, lcdMsg, powerOff() { clearTimeout(powerHold); powerHold = 0; if (state !== OFF) powerToggle(); }, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
     skinPreview: (i, scale) => makeConsole(SKINS[i].layout, skinColour(SKINS[i]), SKINS[i].tint, scale)
   };
   window.BrickConsole = { api, g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
