@@ -2,8 +2,8 @@
    Network-first and ALWAYS revalidating (cache: 'no-cache') so a new deploy is never masked by the
    browser's own HTTP cache; the Cache Storage copy is only the offline fallback.
    Bump VERSION (and ?v= in index.html, BUILD in engine.js, --build in brick.css) on every change. */
-const VERSION = 'brick-v13';
-const FILES = ['./', 'index.html', 'brick.css?v=13', 'games.js?v=13', 'mascots.js?v=13', 'engine.js?v=13', 'back.js?v=13', 'welcome.js?v=13', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
+const VERSION = 'brick-v14';
+const FILES = ['./', 'index.html', 'brick.css?v=14', 'games.js?v=14', 'mascots.js?v=14', 'engine.js?v=14', 'back.js?v=14', 'welcome.js?v=14', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => Promise.all(FILES.map(f => fetch(f, { cache: 'reload' }).then(r => r.ok && c.put(f, r)).catch(() => { })))).then(() => self.skipWaiting()));

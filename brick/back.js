@@ -23,7 +23,8 @@
   }
   show(back, false);
 
-  function closeDoor() { door.classList.remove('open'); }
+  const bay = $('#bk-bay');
+  function closeDoor() { door.classList.remove('open'); bay.classList.remove('peek'); }
   function flip(to) {
     if (busy || side === to) return;
     busy = true;
@@ -48,8 +49,17 @@
   $('#flip-back').addEventListener('click', () => flip('front'));
 
   /* the battery door */
-  $('#bk-open').addEventListener('click', () => { door.classList.add('open'); api.Sound.fx('thunk'); api.Haptic.fx('land'); });
+  $('#bk-open').addEventListener('click', () => { door.classList.add('open'); bay.classList.add('peek'); api.Sound.fx('thunk'); api.Haptic.fx('land'); });
   $('#bk-close').addEventListener('click', () => { closeDoor(); api.Sound.fx('thunk'); api.Haptic.fx('land'); });
+
+  /* easter egg: the little note in the bay says something different each time you tap it */
+  const NOTES = [['9999 in 1*', '*12, honestly'], ['Inspected by', 'No. 7'], ['Do not eat', 'the batteries'], ['Mind the spring', 'it bites'], ['Level 11?', 'there is no level 11'], ['Have you tried', 'turning it off and on?'], ['Made with love', 'and 2 x AA']];
+  let noteI = 0;
+  $('#bk-note').addEventListener('click', () => {
+    noteI = (noteI + 1) % NOTES.length;
+    const n = $('#bk-note'); n.innerHTML = NOTES[noteI][0] + '<small>' + NOTES[noteI][1] + '</small>';
+    api.Sound.unlock(); api.Sound.fx('tick'); api.Haptic.key('key');
+  });
 
   /* the cells: out = the console is dead */
   function refresh() {
@@ -60,6 +70,7 @@
   bats.forEach(b => b.addEventListener('click', () => {
     api.Sound.unlock();
     const out = b.classList.toggle('out');
+    const slot = document.querySelectorAll('.bk-slot')[+b.dataset.i]; if (slot) slot.classList.toggle('empty', out);
     b.setAttribute('aria-label', 'AA battery ' + (+b.dataset.i + 1) + ', tap to ' + (out ? 'put back' : 'remove'));
     api.Sound.fx(out ? 'thunk' : 'click'); api.Haptic.key('fn');
     refresh();
