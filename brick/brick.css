@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "9";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "10";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -384,6 +384,14 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
   border: 0; background: rgba(23,23,26,.85); color: #fff; font: 400 24px/1 system-ui; cursor: pointer; box-shadow: 0 0 0 1px #3a3a40;
 }
 #help .car-btn.prev { left: 6px; } #help .car-btn.next { right: 6px; }
+#help .optl .hint { color: #6f6d66; margin-left: 6px; }
+#help .mascots { display: flex; flex-wrap: wrap; gap: 8px; }
+#help .mascots button {
+  width: 54px; height: 54px; padding: 0; display: grid; place-items: center; cursor: pointer;
+  background: var(--lcd-bg); border: 2px solid #2c2c32; border-radius: 12px; color: #141912;
+}
+#help .mascots button.rnd { font: 800 24px/1 system-ui, sans-serif; }
+#help .mascots button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 #help .dots { display: flex; justify-content: center; gap: 7px; margin: 2px 0 4px; }
 #help .dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #3a3a40; cursor: pointer; }
 #help .dots button[aria-current="true"] { background: var(--accent); transform: scale(1.25); }

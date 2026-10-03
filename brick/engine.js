@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '9';
+  const BUILD = '10';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -230,6 +230,7 @@
   function toMenu() {
     Sound.stopMusic(); game = null; def = null;
     g.clear(); g.n.fill(0); g.score = 0; newHi = false;
+    pickMascot();
     setState(MENU);
     showName();
   }
@@ -455,15 +456,22 @@
   }
   const pad = (v, n, z) => { let s = String(v); if (s.length > n) s = s.slice(-n); return s.padStart(n, z ? '0' : ' '); };
 
-  // the little guy on the panel
-  const GUY = [
-    ['....XXXX....', '...XXXXXX...', '...XXXXXX...', '....XXXX....', '..XXXXXXXX..', '.X.XXXXXX.X.', 'X..XXXXXX..X', '...XXXXXX...', '...XX..XX...', '..XX....XX..', '.XX......XX.', 'XX........XX'],
-    ['....XXXX....', '...XXXXXX...', '...XXXXXX...', '....XXXX....', '...XXXXXX...', '..XXXXXXXX..', '..X.XXXX.X..', '..X.XXXX.X..', '....XXXX....', '....XX.XX...', '....XX.XX...', '...XXX.XXX..']
-  ];
-  function guy(frame, color) {
-    const s = 3.5, x0 = PCX - 21, y0 = 157;
+  /* ------------------------ mascot: the little cartoon figure ------------------------ */
+  const MASCOTS = window.BRICK_MASCOTS;
+  let mascotPref = store.get('mascot', 'random');                  // 'random' or a mascot id
+  if (mascotPref !== 'random' && !MASCOTS.some(m => m.id === mascotPref)) mascotPref = 'random';
+  let mascotNow = MASCOTS[0];
+  function pickMascot() {                                          // random: a different character each time, never the same twice in a row
+    if (mascotPref === 'random') { const others = MASCOTS.filter(m => m !== mascotNow); mascotNow = others[Math.floor(Math.random() * others.length)]; }
+    else mascotNow = MASCOTS.find(m => m.id === mascotPref) || MASCOTS[0];
+  }
+  pickMascot();
+  const MS = 3.4;                                                   // size of one mascot pixel
+  function mascotBox(rows) { const w = Math.max.apply(null, rows.map(r => r.length)), h = rows.length; return { x0: PCX - w * MS / 2, y0: 157 + (14 - h) * MS / 2 }; }
+  function drawMascot(pose, color) {
+    const rows = mascotNow[pose], b = mascotBox(rows);
     ctx.fillStyle = color;
-    GUY[frame].forEach((row, j) => { for (let i = 0; i < 12; i++) if (row[i] === 'X') ctx.fillRect(x0 + i * s, y0 + j * s, s - .55, s - .55); });
+    rows.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') ctx.fillRect(b.x0 + i * MS, b.y0 + j * MS, MS - .55, MS - .55); });
   }
 
   function label(txt, x, y, color, size, align) {
@@ -522,12 +530,13 @@
     label('SPEED/LEVEL', PCX, 151, P.soft, 6.5);
 
     // mascot
-    guy(0, P.ghost);
-    if (boot) guy(0, P.ink);
+    drawMascot('a', P.ghost);
+    if (boot) drawMascot('a', P.ink);
     else if (state === PLAY || state === MENU) {
       const rate = state === MENU ? 420 : 520 - (g.speed - 1) * 38;
-      guy(((clock / rate) | 0) % 2, P.ink);
-    } else if (state === PAUSE || state === OVER) guy(1, P.ink);
+      drawMascot(((clock / rate) | 0) % 2 ? 'b' : 'a', P.ink);
+    } else if (state === PAUSE) drawMascot('idle', P.ink);
+    else if (state === OVER) drawMascot('over', P.ink);
 
     // status icons
     const pauseOn = boot || (state === PAUSE && blink);
@@ -807,7 +816,7 @@
     s += '<rect x="176.6" y="77.5" width="41.8" height="39.4" fill="none" stroke="' + P.soft + '" stroke-width="1"/>';
     [[1, 1], [2, 1], [3, 1], [2, 2]].forEach(([c, r]) => { s += cell(179.1 + c * 9.2, 80 + r * 8.6, 9.2, 8.6, P.ink); });
     s += '<rect x="169" y="124" width="20" height="15" rx="2" fill="' + P.ghost + '"/><rect x="205" y="124" width="20" height="15" rx="2" fill="' + P.ghost + '"/>';
-    GUY[0].forEach((row, j) => { for (let i = 0; i < 12; i++) if (row[i] === 'X') s += '<rect x="' + (176.5 + i * 3.5) + '" y="' + (157 + j * 3.5) + '" width="2.95" height="2.95" fill="' + P.ink + '"/>'; });
+    { const rows = mascotNow.a, bx = mascotBox(rows); rows.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') s += '<rect x="' + (bx.x0 + i * MS) + '" y="' + (bx.y0 + j * MS) + '" width="' + (MS - .45) + '" height="' + (MS - .45) + '" fill="' + P.ink + '"/>'; }); }
     s += '</g></svg>';
     const t = document.createElement('template'); t.innerHTML = s;
     return t.content.firstChild;
@@ -899,6 +908,25 @@
   }
   tabsBox.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) { showTab(b.dataset.tab); if (b.dataset.tab === 'style' && window.__brickCentreSkin) window.__brickCentreSkin(); } });
 
+  /* mascot picker (Style tab): Random + every character, drawn from the same sprites the LCD uses */
+  const mascotBox2 = $('#mascot-pick');
+  function thumb(rows) {
+    const c = document.createElement('canvas'); c.width = c.height = 44; c.style.width = c.style.height = '44px';
+    const x = c.getContext('2d'), w = Math.max.apply(null, rows.map(r => r.length)), px = 3, ox = (44 - w * px) / 2, oy = (44 - rows.length * px) / 2;
+    x.fillStyle = '#141912'; rows.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') x.fillRect(ox + i * px, oy + j * px, px - .4, px - .4); });
+    return c;
+  }
+  [{ id: 'random', name: 'Random' }].concat(MASCOTS).forEach(m => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.mascot = m.id; b.setAttribute('aria-label', m.name); b.title = m.name;
+    if (m.id === 'random') { b.className = 'rnd'; b.textContent = '?'; } else b.appendChild(thumb(m.a));
+    mascotBox2.appendChild(b);
+  });
+  mascotBox2.addEventListener('click', e => {
+    const b = e.target.closest('button[data-mascot]'); if (!b) return;
+    mascotPref = b.dataset.mascot; store.set('mascot', mascotPref);
+    pickMascot(); renderSheet();
+  });
+
   /* haptics row (Play tab) */
   const hapBox = $('#haptic-pick');
   hapBox.addEventListener('click', e => { const b = e.target.closest('button[data-hap]'); if (b) { Haptic.set(b.dataset.hap === '1'); renderSheet(); } });
@@ -912,6 +940,7 @@
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
     skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
     hapBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.hap === '1') === Haptic.enabled)));
+    mascotBox2.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mascot === mascotPref)));
     $('#haptic-note').textContent = !Haptic.supported ? 'This device has no vibration motor.' :
       Haptic.experimental ? 'Keys and game events tick your phone. On iPhone this is experimental and only a light tick.' : 'Keys and game events buzz your phone: a light tap on the D-pad, firmer on the small keys, patterns for line clears and crashes.';
     renderLive();
@@ -930,5 +959,5 @@
   }
 
   // handy for testing / tinkering from the console
-  window.BrickConsole = { g, press, unpress, advance, render, GAMES, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
+  window.BrickConsole = { g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
 })();
