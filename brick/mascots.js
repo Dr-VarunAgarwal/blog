@@ -21,6 +21,7 @@
     robot: { head: ['....XX....', '....XX....', '.XXXXXXXX.', '.XeXXXXeX.', '.XXXXXXXX.', '.XXmmmmXX.', '.XXXXXXXX.'], deco: [[3, 6, '.'], [3, 7, '.'], [4, 6, '.'], [4, 7, '.']] },
     alien: { head: ['.X......X.', '..X....X..', '.XXXXXXXX.', 'XXXXXXXXXX', 'XXeeXXeeXX', 'XXXXXXXXXX', '.XXXmmXXX.'], deco: [[3, 6, '.'], [4, 7, '.']] },
     dog:   { head: ['.XXXXXXXX.', 'XXXXXXXXXX', 'XXeXXXXeXX', 'XX.XXXX.XX', 'XX.XmmX.XX', '.XXXXXXXX.', '..XXXXXX..'], deco: [[3, 13, 'X'], [4, 12, 'X'], [4, 13, 'X']] },
+    kid:   { head: ['.X.XXXX.X.', 'XXXXXXXXXX', 'XXXXXXXXXX', 'X..XXXX..X', 'XeeXXXXeeX', 'X.XXmmXX.X', '.XXXXXXXX.'], deco: [[3, 6, '.'], [3, 7, '.'], [4, 6, '.'], [4, 7, '.']] },
     bunny: { head: ['.XX....XX.', '.XX....XX.', '.XXXXXXXX.', 'XXeXXXXeXX', 'XXXXmmXXXX', '.XXXXXXXX.', '..XXXXXX..'], deco: [[5, 12, 'X'], [5, 13, 'X'], [6, 12, 'X'], [6, 13, 'X']] }
   };
 
@@ -57,6 +58,7 @@
     fromHead('alien', 'Alien'),
     fromHead('dog', 'Pup'),
     fromHead('bunny', 'Bunny'),
+    fromHead('kid', 'Kid'),
     { id: 'butterfly', name: 'Butterfly', a: BUTTERFLY.a, b: BUTTERFLY.b, idle: BUTTERFLY.idle, over: flipV(BUTTERFLY.idle) }
   ];
 })();

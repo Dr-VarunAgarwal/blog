@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '15';
+  const BUILD = '16';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -568,13 +568,23 @@
 
     // status icons
     const pauseOn = boot || (state === PAUSE && blink);
-    ctx.fillStyle = pauseOn ? P.ink : P.ghost;
-    ctx.fillRect(154, 207, 3, 9); ctx.fillRect(159.5, 207, 3, 9);
-    label('PAUSE', 166, 215, pauseOn ? P.ink : P.ghost, 7.5, 'left');
+    drawCoffee(154, 201, pauseOn ? P.ink : P.ghost);
+    label('PAUSE', 173, 215, pauseOn ? P.ink : P.ghost, 7.5, 'left');
     label('GAME OVER', PCX, 240, (boot || (state === OVER && slow)) ? P.ink : P.ghost, 9);
     drawSpeaker(231, 211, boot || Sound.enabled ? P.ink : P.ghost);
     if (msg && !boot && clock < msg.until) { if (((clock / 220) | 0) % 2 === 0 || msg.until - clock > 1500) label(msg.text, PCX, 254, P.ink, 8.5); }
     ctx.restore();
+  }
+  // the little steaming coffee cup that means "paused" (take a break)
+  function drawCoffee(x, y, col) {
+    ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+    [[4, 0], [8, 1]].forEach(([dx, d]) => {                                   // two wisps of steam
+      ctx.beginPath(); ctx.moveTo(x + dx, y + 6); ctx.bezierCurveTo(x + dx - 2 + d, y + 4, x + dx + 2 - d, y + 2.5, x + dx, y); ctx.stroke();
+    });
+    ctx.beginPath(); ctx.moveTo(x + 1, y + 7.5); ctx.lineTo(x + 12, y + 7.5); ctx.lineTo(x + 11, y + 12); ctx.quadraticCurveTo(x + 10.5, y + 13.5, x + 9, y + 13.5);
+    ctx.lineTo(x + 4, y + 13.5); ctx.quadraticCurveTo(x + 2.5, y + 13.5, x + 2, y + 12); ctx.closePath(); ctx.fill();            // cup
+    ctx.beginPath(); ctx.arc(x + 12.2, y + 9.8, 2.2, -1.2, 1.5); ctx.stroke();                                                    // handle
+    ctx.fillRect(x - 1, y + 14.2, 16, 1.3);                                                                                        // saucer
   }
   function drawSpeaker(x, y, col) {
     ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 1.3;
