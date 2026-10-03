@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '30';
+  const BUILD = '31';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -495,6 +495,24 @@
   let palIdx = store.get('pal', 0) % PALETTES.length;
 
   const cv = $('#lcd'), ctx = cv.getContext('2d');
+  const afterglow = new Float32Array(N); let ghostT = 0;
+  const parallax = { x: 0, y: 0, tx: 0, ty: 0, sx: 9 };                    // -1..1: tilt of the phone (or where the pointer is) -> shadow offset and glare
+  (function tiltSetup() {
+    const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still) return;
+    const clamp = v => Math.max(-1, Math.min(1, v));
+    let tilted = 0;
+    const onTilt = e => { if (e.gamma == null) return; tilted = performance.now(); parallax.tx = clamp(e.gamma / 30); parallax.ty = clamp((e.beta - 50) / 30); };
+    window.addEventListener('deviceorientation', onTilt);
+    window.addEventListener('pointermove', e => {                    // desktop / no sensor: follow the pointer
+      if (performance.now() - tilted < 1500) return;
+      parallax.tx = clamp((e.clientX / innerWidth - .5) * 2); parallax.ty = clamp((e.clientY / innerHeight - .5) * 2);
+    }, { passive: true });
+    window.addEventListener('pointerdown', function ask() {          // iOS wants a tap before it shares the motion sensors
+      window.removeEventListener('pointerdown', ask);
+      try { if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') DeviceOrientationEvent.requestPermission().catch(() => {}); } catch (_) { /* ignore */ }
+    }, { passive: true });
+  })();
 
   /* ---- press the glass: a real LCD smears dark under a finger, with rainbow fringes where the liquid is squeezed out ---- */
   (function pressureMarks() {
@@ -641,8 +659,17 @@
     if (textHome) drawHome(P, CW, CH);
     else {
       const isOn = i => f[i] === 1 || (f[i] === 2 && blink);
-      for (let i = 0; i < N; i++) if (!isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ghost);
-      ctx.save(); ctx.translate(1.1, 1.1);
+      const gdt = Math.max(0, Math.min(clock - ghostT, 100)); ghostT = clock;
+      for (let i = 0; i < N; i++) {                                            // slow liquid crystal: a cell that just switched off fades instead of vanishing
+        if (isOn(i)) afterglow[i] = 1;
+        else {
+          if (afterglow[i] > 0) afterglow[i] = Math.max(0, afterglow[i] - gdt / 240);
+          const x = FX0 + (i % W) * CW, y = FY0 + ((i / W) | 0) * CH;
+          cell(x, y, CW, CH, P.ghost);
+          if (afterglow[i] > 0.02) { ctx.globalAlpha = afterglow[i] * afterglow[i] * 0.34; cell(x, y, CW, CH, P.ink); ctx.globalAlpha = 1; }
+        }
+      }
+      ctx.save(); ctx.translate(1.1 + parallax.x * 1.5, 1.1 + parallax.y * 1.5);       // the glass sits above the pixels, so the shadow slides as you tilt
       for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, 'rgba(0,0,0,.14)');
       ctx.restore();
       for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ink);
@@ -889,6 +916,8 @@
     const dt = Math.min(now - last, 100);
     last = now;
     advance(dt);
+    parallax.x += (parallax.tx - parallax.x) * Math.min(1, dt / 160); parallax.y += (parallax.ty - parallax.y) * Math.min(1, dt / 160);
+    if (Math.abs(parallax.x - parallax.sx) > .004) { parallax.sx = parallax.x; cv.parentElement.style.setProperty('--tx', parallax.x.toFixed(3)); }   // moves the glare across the glass
     render();
     requestAnimationFrame(frame);
   }

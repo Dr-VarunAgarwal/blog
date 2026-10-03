@@ -8,7 +8,7 @@
   /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
-  --build: "30";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "31";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -83,6 +83,7 @@ html[data-shell="clear"][data-layout="c"] body, html[data-shell="clear"][data-la
 .lcd-frame { position: absolute; background: #2b2c30; box-shadow: inset 0 0 0 2px #18191b; }
 .lcd-screen { position: relative; background: var(--lcd-bg); box-shadow: 0 0 0 2px #18191b; overflow: hidden; }
 :is(#lcd, .lcdc) { display: block; }
+.lcd-screen::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(112deg, transparent calc(24% + var(--tx, 0) * 20%), rgba(255,255,255,.11) calc(40% + var(--tx, 0) * 20%), rgba(255,255,255,.03) calc(52% + var(--tx, 0) * 20%), transparent calc(62% + var(--tx, 0) * 20%)); }
 .lcd-press { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: multiply; }
 body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%, #777); }
 
