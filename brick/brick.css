@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "7";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "8";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -28,7 +28,7 @@ body {
 }
 #stage { position: fixed; inset: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 
-#device {
+:is(#device, .pvdev) {
   position: absolute; left: 50%; top: 50%;
   width: 360px; height: 760px;
   transform: translate(-50%, -50%);
@@ -43,7 +43,7 @@ body {
     inset 0 -5px 0 rgba(0, 0, 0, .2);
   touch-action: none;
 }
-#device * { touch-action: none; }
+:is(#device, .pvdev) * { touch-action: none; }
 
 /* corner controls live on the shell and scale with it: small outlined round icon buttons */
 .corner {
@@ -61,16 +61,16 @@ body {
 /* ---------- parts shared by both layouts ---------- */
 .lcd-frame { position: absolute; background: #2b2c30; box-shadow: inset 0 0 0 2px #18191b; }
 .lcd-screen { position: relative; background: var(--lcd-bg); box-shadow: 0 0 0 2px #18191b; overflow: hidden; }
-#lcd { display: block; }
+:is(#lcd, .lcdc) { display: block; }
 body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%, #777); }
 
 /* keys: flat disc, darker rim, hard side underneath */
-.fn i, #dpad .key, .rot {
+.fn i, :is(#dpad, .dpad) .key, .rot {
   background: var(--key);
   box-shadow: inset 0 0 0 2px var(--key-rim), 0 3px 0 var(--key-side);
   transition: transform .04s, box-shadow .04s;
 }
-.fn.pressed i, #dpad .key.pressed, .rot.pressed {
+.fn.pressed i, :is(#dpad, .dpad) .key.pressed, .rot.pressed {
   transform: translateY(3px);
   box-shadow: inset 0 0 0 2px var(--key-rim), 0 0 0 var(--key-side);
 }
@@ -79,9 +79,9 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 .fn span { position: absolute; left: 50%; transform: translateX(-50%); font: 700 11px/1 Arial, sans-serif; letter-spacing: -.2px; white-space: nowrap; }
 .fn i { position: absolute; left: 50%; border-radius: 50%; }
 
-#dpad { position: absolute; }
-#dpad .key { position: absolute; pointer-events: none; }
-#dpad .cross, #dpad .compass, #dpad .dlab { position: absolute; pointer-events: none; }
+:is(#dpad, .dpad) { position: absolute; }
+:is(#dpad, .dpad) .key { position: absolute; pointer-events: none; }
+:is(#dpad, .dpad) .cross, :is(#dpad, .dpad) .compass, :is(#dpad, .dpad) .dlab { position: absolute; pointer-events: none; }
 .rot { position: absolute; border: 0; padding: 0; cursor: pointer; border-radius: 50%; }
 .mascot, .cat, .swoosh, .grip, .rotlab { position: absolute; pointer-events: none; }
 .brand, .nine { position: absolute; pointer-events: none; }
@@ -93,21 +93,21 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
   position: absolute; background: var(--decal);
   clip-path: polygon(58% 0%, 0% 56%, 40% 56%, 18% 100%, 100% 34%, 58% 34%);
 }
-#device[data-layout="a"] .bolt { top: 74px; width: 26px; height: 138px; }
+:is(#device, .pvdev)[data-layout="a"] .bolt { top: 74px; width: 26px; height: 138px; }
 .bolt.l { left: 12px; }
 .bolt.r { right: 12px; transform: scaleX(-1); }
 
-#device[data-layout="a"] .lcd-frame { left: 41px; top: 26px; width: 278px; height: 280px; padding: 9px; border-radius: 10px; }
-#device[data-layout="a"] .lcd-screen { width: 260px; height: 262px; border-radius: 2px; }
-#device[data-layout="a"] #lcd { width: 250px; height: 260px; margin: 1px 5px; }
+:is(#device, .pvdev)[data-layout="a"] .lcd-frame { left: 41px; top: 26px; width: 278px; height: 280px; padding: 9px; border-radius: 10px; }
+:is(#device, .pvdev)[data-layout="a"] .lcd-screen { width: 260px; height: 262px; border-radius: 2px; }
+:is(#device, .pvdev)[data-layout="a"] :is(#lcd, .lcdc) { width: 250px; height: 260px; margin: 1px 5px; }
 
-#label {
+:is(#label, .lbl) {
   position: absolute; left: 0; right: 0; text-align: center; cursor: pointer;
   font: 400 31px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", "Roboto Condensed", sans-serif;
   font-stretch: condensed; letter-spacing: 1.5px; color: var(--ink);
 }
-#label.named { color: var(--key); }
-#device[data-layout="a"] #label { top: 314px; }
+:is(#label, .lbl).named { color: var(--key); }
+:is(#device, .pvdev)[data-layout="a"] :is(#label, .lbl) { top: 314px; }
 
 .shoulder {
   position: absolute; left: 0; right: 0; top: 356px; height: 48px;
@@ -118,119 +118,119 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 
 /* ---- shared control geometry (layouts a, c, d), proportions taken from the blue "Super" reference ----
  * --cy is where the control block starts; everything is placed relative to it. */
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) { --cy: 428px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) { --cy: 428px; }
 
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn { top: calc(var(--cy) - 1px); width: 56px; height: 62px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="power"] { left: 128px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"]    { left: 178px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sound"] { left: 228px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="reset"] { left: 278px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn i { top: 0; width: 26px; height: 26px; margin-left: -13px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn span { top: 30px; font-size: 10.5px; }
-#device:is([data-layout="c"], [data-layout="d"]) .fn[data-l2]::after {
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn { top: calc(var(--cy) - 1px); width: 56px; height: 62px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="power"] { left: 128px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"]    { left: 178px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sound"] { left: 228px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="reset"] { left: 278px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn i { top: 0; width: 26px; height: 26px; margin-left: -13px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn span { top: 30px; font-size: 10.5px; }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) .fn[data-l2]::after {
   content: attr(data-l2); position: absolute; left: 50%; top: 42px; transform: translateX(-50%);
   font: 700 10.5px/1 Arial, sans-serif; letter-spacing: -.2px; white-space: nowrap; color: var(--alt);
 }
 
 /* D-pad: four round keys on a wide diamond with real gaps (centres 56px from the middle) */
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad { left: 0; top: var(--cy); width: 201px; height: 193px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .key { width: 56px; height: 56px; border-radius: 50%; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .key.up    { left: 72px;  top: 13px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .key.left  { left: 15px;  top: 67px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .key.right { left: 129px; top: 67px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .key.down  { left: 72px;  top: 124px; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .compass { left: 82px; top: 78px; width: 36px; height: 36px; fill: var(--ink); opacity: .85; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .cross,
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad .dlab { display: none; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) { left: 0; top: var(--cy); width: 201px; height: 193px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key { width: 56px; height: 56px; border-radius: 50%; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key.up    { left: 72px;  top: 13px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key.left  { left: 15px;  top: 67px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key.right { left: 129px; top: 67px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key.down  { left: 72px;  top: 124px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .compass { left: 82px; top: 78px; width: 36px; height: 36px; fill: var(--ink); opacity: .85; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .cross,
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .dlab { display: none; }
 
 /* ROTATE: the big key, label underneath (no arrow) */
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rot:not(.rot2) { left: 247px; top: calc(var(--cy) + 57px); width: 95px; height: 95px; box-shadow: inset 0 0 0 3px var(--key-rim), 0 4px 0 var(--key-side); }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rot.pressed { box-shadow: inset 0 0 0 3px var(--key-rim), 0 0 0 var(--key-side); }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rot2 { display: none; }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rotlab { left: 234px; top: calc(var(--cy) + 161px); width: 121px; text-align: center; font: 700 11px/1.15 Arial, sans-serif; color: var(--ink); }
-#device:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rotlab b { display: block; font-weight: 700; color: var(--alt); }
-#device[data-layout="a"] .rotlab b, #device[data-layout="b"] .rotlab b { display: none; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rot:not(.rot2) { left: 247px; top: calc(var(--cy) + 57px); width: 95px; height: 95px; box-shadow: inset 0 0 0 3px var(--key-rim), 0 4px 0 var(--key-side); }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rot.pressed { box-shadow: inset 0 0 0 3px var(--key-rim), 0 0 0 var(--key-side); }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rot2 { display: none; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rotlab { left: 234px; top: calc(var(--cy) + 161px); width: 121px; text-align: center; font: 700 11px/1.15 Arial, sans-serif; color: var(--ink); }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .rotlab b { display: block; font-weight: 700; color: var(--alt); }
+:is(#device, .pvdev)[data-layout="a"] .rotlab b, :is(#device, .pvdev)[data-layout="b"] .rotlab b { display: none; }
 
-#device[data-layout="a"] .mascot { left: 18px; top: 666px; width: 60px; height: 72px; color: var(--ink); }
-#device[data-layout="a"] .brand {
+:is(#device, .pvdev)[data-layout="a"] .mascot { left: 18px; top: 666px; width: 60px; height: 72px; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="a"] .brand {
   left: 108px; top: 670px; transform: rotate(-9deg); transform-origin: 0 100%;
   font: 400 31px/.86 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: 1px; color: var(--ink);
   display: flex; flex-direction: column;
 }
-#device[data-layout="a"] .brand span:last-child { margin-left: 34px; }
-#device[data-layout="a"] .nine { right: 26px; top: 718px; font: 400 20px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: .5px; color: var(--ink); }
-#device[data-layout="a"] .swoosh { left: 100px; top: 710px; width: 160px; height: 40px; color: var(--ink); }
-#device[data-layout="a"] .cat, #device[data-layout="a"] .grip { display: none; }
+:is(#device, .pvdev)[data-layout="a"] .brand span:last-child { margin-left: 34px; }
+:is(#device, .pvdev)[data-layout="a"] .nine { right: 26px; top: 718px; font: 400 20px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: .5px; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="a"] .swoosh { left: 100px; top: 710px; width: 160px; height: 40px; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="a"] .cat, :is(#device, .pvdev)[data-layout="a"] .grip { display: none; }
 
 /* =====================================================================
  * LAYOUT B — "kitty": big screen, one-piece cross D-pad, pill S/P + SOUND, two round action keys
  * ===================================================================== */
-#device[data-layout="b"] { border-radius: 30px 30px 104px 34px; }
-#device[data-layout="b"] .bolt { top: 92px; width: 17px; height: 96px; }
-#device[data-layout="b"] .bolt.l { left: 5px; }
-#device[data-layout="b"] .bolt.r { right: 5px; }
-#device[data-layout="b"] .shoulder { display: none; }
+:is(#device, .pvdev)[data-layout="b"] { border-radius: 30px 30px 104px 34px; }
+:is(#device, .pvdev)[data-layout="b"] .bolt { top: 92px; width: 17px; height: 96px; }
+:is(#device, .pvdev)[data-layout="b"] .bolt.l { left: 5px; }
+:is(#device, .pvdev)[data-layout="b"] .bolt.r { right: 5px; }
+:is(#device, .pvdev)[data-layout="b"] .shoulder { display: none; }
 
-#device[data-layout="b"] .lcd-frame { left: 26px; top: 28px; width: 308px; height: 320px; padding: 9px; border-radius: 12px; background: #62656b; box-shadow: inset 0 0 0 3px #2b2d31; }
-#device[data-layout="b"] .lcd-screen { width: 290px; height: 302px; border-radius: 2px; }
-#device[data-layout="b"] #lcd { width: 290px; height: 302px; margin: 0; }
-#device[data-layout="b"] #label { top: 352px; font: 700 10px/1 Arial, sans-serif; letter-spacing: .14em; opacity: 0; }
-#device[data-layout="b"] #label.named { opacity: .85; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="b"] .lcd-frame { left: 26px; top: 28px; width: 308px; height: 320px; padding: 9px; border-radius: 12px; background: #62656b; box-shadow: inset 0 0 0 3px #2b2d31; }
+:is(#device, .pvdev)[data-layout="b"] .lcd-screen { width: 290px; height: 302px; border-radius: 2px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#lcd, .lcdc) { width: 290px; height: 302px; margin: 0; }
+:is(#device, .pvdev)[data-layout="b"] :is(#label, .lbl) { top: 352px; font: 700 10px/1 Arial, sans-serif; letter-spacing: .14em; opacity: 0; }
+:is(#device, .pvdev)[data-layout="b"] :is(#label, .lbl).named { opacity: .85; color: var(--ink); }
 
-#device[data-layout="b"] .fn { width: 56px; }
-#device[data-layout="b"] .fn span { font-size: 8px; top: 0; }
-#device[data-layout="b"] .fn[data-btn="power"],
-#device[data-layout="b"] .fn[data-btn="reset"] { top: 372px; height: 56px; }
-#device[data-layout="b"] .fn[data-btn="power"] { left: 160px; }
-#device[data-layout="b"] .fn[data-btn="reset"] { left: 218px; }
-#device[data-layout="b"] .fn[data-btn="power"] i,
-#device[data-layout="b"] .fn[data-btn="reset"] i { top: 16px; width: 30px; height: 30px; margin-left: -15px; }
-#device[data-layout="b"] .fn[data-btn="sp"],
-#device[data-layout="b"] .fn[data-btn="sound"] { top: 440px; height: 100px; }
-#device[data-layout="b"] .fn[data-btn="sp"] { left: 160px; }
-#device[data-layout="b"] .fn[data-btn="sound"] { left: 218px; }
-#device[data-layout="b"] .fn[data-btn="sp"] i,
-#device[data-layout="b"] .fn[data-btn="sound"] i { top: 8px; width: 24px; height: 66px; margin-left: -12px; border-radius: 12px; transform: rotate(12deg); }
-#device[data-layout="b"] .fn[data-btn="sp"] span,
-#device[data-layout="b"] .fn[data-btn="sound"] span { top: 86px; }
-#device[data-layout="b"] .fn[data-btn="sp"].pressed i,
-#device[data-layout="b"] .fn[data-btn="sound"].pressed i { transform: rotate(12deg) translateY(3px); }
+:is(#device, .pvdev)[data-layout="b"] .fn { width: 56px; }
+:is(#device, .pvdev)[data-layout="b"] .fn span { font-size: 8px; top: 0; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="power"],
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="reset"] { top: 372px; height: 56px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="power"] { left: 160px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="reset"] { left: 218px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="power"] i,
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="reset"] i { top: 16px; width: 30px; height: 30px; margin-left: -15px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sp"],
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sound"] { top: 440px; height: 100px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sp"] { left: 160px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sound"] { left: 218px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sp"] i,
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sound"] i { top: 8px; width: 24px; height: 66px; margin-left: -12px; border-radius: 12px; transform: rotate(12deg); }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sp"] span,
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sound"] span { top: 86px; }
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sp"].pressed i,
+:is(#device, .pvdev)[data-layout="b"] .fn[data-btn="sound"].pressed i { transform: rotate(12deg) translateY(3px); }
 
 /* one-piece cross; four transparent keys sit on its arms purely to show presses */
-#device[data-layout="b"] #dpad { left: 8px; top: 380px; width: 150px; height: 150px; }
-#device[data-layout="b"] #dpad .cross { position: absolute; left: 17px; top: 14px; width: 116px; height: 116px; filter: drop-shadow(0 3px 0 var(--key-side)); }
-#device[data-layout="b"] #dpad .cross-body { fill: var(--key); stroke: var(--key-rim); stroke-width: 2.4; }
-#device[data-layout="b"] #dpad .cross-dimple { fill: var(--key-rim); opacity: .55; }
-#device[data-layout="b"] #dpad .compass { display: none; }
-#device[data-layout="b"] #dpad .key { background: transparent; box-shadow: none; border-radius: 6px; transition: none; }
-#device[data-layout="b"] #dpad .key.pressed { transform: none; background: rgba(0, 0, 0, .2); }
-#device[data-layout="b"] #dpad .key.up    { left: 55px; top: 19px; width: 40px; height: 33px; }
-#device[data-layout="b"] #dpad .key.down  { left: 55px; top: 85px; width: 40px; height: 33px; }
-#device[data-layout="b"] #dpad .key.left  { left: 22px; top: 52px; width: 33px; height: 40px; }
-#device[data-layout="b"] #dpad .key.right { left: 88px; top: 52px; width: 33px; height: 40px; }
-#device[data-layout="b"] #dpad .dlab { position: absolute; font: 700 7.5px/1 Arial, sans-serif; color: var(--ink); letter-spacing: .02em; }
-#device[data-layout="b"] #dpad .dlab.u { left: 50%; top: 2px; transform: translateX(-50%); }
-#device[data-layout="b"] #dpad .dlab.d { left: 50%; bottom: 3px; transform: translateX(-50%); }
-#device[data-layout="b"] #dpad .dlab.l { left: 0; top: 98px; }
-#device[data-layout="b"] #dpad .dlab.r { right: 0; top: 98px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) { left: 8px; top: 380px; width: 150px; height: 150px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .cross { position: absolute; left: 17px; top: 14px; width: 116px; height: 116px; filter: drop-shadow(0 3px 0 var(--key-side)); }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .cross-body { fill: var(--key); stroke: var(--key-rim); stroke-width: 2.4; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .cross-dimple { fill: var(--key-rim); opacity: .55; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .compass { display: none; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .key { background: transparent; box-shadow: none; border-radius: 6px; transition: none; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .key.pressed { transform: none; background: rgba(0, 0, 0, .2); }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .key.up    { left: 55px; top: 19px; width: 40px; height: 33px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .key.down  { left: 55px; top: 85px; width: 40px; height: 33px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .key.left  { left: 22px; top: 52px; width: 33px; height: 40px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .key.right { left: 88px; top: 52px; width: 33px; height: 40px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .dlab { position: absolute; font: 700 7.5px/1 Arial, sans-serif; color: var(--ink); letter-spacing: .02em; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .dlab.u { left: 50%; top: 2px; transform: translateX(-50%); }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .dlab.d { left: 50%; bottom: 3px; transform: translateX(-50%); }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .dlab.l { left: 0; top: 98px; }
+:is(#device, .pvdev)[data-layout="b"] :is(#dpad, .dpad) .dlab.r { right: 0; top: 98px; }
 
-#device[data-layout="b"] .rot { box-shadow: inset 0 0 0 2.5px var(--key-rim), 0 4px 0 var(--key-side); }
-#device[data-layout="b"] .rot.pressed { box-shadow: inset 0 0 0 2.5px var(--key-rim), 0 0 0 var(--key-side); }
-#device[data-layout="b"] .rot:not(.rot2) { left: 272px; top: 372px; width: 58px; height: 58px; }
-#device[data-layout="b"] .rot2 { left: 276px; top: 450px; width: 52px; height: 52px; }
-#device[data-layout="b"] .rotlab { left: 337px; top: 392px; writing-mode: vertical-rl; font: 700 8px/1 Arial, sans-serif; letter-spacing: .12em; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="b"] .rot { box-shadow: inset 0 0 0 2.5px var(--key-rim), 0 4px 0 var(--key-side); }
+:is(#device, .pvdev)[data-layout="b"] .rot.pressed { box-shadow: inset 0 0 0 2.5px var(--key-rim), 0 0 0 var(--key-side); }
+:is(#device, .pvdev)[data-layout="b"] .rot:not(.rot2) { left: 272px; top: 372px; width: 58px; height: 58px; }
+:is(#device, .pvdev)[data-layout="b"] .rot2 { left: 276px; top: 450px; width: 52px; height: 52px; }
+:is(#device, .pvdev)[data-layout="b"] .rotlab { left: 337px; top: 392px; writing-mode: vertical-rl; font: 700 8px/1 Arial, sans-serif; letter-spacing: .12em; color: var(--ink); }
 
-#device[data-layout="b"] .mascot, #device[data-layout="b"] .swoosh { display: none; }
-#device[data-layout="b"] .cat { left: 20px; top: 556px; width: 124px; height: 134px; color: var(--decal); }
-#device[data-layout="b"] .cat .eye { fill: var(--ink); stroke: none; }
-#device[data-layout="b"] .brand {
+:is(#device, .pvdev)[data-layout="b"] .mascot, :is(#device, .pvdev)[data-layout="b"] .swoosh { display: none; }
+:is(#device, .pvdev)[data-layout="b"] .cat { left: 20px; top: 556px; width: 124px; height: 134px; color: var(--decal); }
+:is(#device, .pvdev)[data-layout="b"] .cat .eye { fill: var(--ink); stroke: none; }
+:is(#device, .pvdev)[data-layout="b"] .brand {
   left: 158px; top: 600px; transform: rotate(-13deg); transform-origin: 0 100%;
   font: italic 900 43px/.82 "Arial Black", Impact, "Haettenschweiler", sans-serif; letter-spacing: -.5px; color: var(--ink);
   display: flex; flex-direction: column;
 }
-#device[data-layout="b"] .brand span:last-child { margin-left: 26px; }
-#device[data-layout="b"] .nine { left: 176px; top: 698px; transform: rotate(-13deg); transform-origin: 0 100%; font: italic 900 14px/1 "Arial Black", Impact, sans-serif; color: var(--ink); }
-#device[data-layout="b"] .grip { left: 290px; top: 648px; width: 52px; height: 44px; stroke: var(--body-lo); }
+:is(#device, .pvdev)[data-layout="b"] .brand span:last-child { margin-left: 26px; }
+:is(#device, .pvdev)[data-layout="b"] .nine { left: 176px; top: 698px; transform: rotate(-13deg); transform-origin: 0 100%; font: italic 900 14px/1 "Arial Black", Impact, sans-serif; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="b"] .grip { left: 290px; top: 648px; width: 52px; height: 44px; stroke: var(--body-lo); }
 
 /* =====================================================================
  * LAYOUT C — "super": full-bleed illustrated blue unit (button sizes and labels from the reference)
@@ -238,84 +238,84 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
  * Both fill the page with the body colour, so there is no shell edge.
  * ===================================================================== */
 html[data-layout="c"] body, html[data-layout="d"] body { background: var(--body); }
-#device:is([data-layout="c"], [data-layout="d"]) { border-radius: 0; box-shadow: none; }
-#device:is([data-layout="c"], [data-layout="d"]) :is(.bolt, .shoulder, .mascot, .cat, .swoosh, .grip, .nine) { display: none; }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) { border-radius: 0; box-shadow: none; }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(.bolt, .shoulder, .mascot, .cat, .swoosh, .grip, .nine) { display: none; }
 
 /* labelled keys: line 1 in ink, line 2 in the accent colour */
-#device:is([data-layout="c"], [data-layout="d"]) #dpad .key::before,
-#device:is([data-layout="c"], [data-layout="d"]) #dpad .key::after {
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key::before,
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key::after {
   position: absolute; left: 50%; transform: translateX(-50%); font: 700 11px/1 Arial, sans-serif; white-space: nowrap; pointer-events: none;
 }
-#device:is([data-layout="c"], [data-layout="d"]) #dpad .key::before { content: attr(data-l1); color: var(--ink); top: calc(100% + 7px); }
-#device:is([data-layout="c"], [data-layout="d"]) #dpad .key::after  { content: attr(data-l2); color: var(--alt); top: calc(100% + 19px); }
-#device:is([data-layout="c"], [data-layout="d"]) #dpad .key.up::before { top: auto; bottom: calc(100% + 4px); }
-#device:is([data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"] span { visibility: hidden; }
-#device:is([data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"]::before {
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key::before { content: attr(data-l1); color: var(--ink); top: calc(100% + 7px); }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key::after  { content: attr(data-l2); color: var(--alt); top: calc(100% + 19px); }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) .key.up::before { top: auto; bottom: calc(100% + 4px); }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"] span { visibility: hidden; }
+:is(#device, .pvdev):is([data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"]::before {
   content: "START"; position: absolute; left: 50%; top: 30px; transform: translateX(-50%); font: 700 10.5px/1 Arial, sans-serif; letter-spacing: -.2px; color: var(--ink);
 }
 
 /* C: outlined screen frame with the title in its top edge, tetromino decals down both sides */
-#device[data-layout="c"] { height: 600px; --cy: 362px; }
-#device[data-layout="c"] .sframe { left: 50px; top: 30px; width: 260px; height: 312px; border: 2.5px solid var(--ink); }
-#device[data-layout="c"] .decals { display: block; width: 36px; height: 312px; top: 30px; color: var(--ink); }
-#device[data-layout="c"] .decals.dl { left: 8px; }
-#device[data-layout="c"] .decals.dr { right: 8px; }
-#device[data-layout="c"] .lcd-frame { left: 64px; top: 46px; width: 232px; height: 281px; padding: 8px; background: var(--body); border-radius: 0; box-shadow: inset 7px 7px 0 var(--body-lo), inset -7px -7px 0 var(--body-hi); }
-#device[data-layout="c"] .lcd-screen { width: 216px; height: 265px; border-radius: 0; box-shadow: none; }
-#device[data-layout="c"] #lcd { width: 216px; height: 265px; margin: 0; }
-#device[data-layout="c"] #label { left: 50%; right: auto; top: 20px; transform: translateX(-50%); padding: 0 10px; background: var(--body); font: 900 24px/1 "Arial Black", Impact, sans-serif; letter-spacing: .5px; color: var(--ink); }
-#device[data-layout="c"] #label.named { color: var(--alt); font-size: 20px; top: 22px; }
-#device[data-layout="c"] .brand {
+:is(#device, .pvdev)[data-layout="c"] { height: 600px; --cy: 362px; }
+:is(#device, .pvdev)[data-layout="c"] .sframe { left: 50px; top: 30px; width: 260px; height: 312px; border: 2.5px solid var(--ink); }
+:is(#device, .pvdev)[data-layout="c"] .decals { display: block; width: 36px; height: 312px; top: 30px; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="c"] .decals.dl { left: 8px; }
+:is(#device, .pvdev)[data-layout="c"] .decals.dr { right: 8px; }
+:is(#device, .pvdev)[data-layout="c"] .lcd-frame { left: 64px; top: 46px; width: 232px; height: 281px; padding: 8px; background: var(--body); border-radius: 0; box-shadow: inset 7px 7px 0 var(--body-lo), inset -7px -7px 0 var(--body-hi); }
+:is(#device, .pvdev)[data-layout="c"] .lcd-screen { width: 216px; height: 265px; border-radius: 0; box-shadow: none; }
+:is(#device, .pvdev)[data-layout="c"] :is(#lcd, .lcdc) { width: 216px; height: 265px; margin: 0; }
+:is(#device, .pvdev)[data-layout="c"] :is(#label, .lbl) { left: 50%; right: auto; top: 20px; transform: translateX(-50%); padding: 0 10px; background: var(--body); font: 900 24px/1 "Arial Black", Impact, sans-serif; letter-spacing: .5px; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="c"] :is(#label, .lbl).named { color: var(--alt); font-size: 20px; top: 22px; }
+:is(#device, .pvdev)[data-layout="c"] .brand {
   left: 146px; top: calc(var(--cy) + 160px); transform: rotate(-26deg); transform-origin: 50% 50%;
   font: 900 22px/.86 "Arial Black", Impact, sans-serif; letter-spacing: 0; color: transparent; -webkit-text-stroke: 1.2px var(--ink);
   display: flex; flex-direction: column;
 }
-#device[data-layout="c"] .brand span:last-child { margin-left: 14px; }
-#device:is([data-layout="a"], [data-layout="b"], [data-layout="d"]) :is(.sframe, .decals) { display: none; }
+:is(#device, .pvdev)[data-layout="c"] .brand span:last-child { margin-left: 14px; }
+:is(#device, .pvdev):is([data-layout="a"], [data-layout="b"], [data-layout="d"]) :is(.sframe, .decals) { display: none; }
 .sframe, .decals { position: absolute; pointer-events: none; }
-#device:not([data-layout="c"]) .sframe { display: none; }
+:is(#device, .pvdev):not([data-layout="c"]) .sframe { display: none; }
 
 /* D: big LCD, nothing else on the page */
-#device[data-layout="d"] { height: 690px; --cy: 458px; }
-#device[data-layout="d"] .lcd-frame { left: 22px; top: 46px; width: 316px; height: 390px; padding: 0; background: none; box-shadow: none; border-radius: 0; }
-#device[data-layout="d"] .lcd-screen { width: 316px; height: 390px; border-radius: 6px; box-shadow: 0 0 0 3px var(--body-lo); }
-#device[data-layout="d"] #lcd { width: 316px; height: 390px; margin: 0; }
-#device[data-layout="d"] #label { top: 18px; font: 700 11px/1 Arial, sans-serif; letter-spacing: .16em; opacity: 0; }
-#device[data-layout="d"] #label.named { opacity: .9; color: var(--ink); }
-#device[data-layout="d"] .brand, #device[data-layout="d"] .nine { display: none; }
+:is(#device, .pvdev)[data-layout="d"] { height: 690px; --cy: 458px; }
+:is(#device, .pvdev)[data-layout="d"] .lcd-frame { left: 22px; top: 46px; width: 316px; height: 390px; padding: 0; background: none; box-shadow: none; border-radius: 0; }
+:is(#device, .pvdev)[data-layout="d"] .lcd-screen { width: 316px; height: 390px; border-radius: 6px; box-shadow: 0 0 0 3px var(--body-lo); }
+:is(#device, .pvdev)[data-layout="d"] :is(#lcd, .lcdc) { width: 316px; height: 390px; margin: 0; }
+:is(#device, .pvdev)[data-layout="d"] :is(#label, .lbl) { top: 18px; font: 700 11px/1 Arial, sans-serif; letter-spacing: .16em; opacity: 0; }
+:is(#device, .pvdev)[data-layout="d"] :is(#label, .lbl).named { opacity: .9; color: var(--ink); }
+:is(#device, .pvdev)[data-layout="d"] .brand, :is(#device, .pvdev)[data-layout="d"] .nine { display: none; }
 
 /* =====================================================================
  * LANDSCAPE (touch devices held sideways): D-pad | screen | ROTATE, for every layout
  * ===================================================================== */
-#device.land { width: 800px; height: 380px; border-radius: 34px; }
-html[data-layout="c"] #device.land, html[data-layout="d"] #device.land { border-radius: 0; }
-#device.land :is(.bolt, .shoulder, .mascot, .cat, .brand, .nine, .swoosh, .grip, .rot2, .dlab, .sframe, .decals) { display: none !important; }
-#device.land #label { display: none; }
+:is(#device, .pvdev).land { width: 800px; height: 380px; border-radius: 34px; }
+html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#device, .pvdev).land { border-radius: 0; }
+:is(#device, .pvdev).land :is(.bolt, .shoulder, .mascot, .cat, .brand, .nine, .swoosh, .grip, .rot2, .dlab, .sframe, .decals) { display: none !important; }
+:is(#device, .pvdev).land :is(#label, .lbl) { display: none; }
 /* the LCD frame: classic shape for a/b, tall shape for c/d */
-#device.land[data-layout] .lcd-frame { top: 12px; padding: 9px; border-radius: 10px; background: #2b2c30; box-shadow: inset 0 0 0 2px #18191b; }
-#device.land:is([data-layout="a"], [data-layout="b"]) .lcd-frame { left: 261px; width: 278px; height: 280px; }
-#device.land:is([data-layout="a"], [data-layout="b"]) .lcd-screen { width: 260px; height: 262px; }
-#device.land:is([data-layout="a"], [data-layout="b"]) #lcd { width: 250px; height: 260px; margin: 1px 5px; }
-#device.land:is([data-layout="c"], [data-layout="d"]) .lcd-frame { left: 284px; width: 232px; height: 281px; padding: 8px; border-radius: 0; background: var(--body); box-shadow: inset 7px 7px 0 var(--body-lo), inset -7px -7px 0 var(--body-hi); }
-#device.land:is([data-layout="c"], [data-layout="d"]) .lcd-screen { width: 216px; height: 265px; border-radius: 0; box-shadow: none; }
-#device.land:is([data-layout="c"], [data-layout="d"]) #lcd { width: 216px; height: 265px; margin: 0; }
+:is(#device, .pvdev).land[data-layout] .lcd-frame { top: 12px; padding: 9px; border-radius: 10px; background: #2b2c30; box-shadow: inset 0 0 0 2px #18191b; }
+:is(#device, .pvdev).land:is([data-layout="a"], [data-layout="b"]) .lcd-frame { left: 261px; width: 278px; height: 280px; }
+:is(#device, .pvdev).land:is([data-layout="a"], [data-layout="b"]) .lcd-screen { width: 260px; height: 262px; }
+:is(#device, .pvdev).land:is([data-layout="a"], [data-layout="b"]) :is(#lcd, .lcdc) { width: 250px; height: 260px; margin: 1px 5px; }
+:is(#device, .pvdev).land:is([data-layout="c"], [data-layout="d"]) .lcd-frame { left: 284px; width: 232px; height: 281px; padding: 8px; border-radius: 0; background: var(--body); box-shadow: inset 7px 7px 0 var(--body-lo), inset -7px -7px 0 var(--body-hi); }
+:is(#device, .pvdev).land:is([data-layout="c"], [data-layout="d"]) .lcd-screen { width: 216px; height: 265px; border-radius: 0; box-shadow: none; }
+:is(#device, .pvdev).land:is([data-layout="c"], [data-layout="d"]) :is(#lcd, .lcdc) { width: 216px; height: 265px; margin: 0; }
 /* small keys under the screen */
-#device.land[data-layout] .fn[data-btn] { top: 306px; width: 56px; height: 62px; }
-#device.land[data-layout] .fn[data-btn] span { top: 30px; font-size: 10.5px; }
-#device.land[data-layout] .fn[data-btn] i { top: 0; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; transform: none; }
-#device.land[data-layout] .fn[data-btn].pressed i { transform: translateY(3px); }
-#device.land[data-layout] .fn[data-btn="power"] { left: 282px; }
-#device.land[data-layout] .fn[data-btn="sp"]    { left: 342px; }
-#device.land[data-layout] .fn[data-btn="sound"] { left: 402px; }
-#device.land[data-layout] .fn[data-btn="reset"] { left: 462px; }
-#device.land:is([data-layout="c"], [data-layout="d"]) .fn[data-l2]::after { top: 42px; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn] { top: 306px; width: 56px; height: 62px; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn] span { top: 30px; font-size: 10.5px; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn] i { top: 0; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; transform: none; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn].pressed i { transform: translateY(3px); }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn="power"] { left: 282px; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn="sp"]    { left: 342px; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn="sound"] { left: 402px; }
+:is(#device, .pvdev).land[data-layout] .fn[data-btn="reset"] { left: 462px; }
+:is(#device, .pvdev).land:is([data-layout="c"], [data-layout="d"]) .fn[data-l2]::after { top: 42px; }
 /* D-pad left, ROTATE right */
-#device.land[data-layout] { --cy: 100px; }
-#device.land:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) #dpad { left: 24px; top: 80px; }
-#device.land[data-layout="b"] #dpad { left: 56px; top: 80px; width: 150px; height: 150px; }
-#device.land[data-layout] .rot:not(.rot2) { left: 650px; top: 110px; width: 95px; height: 95px; }
-#device.land[data-layout] .rotlab { left: 637px; top: 216px; }
-#device.land[data-layout="b"] .rotlab { display: none; }
+:is(#device, .pvdev).land[data-layout] { --cy: 100px; }
+:is(#device, .pvdev).land:is([data-layout="a"], [data-layout="c"], [data-layout="d"]) :is(#dpad, .dpad) { left: 24px; top: 80px; }
+:is(#device, .pvdev).land[data-layout="b"] :is(#dpad, .dpad) { left: 56px; top: 80px; width: 150px; height: 150px; }
+:is(#device, .pvdev).land[data-layout] .rot:not(.rot2) { left: 650px; top: 110px; width: 95px; height: 95px; }
+:is(#device, .pvdev).land[data-layout] .rotlab { left: 637px; top: 216px; }
+:is(#device, .pvdev).land[data-layout="b"] .rotlab { display: none; }
 
 /* =====================================================================
  * Customise / help sheet
@@ -343,7 +343,7 @@ html[data-layout="c"] #device.land, html[data-layout="d"] #device.land { border-
 #help td { padding: 4px 6px 4px 0; border-top: 1px solid #26262b; vertical-align: top; }
 #help td:first-child { color: #fff; }
 #help-close {
-  position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border: 0; background: none; color: #999;
+  z-index: 5; position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border: 0; background: none; color: #999;
   font: 300 28px/1 system-ui; cursor: pointer; border-radius: 50%;
 }
 #help-close:hover { color: #fff; }
@@ -357,16 +357,29 @@ html[data-layout="c"] #device.land, html[data-layout="d"] #device.land { border-
 #help .optl { margin-bottom: 7px; color: #8e8c84; font-size: 12px; }
 #help .fsnote { margin: 4px 0 0; font-size: 12px; color: #8e8c84; }
 
-#help .skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 10px; }
+#help .livepv {
+  position: sticky; top: -22px; z-index: 3; display: flex; justify-content: center; align-items: flex-start; gap: 14px;
+  margin: 0 -22px; padding: 34px 22px 12px; background: #17171a; border-bottom: 1px solid #26262b;
+}
+#help .livepv .cap { align-self: center; color: #8e8c84; font-size: 12px; line-height: 1.5; max-width: 150px; }
+#help .livepv .cap b { display: block; color: #fff; font-size: 14px; margin-bottom: 2px; }
+
+#help .skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
 #help .skin {
   display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px 8px;
   background: #1f1f23; border: 2px solid #2c2c32; border-radius: 12px; color: #cfcdc5; font: 600 12px/1.25 system-ui, sans-serif; cursor: pointer;
 }
-#help .skin svg { width: 40px; height: 78px; margin-bottom: 4px; }
+#help .skin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#help .skin .pv-wrap { margin-bottom: 6px; }
 #help .skin small { color: #8e8c84; font-weight: 500; font-size: 11px; }
 #help .skin[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
-#help .pv-body { fill: var(--body); stroke: var(--body-lo); stroke-width: 1; }
-#help .pv-key { fill: var(--key); }
+
+/* miniature consoles: a scaled clone of the real shell, so previews are always exactly what you'll get */
+.pv-wrap { position: relative; overflow: hidden; border-radius: 6px; pointer-events: none; flex: none; }
+#help .pv-wrap .pvdev { position: absolute; left: 0; top: 0; transform: scale(var(--pvs)); transform-origin: 0 0; box-shadow: none; }
+#help .pv-wrap canvas { display: none; }
+#help .pv-wrap .lcd-mock { display: block; width: 100%; height: 100%; }
+#help .pv-wrap .corner { display: none; }
 
 #help .swatches { display: flex; flex-wrap: wrap; gap: 9px; }
 #help .swatches button, #help .swatches label {
@@ -381,4 +394,4 @@ html[data-layout="c"] #device.land, html[data-layout="d"] #device.land { border-
 #help .seg button + button { border-left: 2px solid #2c2c32; }
 #help .seg button[aria-pressed="true"] { background: var(--accent); color: #111; }
 
-@media (prefers-reduced-motion: reduce) { .fn i, .rot, #dpad .key { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .fn i, .rot, :is(#dpad, .dpad) .key { transition: none; } }
