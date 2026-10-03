@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '27';
+  const BUILD = '28';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -194,7 +194,7 @@
   })();
 
   /* ============================ console state ============================ */
-  const OFF = 0, BOOT = 1, MENU = 2, PLAY = 3, PAUSE = 4, OVER = 5;
+  const OFF = 0, BOOT = 1, MENU = 2, PLAY = 3, PAUSE = 4, OVER = 5, HOME = 6;
   let state = OFF, clock = 0, stateT = 0;
   let sel = store.get('sel', { game: 0, speed: 1, level: 1 });
   if (!sel || typeof sel.game !== 'number' || sel.game >= GAMES.length) sel = { game: 0, speed: 1, level: 1 };
@@ -250,6 +250,34 @@
     }
     document.body.classList.toggle('is-on', state !== OFF);
   }
+  /* ---------- home: the list of games and the local leaderboard ---------- */
+  const home = { page: 'games', idleT: 0 };                      // page: 'games' | 'scores' | 'preview' (the idle robot demo)
+  let board = store.get('board', null);                          // { gameId: [{ s: score, t: when }] } best five per game, kept on this device
+  if (!board || typeof board !== 'object') {
+    board = {};
+    Object.keys(hiAll).forEach(k => { if (hiAll[k] > 0) board[k] = [{ s: hiAll[k], t: 0 }]; });
+    store.set('board', board);
+  }
+  const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const fmtDate = t => { if (!t) return '--'; const d = new Date(t); return MONTHS[d.getMonth()] + ' ' + d.getDate(); };
+  function addScore(id, score) {
+    if (!(score > 0)) return;
+    board[id] = (board[id] || []).concat([{ s: score, t: Date.now() }]).sort((a, b) => b.s - a.s).slice(0, 5);
+    store.set('board', board);
+  }
+  function toHome() {
+    Sound.stopMusic(); game = null; def = null; demo = null;
+    g.clear(); g.n.fill(0); g.score = 0; newHi = false;
+    pickMascot();
+    home.page = 'games'; home.idleT = 0;
+    setState(HOME);
+    showName();
+  }
+  function goHome() {                                            // RESET: play the home animation, then land on Home
+    Sound.stopMusic(); game = null; def = null; demo = null;
+    g.clear(); g.n.fill(0); g.score = 0; newHi = false;
+    setState(BOOT); Sound.fx('boot');
+  }
   function toMenu() {
     Sound.stopMusic(); game = null; def = null;
     g.clear(); g.n.fill(0); g.score = 0; newHi = false;
@@ -272,6 +300,7 @@
   function gameOver() {
     const k = def.id, prev = hiAll[k] || 0;
     if (g.score > prev) { hiAll[k] = g.score; store.set('hi', hiAll); newHi = g.score > 0; }
+    addScore(k, g.score);
     Sound.stopMusic(); Sound.fx('over');
     setState(OVER);
   }
@@ -290,6 +319,17 @@
   }
 
   function dispatch(btn, isRepeat) {
+    if (state === HOME) {
+      if (home.page === 'preview') { home.page = 'games'; home.idleT = 0; return; }       // any key wakes the screen
+      home.idleT = 0;
+      const n = GAMES.length;
+      if (btn === 'down') sel.game = (sel.game + 1) % n;
+      else if (btn === 'up') sel.game = (sel.game + n - 1) % n;
+      else if (btn === 'left' || btn === 'right' || btn === 'rotate') { if (isRepeat) return; home.page = home.page === 'games' ? 'scores' : 'games'; }
+      else return;
+      Sound.fx('tick'); store.set('sel', sel); showName(); emit('menu');
+      return;
+    }
     if (state === MENU) {
       if (menuMode() === 'orig') {            // as printed on the real units: LEFT level, RIGHT speed, DOWN game
         if (btn === 'left') sel.level = sel.level % 10 + 1;
@@ -329,17 +369,18 @@
       if (Sound.enabled) { Sound.fx('tick'); if (state === PLAY && game && game.music) Sound.startMusic(g.speed); }
       return;
     }
-    if (btn === 'reset') { releaseAll(); return toMenu(); }
+    if (btn === 'reset') { releaseAll(); if (state !== BOOT) goHome(); return; }
     if (btn === 'sp') {
-      if (state === MENU) startGame();
+      if (state === HOME) { if (home.page === 'preview') { home.page = 'games'; home.idleT = 0; } else { Sound.fx('click'); toMenu(); } }
+      else if (state === MENU) startGame();
       else if (state === PLAY || state === PAUSE) togglePause();
       else if (state === OVER) toMenu();
-      else if (state === BOOT) toMenu();
+      else if (state === BOOT) toHome();
       return;
     }
     if (!(btn in held) || held[btn]) return;
     held[btn] = clock || 1;
-    const cfg = state === MENU ? MENU_REP : (game && game.repeat && game.repeat[btn]);
+    const cfg = (state === MENU || state === HOME) ? MENU_REP : (game && game.repeat && game.repeat[btn]);
     nextRep[btn] = clock + (cfg ? cfg[0] : 0);
     if (state === OVER && stateT > 900) return toMenu();
     if (state === PAUSE) return;
@@ -533,33 +574,38 @@
     ctx.strokeStyle = P.ink; ctx.lineWidth = 1.4;
     ctx.strokeRect(5.7, 5.7, W * CW + 5.6, H * CH + 5.6);
 
-    // cells: ghost grid, then shadow, then ink
-    const isOn = i => f[i] === 1 || (f[i] === 2 && blink);
-    for (let i = 0; i < N; i++) if (!isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ghost);
-    ctx.save(); ctx.translate(1.1, 1.1);
-    for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, 'rgba(0,0,0,.14)');
-    ctx.restore();
-    for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ink);
+    // cells: ghost grid, then shadow, then ink (Home's list and score pages are drawn as text instead)
+    const textHome = state === HOME && home.page !== 'preview';
+    if (textHome) drawHome(P, CW, CH);
+    else {
+      const isOn = i => f[i] === 1 || (f[i] === 2 && blink);
+      for (let i = 0; i < N; i++) if (!isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ghost);
+      ctx.save(); ctx.translate(1.1, 1.1);
+      for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, 'rgba(0,0,0,.14)');
+      ctx.restore();
+      for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ink);
+    }
 
     /* ---- side panel (drawn in classic coordinates, scaled into place) ---- */
     ctx.save(); ctx.translate(PF.px, PF.py); ctx.scale(PF.ps, PF.ps); ctx.translate(-150, 0);
-    const hiVal = hiAll[GAMES[state === MENU || !def ? sel.game : GAMES.indexOf(def)].id] || 0;
-    const showScore = state === MENU ? '    ' + pad(sel.game + 1, 2, true) : pad(g.score, 6, false);
+    const idle = state === MENU || state === HOME;
+    const hiVal = hiAll[GAMES[idle || !def ? sel.game : GAMES.indexOf(def)].id] || 0;
+    const showScore = idle ? '    ' + pad(sel.game + 1, 2, true) : pad(g.score, 6, false);
     label('HI-SCORE', 154, 14, P.soft, 6.5, 'left');
     number(boot ? '888888' : (state === OVER && newHi && !slow ? '      ' : pad(hiVal, 6, false)), 176, 18, 9, 14, 2.2, 2.6, P.ink, P.ghost);
     number(boot ? '888888' : (state === OVER && !slow && g.score > 0 ? '      ' : showScore), 157.5, 40, 12.5, 24, 3.2, 2.3, P.ink, P.ghost);
-    label(state === MENU ? 'GAME' : 'SCORE', PCX, 74, P.soft, 7);
+    label(idle ? 'GAME' : 'SCORE', PCX, 74, P.soft, 7);
 
     // "next" box
     const bx = PCX - 18.4, by = 80, mw = 9.2, mh = 8.6;
     ctx.strokeStyle = P.soft; ctx.lineWidth = 1; ctx.strokeRect(bx - 2.5, by - 2.5, mw * 4 + 5, mh * 4 + 5);
     for (let i = 0; i < 16; i++) {
-      const on = boot || (state === MENU ? demoG.n : g.n)[i] === 1;
+      const on = boot || (idle ? (state === HOME && home.page !== 'preview' ? g.n : demoG.n) : g.n)[i] === 1;
       cell(bx + (i % 4) * mw, by + ((i / 4) | 0) * mh, mw, mh, on ? P.ink : P.ghost);
     }
 
     // speed / level
-    const spd = state === MENU ? sel.speed : g.speed, lvl = state === MENU ? sel.level : g.level;
+    const spd = idle ? sel.speed : g.speed, lvl = idle ? sel.level : g.level;
     number(boot ? '88' : pad(spd, 2, false), PCX - 8 - 20.4, 124, 9, 15, 2.2, 2.4, P.ink, P.ghost);
     number(boot ? '88' : pad(lvl, 2, false), PCX + 8, 124, 9, 15, 2.2, 2.4, P.ink, P.ghost);
     ctx.fillStyle = P.soft; ctx.fillRect(PCX - 3, 130.5, 6, 2);
@@ -568,8 +614,8 @@
     // mascot
     drawMascot('a', P.ghost);
     if (boot) drawMascot('a', P.ink);
-    else if (state === PLAY || state === MENU) {
-      const rate = state === MENU ? 420 : 520 - (g.speed - 1) * 38;
+    else if (state === PLAY || idle) {
+      const rate = idle ? 420 : 520 - (g.speed - 1) * 38;
       drawMascot(((clock / rate) | 0) % 2 ? 'b' : 'a', P.ink);
     } else if (state === PAUSE) drawMascot('idle', P.ink);
     else if (state === OVER) drawMascot('over', P.ink);
@@ -582,6 +628,47 @@
     drawSpeaker(231, 211, boot || Sound.enabled ? P.ink : P.ghost);
     if (!boot) drawTicker(P);
     ctx.restore();
+  }
+  /* ---------- Home: the games list and the local leaderboard, drawn as LCD text over the field ---------- */
+  function drawHome(P, CW, CH) {
+    const fx = FX0, fy = FY0, fw = W * CW, fh = H * CH, n = GAMES.length;
+    const text = (t, x, y, col, size, align) => label(t, x, y, col, size, align);
+    if (home.page === 'games') {
+      text('GAMES', fx + 4, fy + 11, P.soft, 8, 'left');
+      text(String(sel.game + 1) + '/' + n, fx + fw - 4, fy + 11, P.soft, 8, 'right');
+      ctx.fillStyle = P.soft; ctx.fillRect(fx + 2, fy + 15, fw - 4, 1);
+      const rowH = Math.min(18, (fh - 24) / Math.min(n, 12)), vis = Math.min(n, Math.floor((fh - 24) / rowH));
+      let top = Math.max(0, Math.min(n - vis, sel.game - (vis >> 1)));
+      for (let i = 0; i < vis; i++) {
+        const gi = top + i, y = fy + 20 + i * rowH, on = gi === sel.game;
+        if (on) { ctx.fillStyle = P.ink; ctx.fillRect(fx + 2, y, fw - 4, rowH - 1); }
+        const col = on ? P.bg : P.ink;
+        text(pad(gi + 1, 2, true), fx + 5, y + rowH - 5.5, col, 9.5, 'left');
+        text(GAMES[gi].name.toUpperCase(), fx + 24, y + rowH - 5.5, col, 9.5, 'left');
+        if (hiAll[GAMES[gi].id]) text('*', fx + fw - 6, y + rowH - 5, col, 9, 'right');
+      }
+      if (top > 0) text('^', fx + fw - 6, fy + 11, P.ink, 8, 'right');
+      return;
+    }
+    // scores
+    const gm = GAMES[sel.game], list = board[gm.id] || [];
+    text('SCORES', fx + 4, fy + 11, P.soft, 8, 'left');
+    text(pad(sel.game + 1, 2, true), fx + fw - 4, fy + 11, P.soft, 8, 'right');
+    ctx.fillStyle = P.soft; ctx.fillRect(fx + 2, fy + 15, fw - 4, 1);
+    text(gm.name.toUpperCase(), fx + fw / 2, fy + 36, P.ink, 11, 'center');
+    if (!list.length) {
+      text('NO SCORES YET', fx + fw / 2, fy + 100, P.ink, 10, 'center');
+      text('BE THE FIRST!', fx + fw / 2, fy + 116, P.soft, 9, 'center');
+    } else {
+      for (let i = 0; i < 5; i++) {
+        const y = fy + 70 + i * 28, e = list[i];
+        text(String(i + 1), fx + 8, y, e ? P.ink : P.ghost, 11, 'left');
+        text(e ? String(e.s) : '-', fx + 26, y, e ? P.ink : P.ghost, i === 0 ? 13 : 11, 'left');
+        if (e) text(fmtDate(e.t), fx + 26, y + 11, P.soft, 7.5, 'left');
+        if (i < 4) { ctx.fillStyle = P.ghost; ctx.fillRect(fx + 6, y + 15, fw - 12, 1); }
+      }
+    }
+    text('< GAMES >', fx + fw / 2, fy + fh - 5, P.soft, 7.5, 'center');
   }
   // the little steaming coffee cup that means "paused" (take a break)
   function drawCoffee(x, y, col) {
@@ -611,8 +698,10 @@
     let text;
     if (first && state === OVER) text = newHi ? 'NEW HIGH SCORE!' : 'GAME OVER. ONE MORE GO?';
     else if (first && state === PAUSE) text = 'PAUSED. TAKE A COFFEE.';
+    else if (first && state === HOME) text = home.page === 'preview' ? 'ANY KEY: BACK TO THE LIST' : 'UP/DOWN: PICK. S/P: GO.';
     else if (first && state === MENU) text = hi ? 'BEST ' + hi + '. BEAT IT.' : 'NO SCORE YET. BE FIRST.';
-    else if (tk.n % 3 === 1) text = hi && state === MENU ? 'BEST ' + hi + '. BEAT IT.' : TIPS_INFO[tk.info++ % TIPS_INFO.length];
+    else if (state === HOME && tk.n % 4 === 1) text = home.page === 'scores' ? 'LEFT/RIGHT: BACK TO GAMES' : 'ROTATE OR LEFT/RIGHT: SCORES';
+    else if (tk.n % 3 === 1) text = hi && (state === MENU || state === HOME) ? 'BEST ' + hi + '. BEAT IT.' : TIPS_INFO[tk.info++ % TIPS_INFO.length];
     else text = tk.n % 3 === 2 ? TIPS_INFO[tk.info++ % TIPS_INFO.length] : TIPS_FUN[tk.fun++ % TIPS_FUN.length];
     tk.n++; tk.state = state; tk.text = text; tk.start = clock;
     ctx.font = '700 8.5px "Arial Narrow", "Roboto Condensed", Arial, sans-serif';
@@ -624,7 +713,7 @@
       if (((clock / 220) | 0) % 2 === 0 || msg.until - clock > 1500) label(msg.text, PCX, 254, P.ink, 8.5);
       return;
     }
-    if (state !== MENU && state !== PAUSE && state !== OVER) return;
+    if (state !== MENU && state !== PAUSE && state !== OVER && state !== HOME) return;
     if (tk.state !== state || clock - tk.start > tk.dur || clock < tk.start) pickTicker();
     ctx.save();
     ctx.beginPath(); ctx.rect(152, 243, 96, 16); ctx.clip();
@@ -686,7 +775,7 @@
       else { const k = Math.floor((stateT - half) / (BOOT_MS - half) * n); for (let i = k; i < n; i++) view[SPIRAL[i]] = 1; }
       return view;
     }
-    if (state === MENU) {
+    if (state === MENU || (state === HOME && home.page === 'preview')) {
       if (!demo) startDemo();
       if (!demo) { view.fill(0); return view; }
       demoG.clear();
@@ -721,8 +810,13 @@
   let last = performance.now();
   function advance(dt) {
     clock += dt; stateT += dt;
-    if (state === BOOT) { if (stateT > BOOT_MS) toMenu(); }
+    if (state === BOOT) { if (stateT > BOOT_MS) toHome(); }
     else if (state === MENU) { repeats(); stepDemo(dt); }
+    else if (state === HOME) {
+      repeats();
+      if (home.page === 'preview') stepDemo(dt);
+      else { home.idleT += dt; if (home.idleT > 7000 && !Object.keys(held).some(b => held[b])) { home.page = 'preview'; demo = null; } }
+    }
     else if (state === PLAY) {
       if (startDelay > 0) startDelay -= dt;
       else { repeats(); if (game) game.update(dt); }
@@ -736,7 +830,7 @@
     requestAnimationFrame(frame);
   }
   function repeats() {
-    const menu = state === MENU;
+    const menu = state === MENU || state === HOME;
     for (const b in held) {
       if (!held[b]) continue;
       const cfg = menu ? MENU_REP : (game && game.repeat && game.repeat[b]);
@@ -1230,7 +1324,7 @@
   // handy for testing / tinkering from the console
   const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
   const api = {
-    BUILD, SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
+    BUILD, SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER, HOME },
     demoField: () => demoG.f, lcdMsg, powerOff() { clearTimeout(powerHold); powerHold = 0; if (state !== OFF) powerToggle(); }, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
     skinPreview: (i, scale) => makeConsole(SKINS[i].layout, skinColour(SKINS[i]), SKINS[i].tint, scale)
   };

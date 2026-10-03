@@ -87,10 +87,12 @@
   }
   const TOUR = [
     { target: '#device .fn[data-btn="power"] i', text: () => 'Press <b>ON/OFF</b> to switch it on.', done: () => api.state !== STATE.OFF },
-    { target: '#device #dpad .key', text: () => 'This is the title screen. Choose a game, speed and level with the D-pad.<div class="coach-keys">' + menuHelp() + '</div>', button: 'Got it' },
+    { target: '#device #dpad .key', text: () => 'This is <b>Home</b>: the list of games. <b>UP</b> / <b>DOWN</b> browse it; <b>LEFT</b> / <b>RIGHT</b> show the scores.', button: 'Got it' },
+    { target: '#device .fn[data-btn="sp"] i', text: () => 'Press <b>S/P</b> to open the highlighted game.', done: () => api.state === STATE.MENU || api.state === STATE.PLAY },
+    { target: '#device #dpad .key', text: () => 'This is the title screen. Choose speed and level with the D-pad.<div class="coach-keys">' + menuHelp() + '</div>', button: 'Got it' },
     { target: '#device .fn[data-btn="sp"] i', text: () => 'Press <b>S/P</b> (start / pause) to begin the game.', done: () => api.state === STATE.PLAY },
     { target: '#device .fn[data-btn="sp"] i', text: () => 'Press <b>S/P</b> again to pause. Once more to carry on.', done: () => api.state === STATE.PAUSE },
-    { target: '#device .fn[data-btn="reset"] i', text: () => '<b>RESET</b> takes you back to the title screen, <b>SOUND</b> mutes it. That&rsquo;s everything. Have fun!', button: 'Start playing' }
+    { target: '#device .fn[data-btn="reset"] i', text: () => '<b>RESET</b> takes you back Home, <b>SOUND</b> mutes it. That&rsquo;s everything. Have fun!', button: 'Start playing' }
   ];
   let step = -1;
 
