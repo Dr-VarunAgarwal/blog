@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '29';
+  const BUILD = '30';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -495,6 +495,64 @@
   let palIdx = store.get('pal', 0) % PALETTES.length;
 
   const cv = $('#lcd'), ctx = cv.getContext('2d');
+
+  /* ---- press the glass: a real LCD smears dark under a finger, with rainbow fringes where the liquid is squeezed out ---- */
+  (function pressureMarks() {
+    const scr = cv.parentElement, ov = document.createElement('canvas'), oc = ov.getContext('2d');
+    ov.className = 'lcd-press'; ov.setAttribute('aria-hidden', 'true'); scr.appendChild(ov);
+    const marks = [];                                            // { x, y, r, a, down, t }
+    let raf = 0, pid = null, cur = null;
+    function pos(e) {
+      const r = scr.getBoundingClientRect(), k = scr.offsetWidth / (r.width || 1);
+      return [(e.clientX - r.left) * k, (e.clientY - r.top) * k];
+    }
+    function blot(m) {
+      const R = m.r, a = m.a;
+      let gr = oc.createRadialGradient(m.x, m.y, 0, m.x, m.y, R * 1.55);        // the rainbow rim: thin-film colours around the squeezed spot
+      gr.addColorStop(0.55, 'rgba(0,0,0,0)');
+      gr.addColorStop(0.68, 'rgba(120,70,230,' + (0.34 * a) + ')');
+      gr.addColorStop(0.78, 'rgba(40,190,200,' + (0.30 * a) + ')');
+      gr.addColorStop(0.87, 'rgba(230,200,60,' + (0.26 * a) + ')');
+      gr.addColorStop(0.94, 'rgba(230,70,120,' + (0.20 * a) + ')');
+      gr.addColorStop(1, 'rgba(0,0,0,0)');
+      oc.fillStyle = gr; oc.beginPath(); oc.arc(m.x, m.y, R * 1.55, 0, 7); oc.fill();
+      gr = oc.createRadialGradient(m.x, m.y, 0, m.x, m.y, R);                   // the dark pool in the middle
+      gr.addColorStop(0, 'rgba(8,10,14,' + (0.62 * a) + ')');
+      gr.addColorStop(0.6, 'rgba(14,18,24,' + (0.40 * a) + ')');
+      gr.addColorStop(1, 'rgba(20,24,30,0)');
+      oc.fillStyle = gr; oc.beginPath(); oc.arc(m.x, m.y, R, 0, 7); oc.fill();
+    }
+    function tick(now) {
+      raf = 0;
+      if (ov.width !== scr.offsetWidth || ov.height !== scr.offsetHeight) { ov.width = scr.offsetWidth; ov.height = scr.offsetHeight; }
+      oc.clearRect(0, 0, ov.width, ov.height);
+      const base = Math.min(ov.width, ov.height) * 0.085;
+      for (let i = marks.length - 1; i >= 0; i--) {
+        const m = marks[i], dt = Math.min(now - (m.t || now), 50); m.t = now;
+        if (m.down) { m.r += (base * 1.25 - m.r) * Math.min(1, dt / 90); m.a = Math.min(1, m.a + dt / 120); }   // swells while pressed
+        else { m.a -= dt / 1700; m.r += dt * 0.012; }                                                          // then slowly relaxes
+        if (m.a <= 0) { marks.splice(i, 1); continue; }
+        blot(m);
+      }
+      if (marks.length) raf = requestAnimationFrame(tick);
+    }
+    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    scr.addEventListener('pointerdown', e => {
+      if (!scr.closest('#device') || pid !== null) return;
+      pid = e.pointerId; const [x, y] = pos(e);
+      cur = { x, y, r: Math.min(scr.offsetWidth, scr.offsetHeight) * 0.03, a: 0.05, down: true, t: 0 };
+      marks.push(cur); kick();
+    });
+    scr.addEventListener('pointermove', e => {
+      if (e.pointerId !== pid || !cur) return;
+      const [x, y] = pos(e);                                      // dragging smears the spot along, leaving a fading trail
+      if (Math.hypot(x - cur.x, y - cur.y) > 6) {
+        cur.down = false; cur = { x, y, r: cur.r, a: 0.6, down: true, t: 0 }; marks.push(cur);
+      }
+    });
+    const up = e => { if (e.pointerId !== pid) return; pid = null; if (cur) cur.down = false; cur = null; kick(); };
+    scr.addEventListener('pointerup', up); scr.addEventListener('pointercancel', up);
+  })();
   // Two LCD shapes. "classic" has wide cells and a roomy side panel; "tall" (the blue unit) has square cells and a
   // narrow panel, so the panel is drawn in the same coordinates and just scaled down (ps) into its slot (px, py).
   const PROFILES = {
