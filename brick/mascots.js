@@ -30,6 +30,13 @@
     b: ['....XXXX....', '...XXXXXX...', '...XXXXXX...', '....XXXX....', '...XXXXXX...', '..XXXXXXXX..', '..X.XXXX.X..', '..X.XXXX.X..', '....XXXX....', '....XX.XX...', '....XX.XX...', '...XXX.XXX..']
   };
 
+  // butterfly: its own sprite (wings open / wings up / folded), not the head-and-body template
+  const BUTTERFLY = {
+    a: ['....X....X....', '.....X..X.....', '......XX......', 'XXX..XXXX..XXX', 'XXXXXXXXXXXXXX', 'XX.XXXXXXXX.XX', 'XXXXXXXXXXXXXX', '.XXXX.XX.XXXX.', '..XXXXXXXXXX..', '..XXX.XX.XXX..', '...XX.XX.XX...', '....X.XX.X....'],
+    b: ['....X....X....', '.....X..X.....', '......XX......', '..XX..XX..XX..', '.XXXX.XX.XXXX.', '.XXXX.XX.XXXX.', '..XXXXXXXXXX..', '...XX.XX.XX...', '...XXXXXXXX...', '....XXXXXX....', '.....X..X.....', '......XX......'],
+    idle: ['....X....X....', '.....X..X.....', '......XX......', '.....XXXX.....', '....XXXXXX....', '....XXXXXX....', '....XXXXXX....', '.....XXXX.....', '.....XXXX.....', '......XX......', '......XX......', '......XX......']
+  };
+
   const flipV = rows => rows.slice().reverse();
 
   function compose(def, bodyKey, asleep) {
@@ -49,6 +56,7 @@
     fromHead('robot', 'Robot'),
     fromHead('alien', 'Alien'),
     fromHead('dog', 'Pup'),
-    fromHead('bunny', 'Bunny')
+    fromHead('bunny', 'Bunny'),
+    { id: 'butterfly', name: 'Butterfly', a: BUTTERFLY.a, b: BUTTERFLY.b, idle: BUTTERFLY.idle, over: flipV(BUTTERFLY.idle) }
   ];
 })();

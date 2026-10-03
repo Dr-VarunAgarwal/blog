@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=11">
+<link rel="stylesheet" href="brick.css?v=12">
 </head>
 <body>
 <!--
@@ -125,26 +125,30 @@
 
       <div class="panes">
       <section data-pane="style">
-        <div class="livepv" id="live-pv"></div>
-        <h3>Skins</h3>
+        <div class="stylehead">
+          <div class="livepv" id="live-pv"></div>
+          <div class="sidectl">
+            <div class="cap" id="live-cap"></div>
+            <div class="srow"><span>Body</span><div class="swatches strip" id="colour-pick"></div></div>
+            <div class="srow"><span>Buttons</span><div class="swatches strip" id="key-pick"></div></div>
+            <div class="srow"><span>Screen</span><div class="swatches strip" id="tint-pick"></div></div>
+          </div>
+        </div>
+        <h3>Skins <span class="hint">ready-made looks, swipe to browse</span></h3>
         <div class="carousel">
           <button type="button" class="car-btn prev" id="skin-prev" aria-label="Previous skin">&#8249;</button>
           <div class="skins" id="skin-pick" role="listbox" aria-label="Skins"></div>
           <button type="button" class="car-btn next" id="skin-next" aria-label="Next skin">&#8250;</button>
         </div>
         <div class="dots" id="skin-dots"></div>
-        <h3>Fine-tune</h3>
-        <div class="opt"><div class="optl">Layout</div>
+        <div class="opt"><div class="optl">Layout <span class="hint">shape of the console</span></div>
           <div class="seg" id="layout-pick">
             <button type="button" data-layout="a">Lightning</button>
             <button type="button" data-layout="b">Kitty</button>
             <button type="button" data-layout="c">Super</button>
-            <button type="button" data-layout="d">Screen</button>
+            <button type="button" data-layout="d">Immersive</button>
           </div>
         </div>
-        <div class="opt"><div class="optl">Colour</div><div class="swatches" id="colour-pick"></div></div>
-        <div class="opt"><div class="optl">Buttons</div><div class="swatches" id="key-pick"></div></div>
-        <div class="opt"><div class="optl">Screen</div><div class="seg" id="tint-pick"></div></div>
         <div class="opt"><div class="optl">Mascot <span class="hint">the little figure on the screen</span></div><div class="mascots" id="mascot-pick"></div></div>
       </section>
 
@@ -175,6 +179,7 @@
 
       <section data-pane="help" hidden>
         <p class="lede">Just like the real thing: press <b>ON/OFF</b>, pick a game, speed and level on the title screen (see <i>Title keys</i> under Play), and hit <b>S/P</b> to start.</p>
+        <button type="button" class="linkbtn" id="replay-welcome">Replay the welcome tour</button>
         <h3><span id="help-games-n">12</span> games</h3>
         <ol id="help-games"></ol>
         <h3>Controls</h3>
@@ -200,8 +205,9 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=11"></script>
-<script src="mascots.js?v=11"></script>
-<script src="engine.js?v=11"></script>
+<script src="games.js?v=12"></script>
+<script src="mascots.js?v=12"></script>
+<script src="engine.js?v=12"></script>
+<script src="welcome.js?v=12"></script>
 </body>
 </html>
