@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '31';
+  const BUILD = '32';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -638,20 +638,20 @@
   }
 
   function render() {
-    const P = PALETTES[palIdx];
+    const base = PALETTES[palIdx], off = state === OFF;
+    const P = off ? Object.assign({}, base, { ink: base.ghost }) : base;           // switched off, the printed frame and the unlit segments are still there
     const CW = PF.CW, CH = PF.CH;
     const sx = cv.width / PF.LW, sy = cv.height / PF.LH;
     ctx.setTransform(sx, 0, 0, sy, 0, 0);
     ctx.fillStyle = P.bg; ctx.fillRect(0, 0, PF.LW, PF.LH);
-    if (state === OFF) return;
 
     const boot = state === BOOT;
     const blink = ((clock / 260) | 0) % 2 === 0;
     const slow = ((clock / 500) | 0) % 2 === 0;
-    const f = frameField();
+    const f = off ? (view.fill(0), view) : frameField();
 
     // field frame
-    ctx.strokeStyle = P.ink; ctx.lineWidth = 1.4;
+    ctx.strokeStyle = base.ink; ctx.lineWidth = 1.4;
     ctx.strokeRect(5.7, 5.7, W * CW + 5.6, H * CH + 5.6);
 
     // cells: ghost grid, then shadow, then ink (Home's list and score pages are drawn as text instead)
