@@ -71,7 +71,7 @@
     api.Sound.unlock();
     const out = b.classList.toggle('out');
     const slot = document.querySelectorAll('.bk-slot')[+b.dataset.i]; if (slot) slot.classList.toggle('empty', out);
-    b.setAttribute('aria-label', 'AA battery ' + (+b.dataset.i + 1) + ', tap to ' + (out ? 'put back' : 'remove'));
+    b.setAttribute('aria-label', (b.dataset.brand === 'zapcell' ? 'Zapcell' : 'Voltix') + ' AA battery, tap to ' + (out ? 'put back' : 'remove'));
     api.Sound.fx(out ? 'thunk' : 'click'); api.Haptic.key('fn');
     refresh();
   }));

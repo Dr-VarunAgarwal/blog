@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=18">
+<link rel="stylesheet" href="brick.css?v=19">
 </head>
 <body>
 <!--
@@ -123,14 +123,15 @@
     <div class="shell">
       <div class="bk-bay" id="bk-bay">
         <div class="bk-slots">
-          <div class="bk-slot"><i>+</i><i>&minus;</i><svg class="spring" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 38 V34 L9 31 L31 26 L9 21 L31 16 L9 11 L31 6 L20 3 V1"/></svg><s class="plate"></s></div><div class="bk-slot"><i>+</i><i>&minus;</i><svg class="spring" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 38 V34 L9 31 L31 26 L9 21 L31 16 L9 11 L31 6 L20 3 V1"/></svg><s class="plate"></s></div>
+          <div class="bk-slot"><i>+</i><i>&minus;</i><svg class="spring" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 38 V34 L9 31 L31 26 L9 21 L31 16 L9 11 L31 6 L20 3 V1"/></svg><s class="plate"></s></div><div class="bk-slot rev"><i>&minus;</i><i>+</i><svg class="spring" viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 38 V34 L9 31 L31 26 L9 21 L31 16 L9 11 L31 6 L20 3 V1"/></svg><s class="plate"></s></div>
         </div>
-        <button type="button" class="bk-bat" data-i="0" aria-label="AA battery 1, tap to remove"><i class="nub"></i><i class="band"></i><b>AA</b></button>
-        <button type="button" class="bk-bat" data-i="1" aria-label="AA battery 2, tap to remove"><i class="nub"></i><i class="band"></i><b>AA</b></button>
+        <button type="button" class="bk-bat" data-i="0" data-brand="voltix" aria-label="Voltix AA battery, tap to remove"><span class="in"><i class="nub"></i><i class="band"></i><u class="pl">+</u><b class="bname">VOLTIX</b><b class="spec">AA 1.5V</b><u class="mi">&minus;</u></span></button>
+        <button type="button" class="bk-bat" data-i="1" data-brand="zapcell" aria-label="Zapcell AA battery, tap to remove"><span class="in"><i class="nub"></i><i class="band"></i><u class="pl">+</u><b class="bname">ZAPCELL</b><b class="spec">AA 1.5V</b><u class="mi">&minus;</u></span></button>
         <div class="bk-egg" id="bk-egg">
           <div class="bk-qc" aria-hidden="true"><b>QC</b><span>PASSED</span><em>No. 7</em></div>
           <button type="button" class="bk-note" id="bk-note" aria-label="Handwritten note inside the battery bay. Tap for another.">9999 in 1*<small>*12, honestly</small></button>
         </div>
+        <p class="bk-ver bk-ver2">Version <span class="ver-n">?</span></p>
         <p class="bk-hint" id="bk-hint">Tap a battery to take it out.</p>
         <button type="button" class="bk-btn" id="bk-close">Close the door</button>
       </div>
@@ -142,6 +143,7 @@
         <p>Made by <b>Varun Agarwal</b>.</p>
         <a class="bk-link" id="bk-blog" href="https://blog.varunagarwal.com/" target="_blank" rel="noopener">Visit my blog <span aria-hidden="true">&#8599;</span></a>
         <p class="bk-fine">Original code, art and sounds. Not affiliated with any manufacturer or game company.</p>
+        <p class="bk-ver">Version <span class="ver-n">?</span></p>
         <button type="button" class="bk-btn" id="bk-open">Open the battery door</button>
       </div>
     </div>
@@ -152,7 +154,7 @@
       <button id="help-close" aria-label="Close">&times;</button>
       <h2 id="help-title">Brick Game</h2>
       <div class="tabs" id="help-tabs" role="tablist">
-        <button type="button" role="tab" data-tab="style" aria-selected="true">Style</button>
+        <button type="button" role="tab" data-tab="style" aria-selected="true">Customise</button>
         <button type="button" role="tab" data-tab="play" aria-selected="false">Play</button>
         <button type="button" role="tab" data-tab="help" aria-selected="false">Help</button>
       </div>
@@ -168,23 +170,47 @@
             <div class="srow"><span>Screen</span><div class="swatches strip" id="tint-pick"></div></div>
           </div>
         </div>
-        <p class="fsnote whats"><b>Skin</b> = a complete look. <b>Body</b> shell, <b>Buttons</b> keys, <b>Screen</b> LCD tint. <b>Layout</b> = shape only, colours stay.</p>
-        <h3>Skins <span class="hint">complete looks, swipe to browse</span></h3>
-        <div class="carousel">
-          <button type="button" class="car-btn prev" id="skin-prev" aria-label="Previous skin">&#8249;</button>
-          <div class="skins" id="skin-pick" role="listbox" aria-label="Skins"></div>
-          <button type="button" class="car-btn next" id="skin-next" aria-label="Next skin">&#8250;</button>
+        <div class="submenu" id="style-sub" role="tablist" aria-label="Customise">
+          <button type="button" role="tab" data-sub="skins" aria-selected="true">Skins</button>
+          <button type="button" role="tab" data-sub="layout" aria-selected="false">Layout</button>
+          <button type="button" role="tab" data-sub="finish" aria-selected="false">Finish</button>
+          <button type="button" role="tab" data-sub="mascot" aria-selected="false">Mascot</button>
         </div>
-        <div class="dots" id="skin-dots"></div>
-        <div class="opt"><div class="optl">Layout <span class="hint">shape only, colours stay</span></div>
-          <div class="seg" id="layout-pick">
-            <button type="button" data-layout="a">Lightning</button>
-            <button type="button" data-layout="b">Kitty</button>
-            <button type="button" data-layout="c">Super</button>
-            <button type="button" data-layout="d">Immersive</button>
+
+        <div data-sub-pane="skins">
+          <p class="fsnote whats">A <b>skin</b> is a complete look: shape, colours and screen tint. Tap one, then fine-tune the colours above.</p>
+          <div class="carousel">
+            <button type="button" class="car-btn prev" id="skin-prev" aria-label="Previous skin">&#8249;</button>
+            <div class="skins" id="skin-pick" role="listbox" aria-label="Skins"></div>
+            <button type="button" class="car-btn next" id="skin-next" aria-label="Next skin">&#8250;</button>
           </div>
+          <div class="dots" id="skin-dots"></div>
         </div>
-        <div class="opt"><div class="optl">Mascot <span class="hint">the little figure on the screen</span></div><div class="mascots" id="mascot-pick"></div></div>
+
+        <div data-sub-pane="layout" hidden>
+          <p class="fsnote whats"><b>Layout</b> is the shape of the console and where the keys sit. It keeps your colours.</p>
+          <div class="layouts" id="layout-pick"></div>
+        </div>
+
+        <div data-sub-pane="finish" hidden>
+          <div class="opt"><div class="optl">Shell <span class="hint">solid colour or see-through plastic</span></div>
+            <div class="seg" id="shell-pick">
+              <button type="button" data-shell="solid">Solid</button>
+              <button type="button" data-shell="clear">Clear</button>
+            </div>
+          </div>
+          <div class="opt"><div class="optl">Texture <span class="hint">fine plastic grain and sheen</span></div>
+            <div class="seg" id="tex-pick">
+              <button type="button" data-tex="1">On</button>
+              <button type="button" data-tex="0">Off</button>
+            </div>
+          </div>
+          <p class="fsnote">Colours live up top: <b>Body</b> is the shell, <b>Buttons</b> the keys, <b>Screen</b> the LCD tint. Swipe a strip for more, or use the rainbow dot for any colour.</p>
+        </div>
+
+        <div data-sub-pane="mascot" hidden>
+          <div class="opt"><div class="optl">Mascot <span class="hint">the little figure on the screen</span></div><div class="mascots" id="mascot-pick"></div></div>
+        </div>
       </section>
 
       <section data-pane="play" hidden>
@@ -245,10 +271,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=18"></script>
-<script src="mascots.js?v=18"></script>
-<script src="engine.js?v=18"></script>
-<script src="back.js?v=18"></script>
-<script src="welcome.js?v=18"></script>
+<script src="games.js?v=19"></script>
+<script src="mascots.js?v=19"></script>
+<script src="engine.js?v=19"></script>
+<script src="back.js?v=19"></script>
+<script src="welcome.js?v=19"></script>
 </body>
 </html>
