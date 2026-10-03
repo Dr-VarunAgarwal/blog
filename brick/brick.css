@@ -1,11 +1,14 @@
 /* Brick Game — the handheld. Fixed 360×760 design box (800×380 in landscape), scaled to fit by engine.js.
  *
  * Plastic is drawn flat on purpose: solid colours, a darker rim, a hard offset "side" under each key.
- * No glossy gradients - real handhelds of this kind are matte ABS, and gradients are what read as "rendered".
+ * No glossy gradients - real handhelds of this kind are matte ABS. The only extras are a very fine grain and a barely-there sheen (--grain, --sheen).
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "17";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
+  --build: "18";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -35,7 +38,7 @@ body {
   transform: perspective(1700px) translate(-50%, -50%) scale(var(--s, 1)) rotateY(var(--ry, 0deg));
   transform-origin: 50% 50%;
   border-radius: 34px 34px 40px 40px;
-  background: var(--body);
+  background: var(--sheen), var(--grain), var(--body);
   color: var(--ink);
   box-shadow:
     0 0 0 2px var(--body-lo),
@@ -73,7 +76,7 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 
 /* keys: flat disc, darker rim, hard side underneath */
 .fn i, :is(#dpad, .dpad) .key, .rot {
-  background: var(--key);
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .30), rgba(255, 255, 255, 0) 56%), radial-gradient(circle at 72% 82%, rgba(0, 0, 0, .14), rgba(0, 0, 0, 0) 58%), var(--grain), var(--key);
   box-shadow: inset 0 0 0 2px var(--key-rim), 0 3px 0 var(--key-side);
   transition: transform .04s, box-shadow .04s;
 }
@@ -109,7 +112,7 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 :is(#device, #back, .pvdev)[data-layout="a"] :is(#lcd, .lcdc) { width: 250px; height: 260px; margin: 1px 5px; }
 
 :is(#label, .lbl) {
-  position: absolute; left: 0; right: 0; text-align: center; cursor: pointer;
+  position: absolute; left: 0; right: 0; text-align: center; cursor: pointer; white-space: nowrap;
   font: 400 31px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", "Roboto Condensed", sans-serif;
   font-stretch: condensed; letter-spacing: 1.5px; color: var(--ink);
 }
@@ -160,13 +163,13 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 
 :is(#device, #back, .pvdev)[data-layout="a"] .mascot { left: 18px; top: 666px; width: 60px; height: 72px; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="a"] .brand {
-  left: 108px; top: 670px; transform: rotate(-9deg); transform-origin: 0 100%;
+  left: 108px; top: 664px; transform: rotate(-9deg); transform-origin: 0 100%;
   font: 400 31px/.86 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: 1px; color: var(--ink);
   display: flex; flex-direction: column;
 }
 :is(#device, #back, .pvdev)[data-layout="a"] .brand span:last-child { margin-left: 34px; }
 :is(#device, #back, .pvdev)[data-layout="a"] .nine { right: 26px; top: 718px; font: 400 20px/1 Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif; letter-spacing: .5px; color: var(--ink); }
-:is(#device, #back, .pvdev)[data-layout="a"] .swoosh { left: 96px; top: 710px; width: 140px; height: 40px; color: var(--ink); }
+:is(#device, #back, .pvdev)[data-layout="a"] .swoosh { left: 96px; top: 718px; width: 140px; height: 40px; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="a"] .cat, :is(#device, #back, .pvdev)[data-layout="a"] .grip { display: none; }
 
 /* =====================================================================
@@ -237,14 +240,14 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
 }
 :is(#device, #back, .pvdev)[data-layout="b"] .brand span:last-child { margin-left: 26px; }
 :is(#device, #back, .pvdev)[data-layout="b"] .nine { left: 176px; top: 698px; transform: rotate(-13deg); transform-origin: 0 100%; font: italic 900 14px/1 "Arial Black", Impact, sans-serif; color: var(--ink); }
-:is(#device, #back, .pvdev)[data-layout="b"] .grip { left: 290px; top: 648px; width: 52px; height: 44px; stroke: var(--body-lo); }
+:is(#device, #back, .pvdev)[data-layout="b"] .grip { left: 300px; top: 668px; width: 46px; height: 40px; stroke: var(--body-lo); }
 
 /* =====================================================================
  * LAYOUT C — "super": full-bleed illustrated blue unit (button sizes and labels from the reference)
  * LAYOUT D — "screen": no console at all, just a big LCD and the keys
  * Both fill the page with the body colour, so there is no shell edge.
  * ===================================================================== */
-html[data-layout="c"] body, html[data-layout="d"] body { background: var(--body); }
+html[data-layout="c"] body, html[data-layout="d"] body { background: var(--sheen), var(--grain), var(--body); }
 :is(#device, #back, .pvdev):is([data-layout="c"], [data-layout="d"]) { border-radius: 0; box-shadow: none; }
 :is(#device, #back, .pvdev):is([data-layout="c"], [data-layout="d"]) :is(.bolt, .shoulder, .mascot, .cat, .swoosh, .grip, .nine) { display: none; }
 
@@ -271,7 +274,7 @@ html[data-layout="c"] body, html[data-layout="d"] body { background: var(--body)
 :is(#device, #back, .pvdev)[data-layout="c"] .lcd-frame { left: 64px; top: 46px; width: 232px; height: 281px; padding: 8px; background: var(--body); border-radius: 0; box-shadow: inset 7px 7px 0 var(--body-lo), inset -7px -7px 0 var(--body-hi); }
 :is(#device, #back, .pvdev)[data-layout="c"] .lcd-screen { width: 216px; height: 265px; border-radius: 0; box-shadow: none; }
 :is(#device, #back, .pvdev)[data-layout="c"] :is(#lcd, .lcdc) { width: 216px; height: 265px; margin: 0; }
-:is(#device, #back, .pvdev)[data-layout="c"] :is(#label, .lbl) { left: 50%; right: auto; top: 20px; transform: translateX(-50%); padding: 0 10px; background: var(--body); font: 900 24px/1 "Arial Black", Impact, sans-serif; letter-spacing: .5px; color: var(--ink); }
+:is(#device, #back, .pvdev)[data-layout="c"] :is(#label, .lbl) { left: 50%; right: auto; width: max-content; top: 20px; transform: translateX(-50%); padding: 0 10px; background: var(--body); font: 900 24px/1 "Arial Black", Impact, sans-serif; letter-spacing: .5px; color: var(--ink); }
 :is(#device, #back, .pvdev)[data-layout="c"] :is(#label, .lbl).named { color: var(--alt); font-size: 20px; top: 22px; }
 :is(#device, #back, .pvdev)[data-layout="c"] .brand {
   left: 200px; top: calc(var(--cy) + 214px); transform: rotate(-7deg); transform-origin: 0 100%;

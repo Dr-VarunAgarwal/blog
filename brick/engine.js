@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '17';
+  const BUILD = '18';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -686,20 +686,28 @@
   let nameTimer = null;
   const defaultLabel = () => ({ a: 'CLASSIC', c: 'SUPER' }[look.layout] || '');
   // Immersive has no printed title, so the game's name stays up top the whole time the console is on.
+  // long titles shrink to fit their slot instead of wrapping onto the screen
+  const LABEL_MAX = { a: 330, b: 330, c: 224, d: 250 };
+  function fitLabel() {
+    labelEl.style.fontSize = ''; labelEl.style.width = 'max-content';
+    const max = LABEL_MAX[look.layout] || 330, w = labelEl.offsetWidth - (look.layout === 'c' ? 20 : 0);
+    labelEl.style.width = '';
+    if (w > max) labelEl.style.fontSize = (parseFloat(getComputedStyle(labelEl).fontSize) * max / w).toFixed(2) + 'px';
+  }
   let pinnedName = false;
   function syncName() {
     if (look.layout !== 'd') return;
     pinnedName = true;
     if (state === OFF) { labelEl.textContent = ''; labelEl.classList.remove('named'); return; }
     const gm = (state === MENU || !def) ? GAMES[sel.game] : def;
-    labelEl.textContent = gm.name.toUpperCase(); labelEl.classList.add('named');
+    labelEl.textContent = gm.name.toUpperCase(); labelEl.classList.add('named'); fitLabel();
   }
   function showName() {
     if (look.layout === 'd') return syncName();
     labelEl.textContent = GAMES[sel.game].name.toUpperCase();
-    labelEl.classList.add('named');
+    labelEl.classList.add('named'); fitLabel();
     clearTimeout(nameTimer);
-    nameTimer = setTimeout(() => { labelEl.textContent = defaultLabel(); labelEl.classList.remove('named'); }, 2200);
+    nameTimer = setTimeout(() => { labelEl.textContent = defaultLabel(); labelEl.classList.remove('named'); fitLabel(); }, 2200);
   }
   on('state', syncName);
   labelEl.addEventListener('click', () => { setTint((palIdx + 1) % PALETTES.length); Sound.unlock(); Sound.fx('tick'); });
@@ -856,6 +864,7 @@
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) tc.setAttribute('content', (look.layout === 'c' || look.layout === 'd') ? c.body : '#0d0d0f');
     if (look.layout === 'd') syncName(); else if (!labelEl.classList.contains('named')) labelEl.textContent = defaultLabel();
+    fitLabel();
     if (look.layout !== 'd' && pinnedName) { pinnedName = false; labelEl.classList.remove('named'); labelEl.textContent = defaultLabel(); }
     store.set('look', look);
     renderSheet();
