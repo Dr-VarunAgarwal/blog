@@ -8,7 +8,7 @@
   /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
-  --build: "23";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "24";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -362,18 +362,24 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 /* =====================================================================
  * Customise / help sheet
  * ===================================================================== */
-#help {
-  position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.74);
-  display: flex; align-items: center; justify-content: center; padding: 16px;
-}
+/* The settings dock: a panel along the bottom (a side panel when the phone is held sideways). The real console stays live above/beside it,
+ * re-fitted by engine.js into whatever space the dock leaves free, so every change is previewed on the actual console. */
+:root { --dock-h: clamp(346px, 50vh, 450px); --dock-h: clamp(346px, 50dvh, 450px); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#help { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
 #help .card {
-  position: relative; width: 100%; max-width: 460px; height: min(880px, 94vh); height: min(880px, 94dvh);
-  display: flex; flex-direction: column; overflow: hidden;
-  background: #17171a; border: 1px solid #2c2c32; border-radius: 16px; padding: 16px 22px 0;
+  pointer-events: auto; position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; width: 100%; max-width: 560px; height: var(--dock-h);
+  display: flex; flex-direction: column; overflow: hidden; animation: dockUp .2s ease-out;
+  background: #17171a; border: 1px solid #2c2c32; border-bottom: 0; border-radius: 18px 18px 0 0; padding: 8px 14px 0; box-shadow: 0 -12px 34px rgba(0, 0, 0, .5);
   color: #dedcd4; font-size: 14px; line-height: 1.5; user-select: text; -webkit-user-select: text;
 }
+@keyframes dockUp { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+@media (orientation: landscape) and (max-height: 520px) {
+  #help .card { left: auto; right: 0; top: 0; bottom: 0; margin: 0; width: min(46vw, 440px); max-width: none; height: 100%; border: 1px solid #2c2c32; border-right: 0; border-radius: 18px 0 0 18px; box-shadow: -12px 0 34px rgba(0, 0, 0, .5); }
+}
+@media (prefers-reduced-motion: reduce) { #help .card { animation: none; } }
 #help .card > h2, #help .card > .tabs { flex: none; }
-#help .panes { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; margin: 0 -22px; padding: 0 22px 22px; }
+#help .panes { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; margin: 0 -14px; padding: 0 14px 14px; }
 #help h2 { margin: 0 0 4px; font: 400 24px/1 Impact, "Arial Narrow Bold", sans-serif; letter-spacing: 1px; color: #fff; }
 #help h3 { margin: 18px 0 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 #help .lede { margin: 0; color: #bdbbb2; }
@@ -387,12 +393,12 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #help td { padding: 4px 6px 4px 0; border-top: 1px solid #26262b; vertical-align: top; }
 #help td:first-child { color: #fff; }
 #help-close {
-  z-index: 5; position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border: 0; background: none; color: #999;
+  z-index: 5; position: absolute; top: 6px; right: 8px; width: 34px; height: 34px; border: 0; background: none; color: #999;
   font: 300 28px/1 system-ui; cursor: pointer; border-radius: 50%;
 }
 #help-close:hover { color: #fff; }
 
-#help .tabs { display: flex; gap: 4px; margin: 8px 0 0; padding: 4px; background: #101013; border-radius: 12px; }
+#help .tabs { display: flex; gap: 4px; margin: 0 40px 0 0; padding: 3px; background: #101013; border-radius: 12px; }
 #help .tabs button { flex: 1; padding: 7px 0; border: 0; border-radius: 9px; background: none; color: #9d9b93; font: 600 13px system-ui, sans-serif; cursor: pointer; }
 #help .tabs button[aria-selected="true"] { background: #26262b; color: #fff; }
 #help section[hidden] { display: none; }
@@ -401,34 +407,26 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #help .optl { margin-bottom: 7px; color: #8e8c84; font-size: 12px; }
 #help .fsnote { margin: 4px 0 0; font-size: 12px; color: #8e8c84; }
 
-#help .stylehead {
-  position: sticky; top: 0; z-index: 3; display: flex; gap: 14px; align-items: stretch;
-  height: min(290px, 36vh); height: min(290px, 36dvh); margin: 0 -22px; padding: 10px 22px; background: #17171a; border-bottom: 1px solid #26262b;
-}
-#help .livepv { flex: none; display: flex; align-items: center; justify-content: center; min-width: 96px; }
-#help .sidectl { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 9px; }
-#help .srow { display: grid; grid-template-columns: 50px 1fr; align-items: center; gap: 6px; }
+#help .srow { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 6px; }
 #help .srow > span { color: #8e8c84; font-size: 11px; }
-#help .sidectl .cap { color: #8e8c84; font-size: 12px; line-height: 1.4; }
-#help .sidectl .cap b { display: block; color: #fff; font-size: 15px; margin-bottom: 1px; }
 
-#help .submenu { display: flex; gap: 6px; margin: 10px 0 4px; overflow-x: auto; scrollbar-width: none; }
-#help .submenu::-webkit-scrollbar { display: none; }
-#help .submenu button { flex: 1; padding: 8px 12px; border: 2px solid #2c2c32; border-radius: 999px; background: #1f1f23; color: #cfcdc5; font: 700 12px system-ui, sans-serif; cursor: pointer; white-space: nowrap; }
-#help .submenu button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #111; }
-#help .layouts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
-#help .layouts > button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 8px 10px; background: #1f1f23; border: 2px solid #2c2c32; border-radius: 12px; color: #cfcdc5; font: 700 13px/1.2 system-ui, sans-serif; cursor: pointer; text-align: center; }
-#help .layouts > button small { color: #8e8c84; font-weight: 500; font-size: 11px; line-height: 1.3; }
-#help .layouts > button[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
-#help .carousel { position: relative; margin: 0 -22px; }
+#help .dk-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0 0; }
+#help .dk-top .cap { min-width: 0; color: #a9a79f; font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#help .dk-top .cap b { color: #fff; font-size: 13px; }
+#help .dk-tex { flex: none; display: flex; align-items: center; gap: 6px; color: #8e8c84; font-size: 11px; }
+#help .seg.mini { border-width: 1.5px; border-radius: 8px; }
+#help .seg.mini button { flex: none; padding: 4px 10px; font-size: 11px; }
+#help .dk-rows { display: grid; gap: 4px; margin-top: 2px; }
+#help .swatches .sep { flex: none; width: 2px; height: 20px; margin: 0 5px; border-radius: 1px; background: #3a3a40; }
+#help .carousel { position: relative; margin: 0 -14px; }
 #help .skins {
   display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-  padding: 6px 16px 8px; scroll-padding: 0 16px;
+  padding: 4px 14px 6px; scroll-padding: 0 14px; gap: 8px;
 }
 #help .skins::-webkit-scrollbar { display: none; }
 #help .skin {
-  flex: 0 0 92px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 4px 8px;
-  background: #1f1f23; border: 2px solid #2c2c32; border-radius: 12px; color: #cfcdc5; font: 600 12px/1.25 system-ui, sans-serif; cursor: pointer;
+  flex: 0 0 64px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; padding: 6px 2px 5px;
+  background: #1f1f23; border: 2px solid #2c2c32; border-radius: 12px; color: #cfcdc5; font: 700 10px/1.2 system-ui, sans-serif; cursor: pointer;
 }
 #help .skin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #help .car-btn {
@@ -437,9 +435,11 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 }
 #help .car-btn.prev { left: 6px; } #help .car-btn.next { right: 6px; }
 #help .hint { color: #6f6d66; margin-left: 6px; font-weight: 500; text-transform: none; letter-spacing: 0; }
-#help .mascots { display: flex; flex-wrap: wrap; gap: 8px; }
+#help .mascots { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 6px; scrollbar-width: none; padding: 2px 14px 2px 2px; -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent); mask-image: linear-gradient(90deg, #000 90%, transparent); }
+#help .mascots::-webkit-scrollbar { display: none; }
+#help .mascots canvas { width: 26px !important; height: 26px !important; }
 #help .mascots button {
-  width: 54px; height: 54px; padding: 0; display: grid; place-items: center; cursor: pointer;
+  flex: none; width: 34px; height: 34px; padding: 0; display: grid; place-items: center; cursor: pointer;
   background: var(--lcd-bg); border: 2px solid #2c2c32; border-radius: 12px; color: #141912;
 }
 #help .mascots button.rnd { font: 800 24px/1 system-ui, sans-serif; }
@@ -447,8 +447,8 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #help .dots { display: flex; justify-content: center; gap: 7px; margin: 2px 0 4px; }
 #help .dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #3a3a40; cursor: pointer; }
 #help .dots button[aria-current="true"] { background: var(--accent); transform: scale(1.25); }
-#help .skin .pv-wrap { margin-bottom: 6px; }
-#help .skin small { color: #8e8c84; font-weight: 500; font-size: 11px; }
+#help .skin .pv-wrap { margin-bottom: 3px; }
+#help .skin small { display: none; }
 #help .skin[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
 
 /* miniature consoles: a scaled clone of the real shell, so previews are always exactly what you'll get */

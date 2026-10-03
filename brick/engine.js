@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '23';
+  const BUILD = '24';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -720,10 +720,13 @@
   // help sheet
   const help = $('#help');
   const helpOpen = () => !help.hidden;
-  function toggleHelp(v) { help.hidden = !(v === undefined ? help.hidden : v); }
-  $('#help-open').addEventListener('click', () => { showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); if (window.__brickCentreSkin) window.__brickCentreSkin(); if (window.__brickRenderLive) window.__brickRenderLive(); });
+  function toggleHelp(v) {
+    help.hidden = !(v === undefined ? help.hidden : v);
+    const g = $('#help-open'); if (g) g.setAttribute('aria-pressed', String(!help.hidden));
+    fit();                                           // the console shrinks into whatever the docked panel leaves free
+  }
+  $('#help-open').addEventListener('click', () => { if (!help.hidden) { toggleHelp(false); return; } showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); if (window.__brickCentreSkin) window.__brickCentreSkin(); if (window.__brickRenderLive) window.__brickRenderLive(); });
   $('#help-close').addEventListener('click', () => toggleHelp(false));
-  help.addEventListener('click', e => { if (e.target === help) toggleHelp(false); });
   $('#help-games').innerHTML = GAMES.map((d, i) => '<li><b>' + String(i + 1).padStart(2, '0') + '</b> ' + d.name + '</li>').join('');
   $('#help-games-n').textContent = GAMES.length;
 
@@ -739,7 +742,13 @@
     // keep clear of the notch / status bar / home indicator when the page draws edge to edge
     const cs = getComputedStyle(probe);
     const inT = parseFloat(cs.paddingTop) || 0, inB = parseFloat(cs.paddingBottom) || 0, inL = parseFloat(cs.paddingLeft) || 0, inR = parseFloat(cs.paddingRight) || 0;
-    const aw = vw - inL - inR, ah = vh - inT - inB;
+    let aw = vw - inL - inR, ah = vh - inT - inB;
+    // settings dock: a bottom panel (portrait) or a side panel (landscape); the console re-fits into the free area
+    const dockCard = help && !help.hidden ? help.querySelector('.card') : null;
+    if (dockCard) {
+      // layout size, not the on-screen box: the panel slides in with a transform
+      if (dockCard.offsetHeight < vh * .8) ah -= dockCard.offsetHeight; else aw -= dockCard.offsetWidth;
+    }
     const land = vw > vh * 1.2 && (coarse.matches || /[?&]land\b/.test(location.search));
     const DW = land ? 800 : 360, DH = land ? 380 : (DIMS[look.layout] || 782);
     const s = Math.min(aw / DW, ah / DH, 1.6);
@@ -891,8 +900,10 @@
 
   /* picker UI inside the sheet */
   const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), menuBox = $('#menu-pick');
-  swatchBox.innerHTML = COLOURS.filter(c => c.id === 'clear' || !c.shell).map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + (c.shell ? 'Clear' : c.name) + '" title="' + (c.shell ? 'Clear (see-through)' : c.name) + '" style="background:' + (c.swatch || c.body) + '"></button>').join('') +
-    '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>';
+  const swBtn = c => '<button type="button" data-colour="' + c.id + '" aria-label="' + (c.shell ? 'Clear ' + c.name : c.name) + '" title="' + (c.shell ? 'Clear ' + c.name + ' (see-through)' : c.name) + '" style="background:' + (c.swatch || c.body) + '"></button>';
+  swatchBox.innerHTML = COLOURS.filter(c => !c.shell).map(swBtn).join('') +
+    '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>' +
+    '<i class="sep" title="See-through shells" aria-hidden="true"></i>' + COLOURS.filter(c => c.shell).map(swBtn).join('');
   tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '" aria-label="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" title="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" style="background:' + p.bg + '"></button>').join('');
   swatchBox.addEventListener('click', e => {
     const b = e.target.closest('button[data-colour]'); if (!b) return;
@@ -901,26 +912,8 @@
   $('#colour-custom').addEventListener('input', e => { look.colour = 'custom'; look.custom = e.target.value; applyLook(); });
   tintBox.addEventListener('click', e => { const b = e.target.closest('button[data-tint]'); if (b) setTint(+b.dataset.tint); });
   menuBox.addEventListener('click', e => { const b = e.target.closest('button[data-menu]'); if (b) { look.menu = b.dataset.menu; applyLook(); } });
-  // Finish: shell (solid / clear) and texture
-  const shellBox = $('#shell-pick'), texBox = $('#tex-pick');
-  shellBox.addEventListener('click', e => {
-    const b = e.target.closest('button[data-shell]'); if (!b) return;
-    const cur = look.colour || DEFAULT_COLOUR[look.layout];
-    if (b.dataset.shell === 'clear') { if (!isClearId(cur)) look.colour = 'clear'; } else if (isClearId(cur)) look.colour = null;
-    applyLook();
-  });
-  const glassBox = $('#glass-pick');
-  glassBox.innerHTML = COLOURS.filter(c => c.shell === 'clear').map(c => '<button type="button" data-glass="' + c.id + '" aria-label="' + c.name + ' glass" title="' + c.name + '" style="background:' + c.swatch + '"></button>').join('');
-  glassBox.addEventListener('click', e => { const b = e.target.closest('button[data-glass]'); if (b) { look.colour = b.dataset.glass; applyLook(); } });
+  const texBox = $('#tex-pick');
   texBox.addEventListener('click', e => { const b = e.target.closest('button[data-tex]'); if (b) { look.tex = b.dataset.tex === '0' ? 'off' : null; applyLook(); } });
-  // Customise sub-menu: Skins / Layout / Finish / Mascot
-  const subBox = $('#style-sub');
-  function showSub(name) {
-    subBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.sub === name)));
-    document.querySelectorAll('#help [data-sub-pane]').forEach(p => { p.hidden = p.dataset.subPane !== name; });
-    if (name === 'skins' && window.__brickCentreSkin) window.__brickCentreSkin();
-  }
-  subBox.addEventListener('click', e => { const b = e.target.closest('button[data-sub]'); if (b) showSub(b.dataset.sub); });
 
   /* tetromino-outline decals for the Super layout (generic block shapes, drawn here so there is nothing to download) */
   function buildDecals() {
@@ -1006,7 +999,7 @@
     const card = document.createElement('div');
     card.className = 'skin'; card.setAttribute('role', 'option'); card.tabIndex = 0; card.dataset.skin = i;
     card.setAttribute('aria-label', s.name + ' ' + s.sub);
-    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .19));
+    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .1));
     card.insertAdjacentHTML('beforeend', s.name + '<small>' + s.sub + '</small>');
     skinBox.appendChild(card);
   });
@@ -1049,18 +1042,13 @@
 
   skinBox.addEventListener('keydown', e => { const c = e.target.closest('[data-skin]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pickSkin(c); } });
 
-  /* live preview: always shows your current console, updates as you change anything */
-  const liveBox = $('#live-pv');
+  /* the docked settings panel shows the real console above it, so all that is left here is a one-line caption */
   const LAYOUT_INFO = { a: ['Lightning', 'Thumb layout: small keys in a row under the grip bar'], b: ['Kitty', 'Cat-print unit: cross D-pad, pill keys'], c: ['Super', 'Framed screen, every key labelled, keys beside the D-pad'], d: ['Immersive', 'Big screen, keys in a row along the bottom'] };
   function renderLive() {
     const info = LAYOUT_INFO[look.layout];
     const cn = look.colour === 'custom' ? 'Custom colour' : (function () { const f = COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}; return f.shell === 'clear' ? 'Clear ' + f.name.toLowerCase() : f.name; })();
-    $('#live-cap').innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + (look.key ? ' · custom buttons' : '') + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
-    // big preview: fill the pinned area whatever the screen size
-    const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 4) / DIMS[look.layout]) : .3;
-    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, sc));
+    $('#live-cap').innerHTML = '<b>' + info[0] + '</b> ' + cn + (look.key ? ' · custom buttons' : '') + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
   }
-  window.addEventListener('resize', () => { if (!help.hidden) renderLive(); });
 
   /* sheet tabs */
   const tabsBox = $('#help-tabs');
@@ -1112,13 +1100,9 @@
 
   function renderSheet() {
     const cur = look.colour || DEFAULT_COLOUR[look.layout];
-    const curStrip = isClearId(cur) ? 'clear' : cur;
-    swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === curStrip)));
-    glassBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.glass === cur)));
-    $('#glass-row').hidden = !isClearId(cur);
+    swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === cur)));
     swatchBox.querySelector('label').classList.toggle('on', cur === 'custom');
     tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
-    shellBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.shell === 'clear') === isClearId(cur))));
     texBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.tex === '0') === (look.tex === 'off'))));
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
     skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
