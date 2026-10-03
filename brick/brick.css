@@ -8,7 +8,7 @@
   /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
-  --build: "20";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "21";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -588,8 +588,9 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 .bk-slot .spring { position: absolute; left: 50%; bottom: 4px; width: 40px; height: 46px; margin-left: -20px; color: #c8ccd2; transform-origin: 50% 100%; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1); }
 .bk-slot:not(.empty) .spring { transform: scaleY(.42); }
 .bk-slot .plate { position: absolute; left: 50%; top: 9px; width: 22px; height: 6px; margin-left: -11px; border-radius: 3px; background: #c8ccd2; }
-.bk-slot.rev .spring { bottom: auto; top: 4px; transform-origin: 50% 0; transform: scaleY(-1); }
-.bk-slot.rev:not(.empty) .spring { transform: scaleY(-.42); }
+.bk-slot.rev .spring { bottom: auto; top: 4px; transform-origin: 50% 0; transform: none; }
+.bk-slot.rev:not(.empty) .spring { transform: scaleY(.42); }
+.bk-slot.rev .spring path { transform: scaleY(-1); transform-box: fill-box; transform-origin: 50% 50%; }
 .bk-slot.rev .plate { top: auto; bottom: 9px; }
 /* easter egg inside the bay */
 .bk-egg { position: absolute; left: 0; right: 0; bottom: 86px; height: 92px; opacity: 0; transition: opacity .6s .5s; pointer-events: none; }
