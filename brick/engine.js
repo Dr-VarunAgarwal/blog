@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '18';
+  const BUILD = '19';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -822,7 +822,8 @@
     { id: 'white',  name: 'White',  body: '#e9e9e4', key: '#d63a30', ink: '#222222', decal: '#a9aeb4', alt: '#d63a30' },
     { id: 'gray',   name: 'Smoke',  body: '#4b4e55', key: '#f5d31c', ink: '#f1f1f1', decal: '#c9ccd1', alt: '#f5d31c' },
     { id: 'cream',  name: 'Cream',  body: '#efe7d2', key: '#f6c80f', ink: '#1f2c63', decal: '#3d63c9', alt: '#c2410c' },
-    { id: 'royal',  name: 'Royal',  body: '#2f5fb8', key: '#f7d51d', ink: '#ffffff', decal: '#e8f0ff', alt: '#f7d51d' }
+    { id: 'royal',  name: 'Royal',  body: '#2f5fb8', key: '#f7d51d', ink: '#ffffff', decal: '#e8f0ff', alt: '#f7d51d' },
+    { id: 'clear',  name: 'Clear',  body: '#8ea2ad', key: '#f5d31c', ink: '#f4f7f9', decal: '#e6eef2', alt: '#f5d31c', swatch: 'linear-gradient(135deg, #9db0bb 0 50%, #1d7a4c 50%)' }
   ];
   const DEFAULT_COLOUR = { a: 'black', b: 'yellow', c: 'royal', d: 'black' };            // what each shell wears until you pick
   const hex = c => { c = c.replace('#', ''); return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)); };
@@ -831,7 +832,7 @@
   const lum = c => { const [r, g, b] = hex(c).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; };
 
   let look = store.get('look', null) || {};
-  look = { layout: 'abcd'.includes(look.layout) && look.layout ? look.layout : 'c', colour: look.colour || null, custom: look.custom || null, menu: look.menu === 'orig' || look.menu === 'quick' ? look.menu : null, key: /^#[0-9a-f]{6}$/i.test(look.key || '') ? look.key : null };
+  look = { layout: 'abcd'.includes(look.layout) && look.layout ? look.layout : 'c', colour: look.colour || null, custom: look.custom || null, menu: look.menu === 'orig' || look.menu === 'quick' ? look.menu : null, key: /^#[0-9a-f]{6}$/i.test(look.key || '') ? look.key : null, tex: look.tex === 'off' ? 'off' : null };
   const menuMode = () => look.menu || ((look.layout === 'c' || look.layout === 'd') ? 'orig' : 'quick');
 
   function baseColour() {
@@ -859,6 +860,9 @@
     for (const k in vars) root.setProperty(k, vars[k]);
     device.dataset.layout = look.layout;
     document.documentElement.dataset.layout = look.layout;
+    document.documentElement.dataset.tex = look.tex === 'off' ? 'off' : 'on';
+    const shellKind = c.id === 'clear' ? 'clear' : '';
+    device.dataset.shell = shellKind; document.documentElement.dataset.shell = shellKind; if (backEl) backEl.dataset.shell = shellKind;
     if (backEl) backEl.dataset.layout = look.layout;
     PF = (look.layout === 'c' || look.layout === 'd') ? PROFILES.tall : PROFILES.classic;
     const tc = document.querySelector('meta[name="theme-color"]');
@@ -873,7 +877,7 @@
 
   /* picker UI inside the sheet */
   const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), layoutBox = $('#layout-pick'), menuBox = $('#menu-pick');
-  swatchBox.innerHTML = COLOURS.map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + c.name + '" title="' + c.name + '" style="background:' + c.body + '"></button>').join('') +
+  swatchBox.innerHTML = COLOURS.map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + c.name + '" title="' + c.name + '" style="background:' + (c.swatch || c.body) + '"></button>').join('') +
     '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>';
   tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '" aria-label="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" title="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" style="background:' + p.bg + '"></button>').join('');
   swatchBox.addEventListener('click', e => {
@@ -887,6 +891,22 @@
     const b = e.target.closest('button[data-layout]'); if (!b) return;
     look.layout = b.dataset.layout; applyLook();
   });
+  // Finish: shell (solid / clear) and texture
+  const shellBox = $('#shell-pick'), texBox = $('#tex-pick');
+  shellBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-shell]'); if (!b) return;
+    if (b.dataset.shell === 'clear') look.colour = 'clear'; else if (look.colour === 'clear') look.colour = null;
+    applyLook();
+  });
+  texBox.addEventListener('click', e => { const b = e.target.closest('button[data-tex]'); if (b) { look.tex = b.dataset.tex === '0' ? 'off' : null; applyLook(); } });
+  // Customise sub-menu: Skins / Layout / Finish / Mascot
+  const subBox = $('#style-sub');
+  function showSub(name) {
+    subBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.sub === name)));
+    document.querySelectorAll('#help [data-sub-pane]').forEach(p => { p.hidden = p.dataset.subPane !== name; });
+    if (name === 'skins' && window.__brickCentreSkin) window.__brickCentreSkin();
+  }
+  subBox.addEventListener('click', e => { const b = e.target.closest('button[data-sub]'); if (b) showSub(b.dataset.sub); });
 
   /* tetromino-outline decals for the Super layout (generic block shapes, drawn here so there is nothing to download) */
   function buildDecals() {
@@ -946,7 +966,7 @@
     const dev = TEMPLATE.cloneNode(true);
     dev.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));      // clones are decoration: no duplicate ids
     dev.removeAttribute('id'); dev.removeAttribute('style'); dev.classList.remove('land'); dev.classList.add('pvdev');
-    dev.dataset.layout = layout;
+    dev.dataset.layout = layout; dev.dataset.shell = c.id === 'clear' ? 'clear' : '';
     dev.querySelectorAll('button, a').forEach(el => { el.tabIndex = -1; });
     const lab = dev.querySelector('.lbl'); if (lab) { lab.textContent = ({ a: 'CLASSIC', c: 'SUPER' })[layout] || ''; lab.classList.remove('named'); }
     const screen = dev.querySelector('.lcd-screen'); screen.insertBefore(lcdMock(layout, PALETTES[tint]), screen.firstChild);
@@ -955,15 +975,17 @@
   }
 
   /* ------------------ skins: one-tap complete looks ------------------ */
+  // each ready-made skin also picks a different screen tint, so the defaults show off the options
   const SKINS = [
     { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
-    { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 0 },
-    { name: 'Lightning', sub: 'Black',  layout: 'a', colour: 'black',  tint: 0 },
-    { name: 'Lightning', sub: 'Red',    layout: 'a', colour: 'red',    tint: 0 },
+    { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 2 },
+    { name: 'Clear',     sub: 'Smoke',  layout: 'a', colour: 'clear',  tint: 1 },
+    { name: 'Lightning', sub: 'Black',  layout: 'a', colour: 'black',  tint: 1 },
+    { name: 'Lightning', sub: 'Red',    layout: 'a', colour: 'red',    tint: 3 },
     { name: 'Kitty',     sub: 'Yellow', layout: 'b', colour: 'yellow', tint: 0 },
-    { name: 'Kitty',     sub: 'Pink',   layout: 'b', colour: 'pink',   tint: 0 },
-    { name: 'Immersive', sub: 'Black', layout: 'd', colour: 'black',  tint: 0 },
-    { name: 'Immersive', sub: 'Olive', layout: 'd', colour: 'gray',   tint: 3 }
+    { name: 'Kitty',     sub: 'Pink',   layout: 'b', colour: 'pink',   tint: 2 },
+    { name: 'Immersive', sub: 'Black',  layout: 'd', colour: 'black',  tint: 1 },
+    { name: 'Immersive', sub: 'Olive',  layout: 'd', colour: 'gray',   tint: 3 }
   ];
   const skinBox = $('#skin-pick');
   SKINS.forEach((s, i) => {
@@ -988,10 +1010,16 @@
     const d = document.createElement('button'); d.type = 'button'; d.setAttribute('aria-label', 'Skin ' + (i + 1) + ': ' + s.name + ' ' + s.sub); d.dataset.dot = i;
     dotsBox.appendChild(d);
   });
-  const cardLeft = i => { const c = skinBox.children[i]; return c.offsetLeft - (skinBox.clientWidth - c.offsetWidth) / 2; };
-  const goSkin = (i, smooth) => { i = Math.max(0, Math.min(SKINS.length - 1, i)); skinBox.scrollTo({ left: cardLeft(i), behavior: smooth ? 'smooth' : 'auto' }); };
-  const nearestSkin = () => { let best = 0, d = 1e9; for (let i = 0; i < skinBox.children.length; i++) { const x = Math.abs(cardLeft(i) - skinBox.scrollLeft); if (x < d) { d = x; best = i; } } return best; };
-  function markDots() { const n = nearestSkin(); dotsBox.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-current', String(i === n))); }
+  // cards sit flush left (no dead space); a dot / arrow step is one card, the selected skin is centred when the sheet opens
+  const cardStep = () => skinBox.children.length > 1 ? skinBox.children[1].offsetLeft - skinBox.children[0].offsetLeft : 104;
+  const cardCentred = i => { const c = skinBox.children[i]; return c.offsetLeft - (skinBox.clientWidth - c.offsetWidth) / 2; };
+  const goSkin = (i, smooth) => { i = Math.max(0, Math.min(SKINS.length - 1, i)); skinBox.scrollTo({ left: skinBox.children[i].offsetLeft - 16, behavior: smooth ? 'smooth' : 'auto' }); };
+  const nearestSkin = () => {
+    if (skinBox.scrollLeft < 8) return 0;
+    if (skinBox.scrollLeft > skinBox.scrollWidth - skinBox.clientWidth - 8) return SKINS.length - 1;
+    return Math.max(0, Math.min(SKINS.length - 1, Math.round(skinBox.scrollLeft / cardStep())));
+  };
+  function markDots() { const n = nearestSkin(); dotsBox.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-current', String(i === n))); $('#skin-prev').hidden = skinBox.scrollLeft < 8; $('#skin-next').hidden = skinBox.scrollLeft > skinBox.scrollWidth - skinBox.clientWidth - 8; }
   let carRaf = 0;
   skinBox.addEventListener('scroll', () => { if (!carRaf) carRaf = requestAnimationFrame(() => { carRaf = 0; markDots(); }); }, { passive: true });
   $('#skin-prev').addEventListener('click', () => goSkin(nearestSkin() - 1, true));
@@ -1000,7 +1028,7 @@
   function centreSelected() {
     let i = SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx);
     if (i < 0) i = Math.max(0, SKINS.findIndex(s => s.layout === look.layout));
-    goSkin(i, false); markDots();
+    skinBox.scrollTo({ left: Math.max(0, cardCentred(i)), behavior: 'auto' }); markDots();
   }
   window.__brickCentreSkin = centreSelected;
   window.__brickRenderLive = () => renderLive();
@@ -1017,6 +1045,15 @@
     // big preview: fill the pinned area whatever the screen size
     const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 4) / DIMS[look.layout]) : .3;
     liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, sc));
+    renderLayoutCards();
+  }
+  function renderLayoutCards() {
+    layoutBox.replaceChildren.apply(layoutBox, ['c', 'a', 'b', 'd'].map(k => {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.layout = k; b.setAttribute('aria-pressed', String(k === look.layout));
+      b.appendChild(makeConsole(k, currentColour(), palIdx, .16));
+      b.insertAdjacentHTML('beforeend', LAYOUT_INFO[k][0] + '<small>' + LAYOUT_INFO[k][1] + '</small>');
+      return b;
+    }));
   }
   window.addEventListener('resize', () => { if (!help.hidden) renderLive(); });
 
@@ -1073,7 +1110,8 @@
     swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === cur)));
     swatchBox.querySelector('label').classList.toggle('on', cur === 'custom');
     tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
-    layoutBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.layout === look.layout)));
+    shellBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.shell === 'clear') === (cur === 'clear'))));
+    texBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.tex === '0') === (look.tex === 'off'))));
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
     skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
     hapBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.hap === '1') === Haptic.enabled)));
@@ -1085,6 +1123,7 @@
       Haptic.experimental ? 'Keys and game events tick your phone. On iPhone this is experimental and only a light tick.' : 'Keys and game events buzz your phone: a light tap on the D-pad, firmer on the small keys, patterns for line clears and crashes.';
     renderLive();
   }
+  document.querySelectorAll('.ver-n').forEach(n => { n.textContent = BUILD; });
   applyLook();
   fit();
   requestAnimationFrame(frame);
@@ -1101,7 +1140,7 @@
   // handy for testing / tinkering from the console
   const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
   const api = {
-    SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
+    BUILD, SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
     lcdMsg, powerOff() { clearTimeout(powerHold); powerHold = 0; if (state !== OFF) powerToggle(); }, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
     skinPreview: (i, scale) => makeConsole(SKINS[i].layout, COLOURS.find(x => x.id === SKINS[i].colour), SKINS[i].tint, scale)
   };
