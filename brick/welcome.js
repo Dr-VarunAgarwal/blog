@@ -142,7 +142,7 @@
     if (active) return;
     active = true;
     api.setBatteries(true);
-    if (api.state !== STATE.OFF) { C.press('power'); C.unpress('power'); }                  // replay starts from "off"
+    if (api.state !== STATE.OFF) api.powerOff();                  // replay starts from "off"
     if (!FULL_INTRO) { startTour(); return; }
     overlay = el('div', 'wl'); overlay.id = 'welcome'; overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true'); overlay.setAttribute('aria-label', 'Welcome');
     const skip = el('button', 'wl-skip', 'Skip'); skip.type = 'button'; skip.addEventListener('click', finish);

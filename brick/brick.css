@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "16";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "17";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -127,11 +127,11 @@ body:not(.is-on) .lcd-screen { background: color-mix(in srgb, var(--lcd-bg) 90%,
  * --cy is where the control block starts; everything is placed relative to it. */
 :is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) { --cy: 428px; }
 
-:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn { top: calc(var(--cy) - 1px); width: 56px; height: 62px; }
-:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="power"] { left: 128px; }
-:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"]    { left: 178px; }
-:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sound"] { left: 228px; }
-:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="reset"] { left: 278px; }
+:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn { top: calc(var(--cy) - 9px); width: 44px; height: 58px; }
+:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="power"] { left: 144px; }
+:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sp"]    { left: 194px; }
+:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="sound"] { left: 244px; }
+:is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn[data-btn="reset"] { left: 294px; }
 :is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn i { top: 0; width: 26px; height: 26px; margin-left: -13px; }
 :is(#device, #back, .pvdev):is([data-layout="a"], [data-layout="c"], [data-layout="d"]) .fn span { top: 30px; font-size: 10.5px; }
 :is(#device, #back, .pvdev):is([data-layout="c"], [data-layout="d"]) .fn[data-l2]::after {
