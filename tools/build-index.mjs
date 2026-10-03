@@ -83,6 +83,7 @@ add({ section: 'site', title: 'Books',   url: REPOS.books.base,  blurb: 'Reading
 add({ section: 'site', title: 'Wander',  url: REPOS.wander.base, blurb: 'Photos and travel.' });
 add({ section: 'site', title: 'Notes',   url: REPOS.notes.base,  blurb: 'Gadgets, projects, writeups.' });
 add({ section: 'site', title: 'Paws',    url: REPOS.blog.base + 'paws/', blurb: 'Pet photos.' });
+add({ section: 'site', title: 'Games',   url: REPOS.blog.base + 'games/', blurb: 'Video games, ranked in tiers.' });
 add({ section: 'site', title: 'Contact', url: 'https://contact.varunagarwal.com/', blurb: 'Email, phone, vCard.' });
 add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb: 'Professional profile.' });
 
