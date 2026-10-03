@@ -937,7 +937,8 @@
     { id: 'stacker',  name: 'Block Tower',        make: stacker,                      attract: attractStacker },
     { id: 'dodge',    name: 'Meteor Dodge',   make: dodge,                        attract: attractDodge },
     { id: 'snake2',   name: 'Snake II (wrap)', make: g => snake(g, true),         attract: attractSnake },
-    { id: 'squash',   name: 'Squash',         make: g => pong(g, true),           attract: attractSquash },
-    { id: 'racing3',  name: 'Highway (3 lanes)', make: g => racing(g, 3),         attract: attractRacing3 }
+    { id: 'squash',   name: 'Squash',         make: g => pong(g, true),           attract: attractSquash }
+    // parked for now: the three-lane road (racing(g, 3)) needs proper-looking cars before it ships
+    // { id: 'racing3',  name: 'Highway (3 lanes)', make: g => racing(g, 3),         attract: attractRacing3 }
   ];
 })();

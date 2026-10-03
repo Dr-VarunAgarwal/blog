@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '16';
+  const BUILD = '18';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -309,11 +309,17 @@
     }
   }
 
+  let powerHold = 0;
   function btnDown(btn) {
     Sound.unlock();
     if (btn === 'power') {
       if (!batteries) { toast('No batteries. Flip the console over (top left) to put them back.'); Haptic.fx('miss'); return; }
       if (state === OFF && window.__brickFsOnPower) window.__brickFsOnPower();
+      if (state === PLAY || state === PAUSE) {            // mid-game: a stray tap must not kill the run, so switching off takes a short hold
+        clearTimeout(powerHold);
+        powerHold = setTimeout(() => { powerHold = 0; powerToggle(); Haptic.fx('miss'); }, 500);
+        return;
+      }
       return powerToggle();
     }
     if (state === OFF) return;
@@ -339,6 +345,7 @@
     dispatch(btn, false);
   }
   function btnUp(btn) {
+    if (btn === 'power' && powerHold) { clearTimeout(powerHold); powerHold = 0; toast('Hold ON/OFF to switch off during a game'); return; }
     if (!(btn in held) || !held[btn]) return;
     held[btn] = 0;
     if (game && game.release) game.release(btn);
@@ -526,7 +533,7 @@
     ctx.strokeRect(5.7, 5.7, W * CW + 5.6, H * CH + 5.6);
 
     // cells: ghost grid, then shadow, then ink
-    const isOn = i => boot || f[i] === 1 || (f[i] === 2 && blink);
+    const isOn = i => f[i] === 1 || (f[i] === 2 && blink);
     for (let i = 0; i < N; i++) if (!isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, P.ghost);
     ctx.save(); ctx.translate(1.1, 1.1);
     for (let i = 0; i < N; i++) if (isOn(i)) cell(FX0 + (i % W) * CW, FY0 + ((i / W) | 0) * CH, CW, CH, 'rgba(0,0,0,.14)');
@@ -595,7 +602,26 @@
 
   /* what the playfield shows in each state */
   const view = new Uint8Array(N);
+  // Power-on: like the real units, the field winds up into a spiral and then unwinds again before the title screen.
+  const BOOT_MS = 1250, SPIRAL = (function () {
+    const order = []; let x0 = 0, x1 = W - 1, y0 = 0, y1 = H - 1;
+    while (x0 <= x1 && y0 <= y1) {
+      for (let x = x0; x <= x1; x++) order.push(y0 * W + x);
+      for (let y = y0 + 1; y <= y1; y++) order.push(y * W + x1);
+      if (y0 < y1) for (let x = x1 - 1; x >= x0; x--) order.push(y1 * W + x);
+      if (x0 < x1) for (let y = y1 - 1; y > y0; y--) order.push(y * W + x0);
+      x0++; x1--; y0++; y1--;
+    }
+    return order;
+  })();
   function frameField() {
+    if (state === BOOT) {
+      view.fill(0);
+      const half = BOOT_MS * .52, n = SPIRAL.length;
+      if (stateT < half) { const k = Math.floor(stateT / half * n) + 1; for (let i = 0; i < k && i < n; i++) view[SPIRAL[i]] = 1; }
+      else { const k = Math.floor((stateT - half) / (BOOT_MS - half) * n); for (let i = k; i < n; i++) view[SPIRAL[i]] = 1; }
+      return view;
+    }
     if (state === MENU) {
       view.fill(0);
       const was = g.f; g.f = view;
@@ -631,7 +657,7 @@
   let last = performance.now();
   function advance(dt) {
     clock += dt; stateT += dt;
-    if (state === BOOT) { if (stateT > 1100) toMenu(); }
+    if (state === BOOT) { if (stateT > BOOT_MS) toMenu(); }
     else if (state === MENU) repeats();
     else if (state === PLAY) {
       if (startDelay > 0) startDelay -= dt;
@@ -660,20 +686,28 @@
   let nameTimer = null;
   const defaultLabel = () => ({ a: 'CLASSIC', c: 'SUPER' }[look.layout] || '');
   // Immersive has no printed title, so the game's name stays up top the whole time the console is on.
+  // long titles shrink to fit their slot instead of wrapping onto the screen
+  const LABEL_MAX = { a: 330, b: 330, c: 224, d: 250 };
+  function fitLabel() {
+    labelEl.style.fontSize = ''; labelEl.style.width = 'max-content';
+    const max = LABEL_MAX[look.layout] || 330, w = labelEl.offsetWidth - (look.layout === 'c' ? 20 : 0);
+    labelEl.style.width = '';
+    if (w > max) labelEl.style.fontSize = (parseFloat(getComputedStyle(labelEl).fontSize) * max / w).toFixed(2) + 'px';
+  }
   let pinnedName = false;
   function syncName() {
     if (look.layout !== 'd') return;
     pinnedName = true;
     if (state === OFF) { labelEl.textContent = ''; labelEl.classList.remove('named'); return; }
     const gm = (state === MENU || !def) ? GAMES[sel.game] : def;
-    labelEl.textContent = gm.name.toUpperCase(); labelEl.classList.add('named');
+    labelEl.textContent = gm.name.toUpperCase(); labelEl.classList.add('named'); fitLabel();
   }
   function showName() {
     if (look.layout === 'd') return syncName();
     labelEl.textContent = GAMES[sel.game].name.toUpperCase();
-    labelEl.classList.add('named');
+    labelEl.classList.add('named'); fitLabel();
     clearTimeout(nameTimer);
-    nameTimer = setTimeout(() => { labelEl.textContent = defaultLabel(); labelEl.classList.remove('named'); }, 2200);
+    nameTimer = setTimeout(() => { labelEl.textContent = defaultLabel(); labelEl.classList.remove('named'); fitLabel(); }, 2200);
   }
   on('state', syncName);
   labelEl.addEventListener('click', () => { setTint((palIdx + 1) % PALETTES.length); Sound.unlock(); Sound.fx('tick'); });
@@ -830,6 +864,7 @@
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) tc.setAttribute('content', (look.layout === 'c' || look.layout === 'd') ? c.body : '#0d0d0f');
     if (look.layout === 'd') syncName(); else if (!labelEl.classList.contains('named')) labelEl.textContent = defaultLabel();
+    fitLabel();
     if (look.layout !== 'd' && pinnedName) { pinnedName = false; labelEl.classList.remove('named'); labelEl.textContent = defaultLabel(); }
     store.set('look', look);
     renderSheet();
@@ -1067,7 +1102,7 @@
   const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
   const api = {
     SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
-    lcdMsg, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
+    lcdMsg, powerOff() { clearTimeout(powerHold); powerHold = 0; if (state !== OFF) powerToggle(); }, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
     skinPreview: (i, scale) => makeConsole(SKINS[i].layout, COLOURS.find(x => x.id === SKINS[i].colour), SKINS[i].tint, scale)
   };
   window.BrickConsole = { api, g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
