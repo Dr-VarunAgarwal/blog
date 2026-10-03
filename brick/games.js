@@ -233,31 +233,44 @@
    * ===================================================================== */
   const CAR = ['.X.', 'XXX', '.X.', 'X.X'];
   const RACE_MS = [140, 120, 105, 90, 78, 68, 58, 50, 43, 37];
-  function racing(g) {
-    const LX = [1, 6], PY = 16;
-    let lane = 0, off = 0, cars = [], gap = 6, nextLane = g.rnd(2), passed = 0, crash = 0;
+  const CAR2 = ['XX', 'XX', 'XX', 'XX'];                          // slim car for the three-lane road
+  function racing(g, lanes) {
+    const three = lanes === 3;
+    const LX = three ? [1, 4, 7] : [1, 6], PY = 16, body = three ? CAR2 : CAR;
+    let lane = three ? 1 : 0, off = 0, cars = [], gap = 6, passed = 0, crash = 0;
+    let nextLanes = [g.rnd(lanes || 2)];
     const tk = Tick(RACE_MS[g.speed - 1]);
 
     const hit = () => cars.some(c => c.lane === lane && c.y + 3 >= PY && c.y <= PY + 3);
     const wreck = () => { crash = 1; g.sfx('crash'); };
-    // How long until the *next* car spawns, and in which lane. A car is 4 rows long, so when the
-    // next car is in the other lane the gap must cover its body (8 rows) plus a human reaction
-    // window (~330 ms at the current speed) - otherwise there is literally no time to switch.
-    function plan(prevLane) {
+    // How long until the *next* car spawns, and in which lane(s). A car is 4 rows long, so when the
+    // next car is in another lane the gap must cover its body (8 rows) plus a human reaction
+    // window (~330 ms at the current speed) per lane to cross - otherwise there is literally no time to switch.
+    // On the three-lane road, higher levels sometimes send two cars side by side, always leaving one lane open.
+    function plan(prev) {
       const reaction = Math.ceil(330 / RACE_MS[g.speed - 1]);
-      nextLane = g.rnd(2);
-      gap = (nextLane === prevLane ? 5 : 8 + reaction) + g.rnd(Math.max(1, 8 - (g.level >> 1)));
+      if (three) {
+        const pair = g.rnd(100) < 8 + g.level * 5;
+        const open = g.rnd(3);
+        nextLanes = pair ? [0, 1, 2].filter(l => l !== open) : [g.rnd(3)];
+        const dist = Math.max.apply(null, nextLanes.map(l => Math.abs(l - prev)).concat(pair ? [2] : [0]));
+        gap = (dist ? 8 + reaction * dist : 5) + g.rnd(Math.max(1, 8 - (g.level >> 1)));
+        return;
+      }
+      nextLanes = [g.rnd(2)];
+      gap = (nextLanes[0] === prev ? 5 : 8 + reaction) + g.rnd(Math.max(1, 8 - (g.level >> 1)));
     }
+    plan(lane);
 
     return {
-      repeat: {},
+      repeat: three ? { left: [190, 120], right: [190, 120] } : {},
       update(dt) {
         if (crash) { crash += dt; if (crash > 1200) g.over(); return; }
         tk.ms = RACE_MS[g.speed - 1] * ((g.held('up') || g.held('rotate')) ? .55 : 1);
         if (!tk.step(dt)) return;
         off = (off + 1) & 3;
         cars.forEach(c => c.y++);
-        if (--gap <= 0) { cars.push({ lane: nextLane, y: -4 }); plan(nextLane); }
+        if (--gap <= 0) { const ls = nextLanes.slice(); ls.forEach(l => cars.push({ lane: l, y: -4 })); plan(ls[ls.length - 1]); }
         cars = cars.filter(c => {
           if (c.y <= H - 1) return true;
           passed++; g.add(10);
@@ -268,16 +281,28 @@
       },
       press(btn) {
         if (crash) return;
-        if (btn === 'left' && lane !== 0) { lane = 0; g.sfx('move'); }
+        if (three) {
+          if (btn === 'left' && lane > 0) { lane--; g.sfx('move'); }
+          else if (btn === 'right' && lane < 2) { lane++; g.sfx('move'); }
+        } else if (btn === 'left' && lane !== 0) { lane = 0; g.sfx('move'); }
         else if (btn === 'right' && lane !== 1) { lane = 1; g.sfx('move'); }
         if (hit()) wreck();
       },
       draw() {
         for (let y = 0; y < H; y++) if (((y + off) & 3) !== 3) { g.set(0, y); g.set(W - 1, y); }
-        cars.forEach(c => sprite(g, LX[c.lane], c.y, CAR));
-        sprite(g, LX[lane], PY, CAR, crash && ((crash / 120) | 0) % 2 ? 0 : 1);
+        cars.forEach(c => sprite(g, LX[c.lane], c.y, body));
+        sprite(g, LX[lane], PY, body, crash && ((crash / 120) | 0) % 2 ? 0 : 1);
       }
     };
+  }
+  function attractRacing3(g, t) {
+    const off = Math.floor(t / 90) & 3;
+    for (let y = 0; y < H; y++) if (((y + off) & 3) !== 3) { g.set(0, y); g.set(W - 1, y); }
+    const cyc = Math.floor(t / 2600);
+    sprite(g, 1, ((Math.floor(t / 90) + 6) % 28) - 6, CAR2);
+    sprite(g, 7, ((Math.floor(t / 90) + 18) % 30) - 6, CAR2);
+    sprite(g, 4, ((Math.floor(t / 90) + 27) % 32) - 6, CAR2);
+    sprite(g, [1, 4, 7][cyc % 3], 16, CAR2);
   }
   function attractRacing(g, t) {
     const off = Math.floor(t / 90) & 3;
@@ -903,7 +928,7 @@
   window.BRICK_GAMES = [
     { id: 'tetris',   name: 'Brick Fall',     make: tetris,                       attract: attractTetris },
     { id: 'snake',    name: 'Snake',          make: g => snake(g, false),         attract: attractSnake },
-    { id: 'racing',   name: 'Road Racer',   make: racing,                       attract: attractRacing },
+    { id: 'racing',   name: 'Road Racer',   make: g => racing(g, 2),            attract: attractRacing },
     { id: 'tanks',    name: 'Tank Battle',    make: tanks,                        attract: attractTanks },
     { id: 'breakout', name: 'Brick Breaker',  make: breakout,                     attract: attractBreakout },
     { id: 'shooter',  name: 'Star Shooter',   make: shooter,                      attract: attractShooter },
@@ -912,6 +937,7 @@
     { id: 'stacker',  name: 'Block Tower',        make: stacker,                      attract: attractStacker },
     { id: 'dodge',    name: 'Meteor Dodge',   make: dodge,                        attract: attractDodge },
     { id: 'snake2',   name: 'Snake II (wrap)', make: g => snake(g, true),         attract: attractSnake },
-    { id: 'squash',   name: 'Squash',         make: g => pong(g, true),           attract: attractSquash }
+    { id: 'squash',   name: 'Squash',         make: g => pong(g, true),           attract: attractSquash },
+    { id: 'racing3',  name: 'Highway (3 lanes)', make: g => racing(g, 3),         attract: attractRacing3 }
   ];
 })();
