@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '14';
+  const BUILD = '15';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -649,12 +649,23 @@
   const labelEl = $('#label');
   let nameTimer = null;
   const defaultLabel = () => ({ a: 'CLASSIC', c: 'SUPER' }[look.layout] || '');
+  // Immersive has no printed title, so the game's name stays up top the whole time the console is on.
+  let pinnedName = false;
+  function syncName() {
+    if (look.layout !== 'd') return;
+    pinnedName = true;
+    if (state === OFF) { labelEl.textContent = ''; labelEl.classList.remove('named'); return; }
+    const gm = (state === MENU || !def) ? GAMES[sel.game] : def;
+    labelEl.textContent = gm.name.toUpperCase(); labelEl.classList.add('named');
+  }
   function showName() {
+    if (look.layout === 'd') return syncName();
     labelEl.textContent = GAMES[sel.game].name.toUpperCase();
     labelEl.classList.add('named');
     clearTimeout(nameTimer);
     nameTimer = setTimeout(() => { labelEl.textContent = defaultLabel(); labelEl.classList.remove('named'); }, 2200);
   }
+  on('state', syncName);
   labelEl.addEventListener('click', () => { setTint((palIdx + 1) % PALETTES.length); Sound.unlock(); Sound.fx('tick'); });
   function setTint(i) { palIdx = i; store.set('pal', palIdx); applyPalette(); renderSheet(); }
   function applyPalette() {
@@ -709,7 +720,7 @@
   const fsRoot = document.documentElement;
   const fsEnabled = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
   const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
-  let wantFs = !!store.get('fs', false);
+  let wantFs = !!store.get('fs', true);                      // full screen is the default (browsers want a tap first, so it starts on your first touch)
   function enterFs() {
     if (!fsEnabled || isFs()) return;
     const req = fsRoot.requestFullscreen || fsRoot.webkitRequestFullscreen;
@@ -733,7 +744,27 @@
   });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { renderFs(); fit(); }));
   window.__brickFsOnPower = () => { if (wantFs) enterFs(); };
+  const firstTouchFs = () => { document.removeEventListener('pointerup', firstTouchFs, true); document.removeEventListener('keydown', firstTouchFs, true); if (wantFs) enterFs(); };
+  document.addEventListener('pointerup', firstTouchFs, true); document.addEventListener('keydown', firstTouchFs, true);
   window.__brickRenderFs = renderFs;
+
+  /* ------------------ reset: refresh the app, or wipe everything ------------------ */
+  function hardReset(wipe) {
+    if (wipe) { try { Object.keys(localStorage).filter(k => k.indexOf('brick.') === 0).forEach(k => localStorage.removeItem(k)); } catch (_) { /* ignore */ } }
+    const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
+    Promise.resolve(regs).then(() => (window.caches ? caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k)))) : null))
+      .catch(() => { }).then(() => location.replace(location.pathname + '?v=' + Date.now()));
+  }
+  const refreshBtn = $('#refresh-app'), wipeBtn = $('#wipe-data');
+  if (refreshBtn) refreshBtn.addEventListener('click', () => { refreshBtn.textContent = 'Refreshing…'; hardReset(false); });
+  if (wipeBtn) wipeBtn.addEventListener('click', () => {
+    if (wipeBtn.dataset.sure !== '1') {
+      wipeBtn.dataset.sure = '1'; wipeBtn.textContent = 'Tap again to confirm';
+      setTimeout(() => { wipeBtn.dataset.sure = ''; wipeBtn.textContent = 'Erase data'; }, 3500);
+      return;
+    }
+    hardReset(true);
+  });
 
   /* ------------------ console look: layout + colour ------------------ */
   const COLOURS = [
@@ -788,7 +819,8 @@
     PF = (look.layout === 'c' || look.layout === 'd') ? PROFILES.tall : PROFILES.classic;
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) tc.setAttribute('content', (look.layout === 'c' || look.layout === 'd') ? c.body : '#0d0d0f');
-    if (!labelEl.classList.contains('named')) labelEl.textContent = defaultLabel();
+    if (look.layout === 'd') syncName(); else if (!labelEl.classList.contains('named')) labelEl.textContent = defaultLabel();
+    if (look.layout !== 'd' && pinnedName) { pinnedName = false; labelEl.classList.remove('named'); labelEl.textContent = defaultLabel(); }
     store.set('look', look);
     renderSheet();
     fit();

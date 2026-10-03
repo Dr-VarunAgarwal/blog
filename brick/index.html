@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Brick Game — lucidité</title>
-<meta name="description" content="A playable rebuild of the classic pocket Brick Game handheld: twelve cartridges, ten speeds, ten levels, on your phone.">
+<meta name="description" content="A playable rebuild of the classic pocket Brick Game handheld: thirteen cartridges, ten speeds, ten levels, on your phone.">
 <meta name="theme-color" content="#0d0d0f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=14">
+<link rel="stylesheet" href="brick.css?v=15">
 </head>
 <body>
 <!--
@@ -138,7 +138,7 @@
         <div class="bk-ridges"><em></em><em></em><em></em></div>
         <h2>BRICK GAME</h2>
         <div class="bk-sub">9999 IN 1</div>
-        <p>A playable rebuild of the pocket brick handheld: twelve games, ten speeds and ten levels, made to fit in your phone.</p>
+        <p>A playable rebuild of the pocket brick handheld: thirteen games, ten speeds and ten levels, made to fit in your phone.</p>
         <p>Made by <b>Varun Agarwal</b>.</p>
         <a class="bk-link" id="bk-blog" href="https://blog.varunagarwal.com/" target="_blank" rel="noopener">Visit my blog <span aria-hidden="true">&#8599;</span></a>
         <p class="bk-fine">Original code, art and sounds. Not affiliated with any manufacturer or game company.</p>
@@ -168,14 +168,15 @@
             <div class="srow"><span>Screen</span><div class="swatches strip" id="tint-pick"></div></div>
           </div>
         </div>
-        <h3>Skins <span class="hint">ready-made looks, swipe to browse</span></h3>
+        <p class="fsnote whats"><b>Skin</b> = a complete look. <b>Body</b> shell, <b>Buttons</b> keys, <b>Screen</b> LCD tint. <b>Layout</b> = shape only, colours stay.</p>
+        <h3>Skins <span class="hint">complete looks, swipe to browse</span></h3>
         <div class="carousel">
           <button type="button" class="car-btn prev" id="skin-prev" aria-label="Previous skin">&#8249;</button>
           <div class="skins" id="skin-pick" role="listbox" aria-label="Skins"></div>
           <button type="button" class="car-btn next" id="skin-next" aria-label="Next skin">&#8250;</button>
         </div>
         <div class="dots" id="skin-dots"></div>
-        <div class="opt"><div class="optl">Layout <span class="hint">shape of the console</span></div>
+        <div class="opt"><div class="optl">Layout <span class="hint">shape only, colours stay</span></div>
           <div class="seg" id="layout-pick">
             <button type="button" data-layout="a">Lightning</button>
             <button type="button" data-layout="b">Kitty</button>
@@ -187,34 +188,39 @@
       </section>
 
       <section data-pane="play" hidden>
-        <div class="opt" id="fs-row"><div class="optl">Display</div>
+        <div class="opt" id="fs-row"><div class="optl">Display <span class="hint">hide the browser bars</span></div>
           <div class="seg" id="fs-pick">
             <button type="button" data-fs="0">Windowed</button>
             <button type="button" data-fs="1">Full screen</button>
           </div>
         </div>
         <p class="fsnote" id="fs-note" hidden>On iPhone, Safari can&rsquo;t go full screen from a web page. Use Share &rarr; Add to Home Screen and open it from there: no browser bars.</p>
-        <div class="opt"><div class="optl">Haptics</div>
+        <div class="opt"><div class="optl">Haptics <span class="hint">buzz on every press</span></div>
           <div class="seg" id="haptic-pick">
             <button type="button" data-hap="0">Off</button>
             <button type="button" data-hap="1">On</button>
           </div>
         </div>
         <p class="fsnote" id="haptic-note"></p>
-        <div class="opt"><div class="optl">Title keys</div>
+        <div class="opt"><div class="optl">Title keys <span class="hint">D-pad on the title screen</span></div>
           <div class="seg" id="menu-pick">
             <button type="button" data-menu="orig">Original</button>
             <button type="button" data-menu="quick">Quick</button>
           </div>
         </div>
-        <p class="fsnote">Original: LEFT = level, RIGHT = speed, DOWN = next game, UP = previous game, as printed on the real units. Quick: LEFT/RIGHT = game, UP/DOWN = speed, ROTATE = level. Super and Screen start on Original.</p>
-        <p class="fsnote">Your skin, colour and high scores are saved on this device. If anything ever looks half-updated, open <b>/brick/?reset</b> once.</p>
+        <p class="fsnote">The D-pad on the title screen, where you pick game, speed and level. <b>Original</b>: LEFT level, RIGHT speed, DOWN/UP game (as printed on the real units). <b>Quick</b>: LEFT/RIGHT game, UP/DOWN speed, ROTATE level.</p>
+        <h3>Reset</h3>
+        <div class="resetrow">
+          <button type="button" class="linkbtn" id="refresh-app">Refresh app</button>
+          <button type="button" class="linkbtn danger" id="wipe-data">Erase data</button>
+        </div>
+        <p class="fsnote"><b>Refresh</b> clears the saved copy of the page and loads the latest version (your skin and scores stay). Use it if anything looks half-updated. <b>Erase</b> also deletes your skin, colours and high scores.</p>
       </section>
 
       <section data-pane="help" hidden>
         <p class="lede">Just like the real thing: press <b>ON/OFF</b>, pick a game, speed and level on the title screen (see <i>Title keys</i> under Play), and hit <b>S/P</b> to start.</p>
         <button type="button" class="linkbtn" id="replay-welcome">Play the welcome tour</button>
-        <h3><span id="help-games-n">12</span> games</h3>
+        <h3><span id="help-games-n">13</span> games</h3>
         <ol id="help-games"></ol>
         <h3>Controls</h3>
         <table>
@@ -239,10 +245,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=14"></script>
-<script src="mascots.js?v=14"></script>
-<script src="engine.js?v=14"></script>
-<script src="back.js?v=14"></script>
-<script src="welcome.js?v=14"></script>
+<script src="games.js?v=15"></script>
+<script src="mascots.js?v=15"></script>
+<script src="engine.js?v=15"></script>
+<script src="back.js?v=15"></script>
+<script src="welcome.js?v=15"></script>
 </body>
 </html>
