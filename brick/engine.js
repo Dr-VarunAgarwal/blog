@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '11';
+  const BUILD = '12';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -109,7 +109,9 @@
       win: () => seq([[659, .08], [784, .08], [988, .08], [1319, .2]]),
       start: () => seq([[523, .09], [659, .09], [784, .09], [1046, .2]]),
       over: () => seq([[392, .2], [330, .2], [262, .2], [196, .5]], { type: 'sawtooth', vol: .8 }),
-      boot: () => seq([[880, .08], [1760, .12]])
+      boot: () => seq([[880, .08], [1760, .12]]),
+      click: () => { tone(2200, .012, { vol: .35 }); tone(900, .025, { vol: .3, at: .016 }); },
+      thunk: () => { noise(.06, { vol: .5, f: 900 }); tone(110, .08, { vol: .6 }); }
     };
     // Korobeiniki — public-domain Russian folk tune (note, beats)
     const TUNE = [
@@ -215,7 +217,10 @@
   };
 
   /* ------------------------------ transitions ------------------------------ */
-  function setState(s) { state = s; stateT = 0; }
+  const listeners = {};
+  const on = (evt, fn) => { (listeners[evt] = listeners[evt] || []).push(fn); };
+  const emit = (evt, data) => (listeners[evt] || []).forEach(f => { try { f(data); } catch (_) { /* a listener must never break the console */ } });
+  function setState(s) { state = s; stateT = 0; emit('state', s); }
 
   function powerToggle() {
     if (state === OFF) {
@@ -279,7 +284,7 @@
         else if (btn === 'down') sel.speed = (sel.speed + 8) % 10 + 1;
         else if (btn === 'rotate') { if (isRepeat) return; sel.level = sel.level % 10 + 1; }
       }
-      Sound.fx('tick'); store.set('sel', sel); showName();
+      Sound.fx('tick'); store.set('sel', sel); showName(); emit('menu');
     } else if (state === PLAY && startDelay <= 0 && game && game.press) {
       game.press(btn, !!isRepeat);
     }
@@ -763,7 +768,7 @@
   const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), layoutBox = $('#layout-pick'), menuBox = $('#menu-pick');
   swatchBox.innerHTML = COLOURS.map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + c.name + '" title="' + c.name + '" style="background:' + c.body + '"></button>').join('') +
     '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>';
-  tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '">' + p.name[0] + p.name.slice(1).toLowerCase() + '</button>').join('');
+  tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '" aria-label="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" title="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" style="background:' + p.bg + '"></button>').join('');
   swatchBox.addEventListener('click', e => {
     const b = e.target.closest('button[data-colour]'); if (!b) return;
     look.colour = b.dataset.colour; applyLook();
@@ -851,8 +856,8 @@
     { name: 'Kitty',     sub: 'Pink',   layout: 'b', colour: 'pink',   tint: 0 },
     { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
     { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 0 },
-    { name: 'Screen',    sub: 'Black',  layout: 'd', colour: 'black',  tint: 0 },
-    { name: 'Screen',    sub: 'Olive',  layout: 'd', colour: 'gray',   tint: 3 }
+    { name: 'Immersive', sub: 'Black', layout: 'd', colour: 'black',  tint: 0 },
+    { name: 'Immersive', sub: 'Olive', layout: 'd', colour: 'gray',   tint: 3 }
   ];
   const skinBox = $('#skin-pick');
   SKINS.forEach((s, i) => {
@@ -863,12 +868,13 @@
     card.insertAdjacentHTML('beforeend', s.name + '<small>' + s.sub + '</small>');
     skinBox.appendChild(card);
   });
-  function pickSkin(card) {
-    const s = SKINS[+card.dataset.skin];
+  function applySkinIndex(i) {
+    const s = SKINS[i];
     look.layout = s.layout; look.colour = s.colour; look.custom = null; look.key = null;
     palIdx = s.tint; store.set('pal', palIdx); applyPalette();
     applyLook();
   }
+  function pickSkin(card) { applySkinIndex(+card.dataset.skin); }
   skinBox.addEventListener('click', e => { const c = e.target.closest('[data-skin]'); if (c) pickSkin(c); });
   /* carousel: swipe / arrows / dots, selected skin centred when the sheet opens */
   const dotsBox = $('#skin-dots');
@@ -897,14 +903,14 @@
 
   /* live preview: always shows your current console, updates as you change anything */
   const liveBox = $('#live-pv');
-  const LAYOUT_INFO = { a: ['Lightning', 'Black unit with lightning bolts'], b: ['Kitty', 'Big screen, cross D-pad, pill keys'], c: ['Super', 'Illustrated, labelled keys'], d: ['Screen', 'No console, just the screen'] };
+  const LAYOUT_INFO = { a: ['Lightning', 'Classic black handheld with lightning bolts'], b: ['Kitty', 'Cat-print unit: big screen, cross D-pad, pill keys'], c: ['Super', 'Illustrated unit: framed screen, every key labelled'], d: ['Immersive', 'Big screen and labelled keys, no console shell'] };
   function renderLive() {
-    const info = LAYOUT_INFO[look.layout], cap = document.createElement('div');
+    const info = LAYOUT_INFO[look.layout];
     const cn = look.colour === 'custom' ? 'Custom colour' : (COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}).name;
-    cap.className = 'cap'; cap.innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + (look.key ? ' · custom buttons' : '') + '<br>' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
-    // big preview: fill the pinned area (it is about 40% of the sheet), whatever the screen size
-    const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 20) / DIMS[look.layout]) : .3;
-    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, sc), cap);
+    $('#live-cap').innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + (look.key ? ' · custom buttons' : '') + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
+    // big preview: fill the pinned area whatever the screen size
+    const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 4) / DIMS[look.layout]) : .3;
+    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, sc));
   }
   window.addEventListener('resize', () => { if (!help.hidden) renderLive(); });
 
@@ -950,6 +956,9 @@
     pickMascot(); renderSheet();
   });
 
+  const replayBtn = $('#replay-welcome');
+  if (replayBtn) replayBtn.addEventListener('click', () => { toggleHelp(false); if (window.BrickWelcome) window.BrickWelcome.start(true); });
+
   /* haptics row (Play tab) */
   const hapBox = $('#haptic-pick');
   hapBox.addEventListener('click', e => { const b = e.target.closest('button[data-hap]'); if (b) { Haptic.set(b.dataset.hap === '1'); renderSheet(); } });
@@ -985,5 +994,11 @@
   }
 
   // handy for testing / tinkering from the console
-  window.BrickConsole = { g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
+  const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
+  const api = {
+    SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
+    menuMode, get state() { return state; },
+    skinPreview: (i, scale) => makeConsole(SKINS[i].layout, COLOURS.find(x => x.id === SKINS[i].colour), SKINS[i].tint, scale)
+  };
+  window.BrickConsole = { api, g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
 })();
