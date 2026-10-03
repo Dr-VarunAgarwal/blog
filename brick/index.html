@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=7">
+<link rel="stylesheet" href="brick.css?v=8">
 </head>
 <body>
 <!--
@@ -47,11 +47,11 @@
 
     <div class="lcd-frame">
       <div class="lcd-screen">
-        <canvas id="lcd" width="500" height="520" aria-label="Brick Game LCD screen"></canvas>
+        <canvas id="lcd" class="lcdc" width="500" height="520" aria-label="Brick Game LCD screen"></canvas>
       </div>
     </div>
 
-    <div id="label">CLASSIC</div>
+    <div id="label" class="lbl">CLASSIC</div>
     <div class="shoulder"></div>
 
     <button class="fn" data-btn="power" aria-label="On / Off"><i></i><span>ON/OFF</span></button>
@@ -59,7 +59,7 @@
     <button class="fn" data-btn="sp"    data-l2="PAUSE" aria-label="Start / Pause"><i></i><span data-alt="START">S/P</span></button>
     <button class="fn" data-btn="reset" aria-label="Reset"><i></i><span>RESET</span></button>
 
-    <div id="dpad" role="group" aria-label="Direction pad">
+    <div id="dpad" class="dpad" role="group" aria-label="Direction pad">
       <!-- layout a: four round keys -->
       <svg class="cross" viewBox="0 0 140 140" aria-hidden="true">
         <path class="cross-body" d="M54 6 H86 a8 8 0 0 1 8 8 V54 H126 a8 8 0 0 1 8 8 V78 a8 8 0 0 1 -8 8 H94 V126 a8 8 0 0 1 -8 8 H54 a8 8 0 0 1 -8 -8 V86 H14 a8 8 0 0 1 -8 -8 V62 a8 8 0 0 1 8 -8 H46 V14 a8 8 0 0 1 8 -8 Z"/>
@@ -124,6 +124,7 @@
       </div>
 
       <section data-pane="style">
+        <div class="livepv" id="live-pv"></div>
         <h3>Skins</h3>
         <div class="skins" id="skin-pick"></div>
         <h3>Fine-tune</h3>
@@ -147,6 +148,13 @@
           </div>
         </div>
         <p class="fsnote" id="fs-note" hidden>On iPhone, Safari can&rsquo;t go full screen from a web page. Use Share &rarr; Add to Home Screen and open it from there: no browser bars.</p>
+        <div class="opt"><div class="optl">Haptics</div>
+          <div class="seg" id="haptic-pick">
+            <button type="button" data-hap="0">Off</button>
+            <button type="button" data-hap="1">On</button>
+          </div>
+        </div>
+        <p class="fsnote" id="haptic-note"></p>
         <div class="opt"><div class="optl">Title keys</div>
           <div class="seg" id="menu-pick">
             <button type="button" data-menu="orig">Original</button>
@@ -183,7 +191,7 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=7"></script>
-<script src="engine.js?v=7"></script>
+<script src="games.js?v=8"></script>
+<script src="engine.js?v=8"></script>
 </body>
 </html>
