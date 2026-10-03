@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=19">
+<link rel="stylesheet" href="brick.css?v=21">
 </head>
 <body>
 <!--
@@ -39,6 +39,10 @@
     </button>
     <button class="corner cfgbtn" id="help-open" aria-label="Settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><path d="M12 2.6v3M12 18.4v3M2.6 12h3M18.4 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/></svg>
+    </button>
+    <button class="corner fsbtn" id="fs-open" title="Full screen" aria-label="Toggle full screen" aria-pressed="false">
+      <svg class="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      <svg class="i-shrink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
     </button>
 
     <div class="shell">
@@ -199,6 +203,9 @@
               <button type="button" data-shell="clear">Clear</button>
             </div>
           </div>
+          <div class="opt" id="glass-row" hidden><div class="optl">Glass tint <span class="hint">colour of the see-through plastic</span></div>
+            <div class="swatches" id="glass-pick"></div>
+          </div>
           <div class="opt"><div class="optl">Texture <span class="hint">fine plastic grain and sheen</span></div>
             <div class="seg" id="tex-pick">
               <button type="button" data-tex="1">On</button>
@@ -271,10 +278,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=19"></script>
-<script src="mascots.js?v=19"></script>
-<script src="engine.js?v=19"></script>
-<script src="back.js?v=19"></script>
-<script src="welcome.js?v=19"></script>
+<script src="games.js?v=21"></script>
+<script src="mascots.js?v=21"></script>
+<script src="engine.js?v=21"></script>
+<script src="back.js?v=21"></script>
+<script src="welcome.js?v=21"></script>
 </body>
 </html>

@@ -29,3 +29,8 @@ The game number on the title screen is its position in the list. `g` also gives 
 
 High scores, sound, last selection and LCD tint are saved in `localStorage` (`brick.*`).
 When you change any file, bump `VERSION` in `sw.js` so installed copies refresh.
+
+## Credits
+
+- The glossy epoxy chip visible through the **Clear** shell (embedded in `pcb.svg`) is cropped from the public-domain (CC0) photograph "MARIO CHIP 1 COB.jpg" by Furrtek on Wikimedia Commons. Only the black epoxy blob is used; the rest of the board, parts and silkscreen in `pcb.svg` are drawn for this project.
+- Orbitron (Self-hosted, SIL Open Font License 1.1): `fonts/OFL-orbitron.txt`.
