@@ -109,6 +109,29 @@
         if (fits(cur.t, nr, cur.x + k, cur.y)) { cur.r = nr; cur.x += k; g.sfx('rot'); return; }
       }
     }
+    function bestPlacement() {
+      let best = null;
+      for (let r = 0; r < 4; r++) for (let x = -3; x < W; x++) {
+        if (!fits(cur.t, r, x, cur.y)) continue;
+        let y = cur.y; while (fits(cur.t, r, x, y + 1)) y++;
+        const tmp = board.slice();
+        for (const [cx, cy] of ROT[cur.t][r]) tmp[(y + cy) * W + x + cx] = 1;
+        let lines = 0;
+        for (let yy = H - 1; yy >= 0; yy--) {
+          let full = true; for (let xx = 0; xx < W; xx++) if (!tmp[yy * W + xx]) { full = false; break; }
+          if (full) { lines++; for (let y2 = yy; y2 > 0; y2--) for (let xx = 0; xx < W; xx++) tmp[y2 * W + xx] = tmp[(y2 - 1) * W + xx]; for (let xx = 0; xx < W; xx++) tmp[xx] = 0; yy++; }
+        }
+        let holes = 0, agg = 0, bump = 0, prevH = -1;
+        for (let xx = 0; xx < W; xx++) {
+          let h = 0, seen = false;
+          for (let yy = 0; yy < H; yy++) { if (tmp[yy * W + xx]) { if (!seen) { h = H - yy; seen = true; } } else if (seen) holes++; }
+          agg += h; if (prevH >= 0) bump += Math.abs(h - prevH); prevH = h;
+        }
+        const sc = lines * 36 - holes * 42 - bump * 5 - agg * 2;
+        if (!best || sc > best.sc) best = { r, x, sc };
+      }
+      return best;
+    }
     spawn();
 
     return {
@@ -128,6 +151,18 @@
           return;
         }
         if (drop.step(dt) && !move(0, 1)) lock();
+      },
+      // demo: a little robot plays the real game on the title screen (greedy: fewest holes, lowest stack)
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (dead || clearing || !cur || this.aiT > 0) return;
+        if (this.aiPiece !== cur) { this.aiPiece = cur; this.aiBest = bestPlacement(); this.aiTries = 0; }
+        const b = this.aiBest;
+        if (!b) { this.press('up'); this.aiT = 150; return; }
+        if (cur.r !== b.r && this.aiTries < 4) { this.aiTries++; this.press('rotate'); this.aiT = 170; }
+        else if (cur.x < b.x) { this.press('right'); this.aiT = 120; }
+        else if (cur.x > b.x) { this.press('left'); this.aiT = 120; }
+        else { this.press('down'); this.aiT = 55; }
       },
       press(btn) {
         if (dead || clearing || !cur) return;
@@ -202,6 +237,42 @@
         if (dead) { dead += dt; if (dead > 1000) g.over(); return; }
         tk.ms = SNAKE_MS[g.speed - 1] * (g.held('rotate') ? .5 : 1);
         if (tk.step(dt)) step();
+      },
+      // demo: breadth-first search to the food, otherwise the roomiest safe neighbour
+      demo() {
+        if (dead || q.length) return;
+        const head = body[0];
+        const blocked = (x, y) => walls.has(key(x, y)) || body.some((s, i) => i < body.length - 1 && s.x === x && s.y === y);
+        const nbrs = (x, y) => [['up', 0, -1], ['down', 0, 1], ['left', -1, 0], ['right', 1, 0]].map(([n, dx, dy]) => {
+          let nx = x + dx, ny = y + dy;
+          if (wrap) { nx = (nx + W) % W; ny = (ny + H) % H; } else if (nx < 0 || nx >= W || ny < 0 || ny >= H) return null;
+          return { n, nx, ny };
+        }).filter(Boolean);
+        const prev = new Map(), start = key(head.x, head.y), queue = [[head.x, head.y]];
+        prev.set(start, null);
+        let found = null;
+        while (queue.length && !found) {
+          const [x, y] = queue.shift();
+          for (const { n, nx, ny } of nbrs(x, y)) {
+            const k = key(nx, ny);
+            if (prev.has(k) || blocked(nx, ny)) continue;
+            prev.set(k, { from: key(x, y), n });
+            if (food && nx === food.x && ny === food.y) { found = k; break; }
+            queue.push([nx, ny]);
+          }
+        }
+        let move = null;
+        if (found) { let k = found; while (prev.get(k) && prev.get(k).from !== start) k = prev.get(k).from; move = prev.get(k).n; }
+        else {
+          let bestN = -1;
+          for (const { n, nx, ny } of nbrs(head.x, head.y)) {
+            if (blocked(nx, ny)) continue;
+            const seen = new Set([key(nx, ny)]), st = [[nx, ny]];
+            while (st.length) { const [x, y] = st.pop(); for (const m of nbrs(x, y)) { const k = key(m.nx, m.ny); if (!seen.has(k) && !blocked(m.nx, m.ny)) { seen.add(k); st.push([m.nx, m.ny]); } } }
+            if (seen.size > bestN) { bestN = seen.size; move = n; }
+          }
+        }
+        if (move) this.press(move);
       },
       press(btn) {
         const v = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[btn];
@@ -278,6 +349,17 @@
           return false;
         });
         if (hit()) wreck();
+      },
+      // demo: stay in a lane with nothing coming; change lane early enough
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (crash || this.aiT > 0) return;
+        const n = three ? 3 : 2;
+        const eta = l => { let e = 99; for (const c of cars) if (c.lane === l && c.y <= PY + 3) e = Math.min(e, c.y >= PY - 3 ? -1 : (PY - 3) - c.y); return e; };
+        if (eta(lane) > 7) return;
+        let tgt = lane, bestE = eta(lane);
+        for (let l = 0; l < n; l++) { if (!three || Math.abs(l - lane) <= 1) { const e = eta(l); if (e > bestE && (e >= 3 || e === 99)) { bestE = e; tgt = l; } } }
+        if (tgt !== lane) { this.press(tgt > lane ? 'right' : 'left'); this.aiT = 90; }
       },
       press(btn) {
         if (crash) return;
@@ -444,6 +526,28 @@
         if (bt.step(dt)) stepBullets();
         if (!spawnLeft && !enemies.length && !clearT) { clearT = 1; g.sfx('win'); }
       },
+      // demo: dodge shots coming down a row or column, otherwise line up on the nearest enemy and fire
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || !player || dying || clearT) return;
+        this.aiT = 90;
+        const me = player;
+        for (const b of bullets) {
+          if (b.own !== 'e') continue;
+          if (b.dx === 0 && Math.abs(b.x - me.x) <= 1 && (me.y - b.y) * b.dy > 0 && (me.y - b.y) * b.dy <= 6) { this.press(me.x > 4 ? 'left' : 'right'); return; }
+          if (b.dy === 0 && Math.abs(b.y - me.y) <= 1 && (me.x - b.x) * b.dx > 0 && (me.x - b.x) * b.dx <= 6) { this.press(me.y > 12 ? 'up' : 'down'); return; }
+        }
+        if (!enemies.length) return;
+        const tgt = enemies.reduce((a, e) => (Math.abs(e.x - me.x) + Math.abs(e.y - me.y) < Math.abs(a.x - me.x) + Math.abs(a.y - me.y) ? e : a));
+        const dx = tgt.x - me.x, dy = tgt.y - me.y;
+        const face = (d, name) => { if (me.d === d) this.press('rotate'); else this.press(name); };
+        if (Math.abs(dx) <= 1 && dy < 0) face(0, 'up');
+        else if (Math.abs(dx) <= 1 && dy > 0) face(2, 'down');
+        else if (Math.abs(dy) <= 1 && dx > 0) face(1, 'right');
+        else if (Math.abs(dy) <= 1 && dx < 0) face(3, 'left');
+        else if (Math.abs(dx) > 1) this.press(dx > 0 ? 'right' : 'left');
+        else this.press(dy < 0 ? 'up' : 'down');
+      },
       press(btn) {
         if (dying || !player || clearT) return;
         if (btn === 'rotate') {
@@ -543,6 +647,15 @@
         tk.ms = BALL_MS[g.speed - 1];
         if (tk.step(dt)) step();
       },
+      // demo: serve after a beat, then keep the paddle under the ball
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || stageT) return;
+        this.aiT = 55;
+        if (stuck) { this.aiW = (this.aiW || 0) + 55; if (this.aiW > 700) { this.aiW = 0; this.press('rotate'); } return; }
+        const want = clamp(ball.x - 1, 0, W - 3);
+        if (px < want) this.press('right'); else if (px > want) this.press('left');
+      },
       press(btn) {
         if (stageT) return;
         if (btn === 'left' && px > 0) px--;
@@ -625,6 +738,24 @@
         }
         if (!inv.length) { waveT = 1; g.add(200); g.sfx('win'); }
       },
+      // demo: step out of the way of shots, line up under the lowest invader, fire
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || hurtT || waveT) return;
+        this.aiT = 70;
+        const unsafe = p => eshots.some(e => e.y >= H - 8 && e.x >= p && e.x <= p + 2);
+        if (unsafe(px)) {
+          let best = null;
+          for (let p = 0; p <= W - 3; p++) if (!unsafe(p) && (best === null || Math.abs(p - px) < Math.abs(best - px))) best = p;
+          if (best !== null) this.press(best > px ? 'right' : 'left');
+          return;
+        }
+        if (!inv.length) return;
+        const tgt = inv.reduce((a, b) => (b.y > a.y ? b : a));
+        if (px + 1 < tgt.x) { if (!unsafe(px + 1)) this.press('right'); }
+        else if (px + 1 > tgt.x) { if (!unsafe(px - 1)) this.press('left'); }
+        else this.press('rotate');
+      },
       press(btn) {
         if (hurtT || waveT) return;
         if (btn === 'left' && px > 0) px--;
@@ -689,6 +820,23 @@
             l.pat = n;
             if (fy === l.y && l.pat[fx]) { die(); return; }
           }
+        }
+      },
+      // demo: hop when the cell ahead is clear now and nothing is about to arrive from behind it
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || dead || flash) return;
+        this.aiT = 110;
+        const safe = (x, y) => {
+          const l = laneAt(y); if (!l) return true;
+          if (x < 0 || x >= W) return false;
+          for (let k = 0; k <= 2; k++) if (l.pat[(((x - l.dir * k) % W) + W) % W]) return false;
+          return true;
+        };
+        if (safe(fx, fy - 1)) { this.press('up'); return; }
+        if (!safe(fx, fy)) {
+          for (const d of [1, -1]) if (safe(fx + d, fy)) { this.press(d > 0 ? 'right' : 'left'); return; }
+          if (safe(fx, fy + 1)) this.press('down');
         }
       },
       press(btn) {
@@ -780,6 +928,14 @@
         }
         if (tk.step(dt)) step();
       },
+      // demo: slide under the ball (a touch lazy while it is heading away)
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || serveT > 0) return;
+        this.aiT = 90;
+        const want = (ball.dy < 0 && !squash) ? 3 : clamp(ball.x - 1, 0, W - 3);
+        if (px < want) this.press('right'); else if (px > want) this.press('left');
+      },
       press(btn) {
         if (btn === 'left' && px > 0) px--;
         else if (btn === 'right' && px < W - 3) px++;
@@ -849,6 +1005,14 @@
           if (bar.x + w >= W) { bar.x = W - w; bar.dir = -1; }
         }
       },
+      // demo: drop the bar when it sits right over the row below
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || fail || win) return;
+        this.aiT = 35;
+        const tx = rows.length ? rows[rows.length - 1].x : 3;
+        if (bar.x === tx) { this.press('rotate'); this.aiT = 350; }
+      },
       press(btn) {
         if (fail || win || btn === 'left' || btn === 'right') return;
         lock();
@@ -900,6 +1064,18 @@
           return false;
         });
         if (hit()) crash();
+      },
+      // demo: sidestep rocks that are about to land on us, then drift back down
+      demo(dt) {
+        this.aiT = (this.aiT || 0) - dt;
+        if (this.aiT > 0 || dead) return;
+        this.aiT = 70;
+        const danger = x => rocks.some(r => x >= r.x && x < r.x + 2 && r.y + 1 >= py - 3 && r.y <= py + 1);
+        if (danger(px)) {
+          let best = null;
+          for (let c = 0; c < W; c++) if (!danger(c) && (best === null || Math.abs(c - px) < Math.abs(best - px))) best = c;
+          if (best !== null) this.press(best > px ? 'right' : 'left');
+        } else if (py < H - 2) this.press('down');
       },
       press(btn) {
         if (dead) return;
