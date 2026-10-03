@@ -134,10 +134,16 @@
     if (coach) { coach.remove(); coach = null; }
     close(); store.set('welcomed', true);
   }
+  // The batteries + console-chooser intro is parked for now: first thing a visitor sees is just the flashing ON/OFF key.
+  // Add ?welcome=full to the URL to see the long version.
+  const FULL_INTRO = /[?&]welcome=full/.test(location.search);
+
   function start(replay) {
     if (active) return;
     active = true;
+    api.setBatteries(true);
     if (api.state !== STATE.OFF) { C.press('power'); C.unpress('power'); }                  // replay starts from "off"
+    if (!FULL_INTRO) { startTour(); return; }
     overlay = el('div', 'wl'); overlay.id = 'welcome'; overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true'); overlay.setAttribute('aria-label', 'Welcome');
     const skip = el('button', 'wl-skip', 'Skip'); skip.type = 'button'; skip.addEventListener('click', finish);
     overlay.appendChild(skip);

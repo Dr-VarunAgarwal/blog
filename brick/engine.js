@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '12';
+  const BUILD = '13';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -222,6 +222,21 @@
   const emit = (evt, data) => (listeners[evt] || []).forEach(f => { try { f(data); } catch (_) { /* a listener must never break the console */ } });
   function setState(s) { state = s; stateT = 0; emit('state', s); }
 
+  let batteries = true;
+  let toastTimer = 0;
+  function toast(msg) {
+    let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  function setBatteries(v) {
+    if (v === batteries) return;
+    batteries = v;
+    if (!v && state !== OFF) { Sound.stopMusic(); game = null; setState(OFF); releaseAll(); document.body.classList.remove('is-on'); }
+    emit('batteries', v);
+  }
+  function pauseIfPlaying() { if (state === PLAY && startDelay <= 0) togglePause(); }
+
   function powerToggle() {
     if (state === OFF) {
       Sound.unlock();
@@ -292,7 +307,11 @@
 
   function btnDown(btn) {
     Sound.unlock();
-    if (btn === 'power') { if (state === OFF && window.__brickFsOnPower) window.__brickFsOnPower(); return powerToggle(); }
+    if (btn === 'power') {
+      if (!batteries) { toast('No batteries. Flip the console over (top left) to put them back.'); Haptic.fx('miss'); return; }
+      if (state === OFF && window.__brickFsOnPower) window.__brickFsOnPower();
+      return powerToggle();
+    }
     if (state === OFF) return;
     if (btn === 'sound') {
       Sound.set(!Sound.enabled);
@@ -649,9 +668,11 @@
   $('#help-games-n').textContent = GAMES.length;
 
   // fit the whole handheld to the viewport
+  const DIMS = { a: 782, b: 782, c: 622, d: 690 };                // design height per layout, incl. the 22px the body sits below the corner keys
   const device = $('#device');
   const coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)') : { matches: false };
   const probe = $('#stage');
+  const backEl = $('#back');
   function fit() {
     const vv = window.visualViewport;
     const vw = vv ? vv.width : window.innerWidth, vh = vv ? vv.height : window.innerHeight;
@@ -660,12 +681,15 @@
     const inT = parseFloat(cs.paddingTop) || 0, inB = parseFloat(cs.paddingBottom) || 0, inL = parseFloat(cs.paddingLeft) || 0, inR = parseFloat(cs.paddingRight) || 0;
     const aw = vw - inL - inR, ah = vh - inT - inB;
     const land = vw > vh * 1.2 && (coarse.matches || /[?&]land\b/.test(location.search));
-    device.classList.toggle('land', land);
-    const DW = land ? 800 : 360, DH = land ? 380 : ({ a: 760, b: 760, c: 600, d: 690 }[look.layout] || 760);
+    const DW = land ? 800 : 360, DH = land ? 380 : (DIMS[look.layout] || 782);
     const s = Math.min(aw / DW, ah / DH, 1.6);
-    device.style.left = (inL + aw / 2) + 'px';
-    device.style.top = (inT + ah / 2) + 'px';
-    device.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+    [device, backEl].forEach(el => {
+      if (!el) return;
+      el.classList.toggle('land', land);
+      el.style.left = (inL + aw / 2) + 'px';
+      el.style.top = (inT + ah / 2) + 'px';
+      el.style.setProperty('--s', s);
+    });
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     const r = cv.getBoundingClientRect();
     const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
@@ -755,6 +779,7 @@
     for (const k in vars) root.setProperty(k, vars[k]);
     device.dataset.layout = look.layout;
     document.documentElement.dataset.layout = look.layout;
+    if (backEl) backEl.dataset.layout = look.layout;
     PF = (look.layout === 'c' || look.layout === 'd') ? PROFILES.tall : PROFILES.classic;
     const tc = document.querySelector('meta[name="theme-color"]');
     if (tc) tc.setAttribute('content', (look.layout === 'c' || look.layout === 'd') ? c.body : '#0d0d0f');
@@ -807,7 +832,6 @@
   const TEMPLATE = device.cloneNode(true);          // pristine copy of the shell, taken before any live state is applied
 
   /* ------------- miniature consoles: scaled clones of the real shell, so previews are exactly what you get ------------- */
-  const DIMS = { a: 760, b: 760, c: 600, d: 690 };
   let mockN = 0;
   function lcdMock(layout, P) {
     const prof = (layout === 'c' || layout === 'd') ? PROFILES.tall : PROFILES.classic;
@@ -986,7 +1010,7 @@
 
   // keep iOS from zooming/scrolling the game
   ['gesturestart', 'dblclick'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
-  document.addEventListener('touchmove', e => { if (!help.contains(e.target)) e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', e => { if (!e.target.closest || !e.target.closest('#help, #welcome')) e.preventDefault(); }, { passive: false });
 
   // offline support
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -997,7 +1021,7 @@
   const currentSkinIndex = () => Math.max(0, SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx));
   const api = {
     SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
-    menuMode, get state() { return state; },
+    menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
     skinPreview: (i, scale) => makeConsole(SKINS[i].layout, COLOURS.find(x => x.id === SKINS[i].colour), SKINS[i].tint, scale)
   };
   window.BrickConsole = { api, g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
