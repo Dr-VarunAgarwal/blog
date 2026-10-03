@@ -364,7 +364,7 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
  * ===================================================================== */
 /* The settings dock: a panel along the bottom (a side panel when the phone is held sideways). The real console stays live above/beside it,
  * re-fitted by engine.js into whatever space the dock leaves free, so every change is previewed on the actual console. */
-:root { --dock-h: clamp(356px, 50vh, 460px); --dock-h: clamp(356px, 50dvh, 460px); }
+:root { --dock-h: clamp(366px, 50vh, 460px); --dock-h: clamp(366px, 50dvh, 460px); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 #help { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
 #help .card {
