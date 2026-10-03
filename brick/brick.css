@@ -8,7 +8,7 @@
   /* fine plastic grain + a faint sheen, layered over the body and key colours for a slightly real feel */
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feColorMatrix values='1.4 0 0 0 -.2  0 1.4 0 0 -.2  0 0 1.4 0 -.2  0 0 0 0 .075'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --sheen: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 34%, rgba(0,0,0,0) 62%, rgba(0,0,0,.10) 100%);
-  --build: "24";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "25";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -364,7 +364,7 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
  * ===================================================================== */
 /* The settings dock: a panel along the bottom (a side panel when the phone is held sideways). The real console stays live above/beside it,
  * re-fitted by engine.js into whatever space the dock leaves free, so every change is previewed on the actual console. */
-:root { --dock-h: clamp(346px, 50vh, 450px); --dock-h: clamp(346px, 50dvh, 450px); }
+:root { --dock-h: clamp(366px, 50vh, 460px); --dock-h: clamp(366px, 50dvh, 460px); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 #help { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
 #help .card {
@@ -407,13 +407,16 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #help .optl { margin-bottom: 7px; color: #8e8c84; font-size: 12px; }
 #help .fsnote { margin: 4px 0 0; font-size: 12px; color: #8e8c84; }
 
-#help .srow { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 6px; }
-#help .srow > span { color: #8e8c84; font-size: 11px; }
+#help .srow { display: grid; grid-template-columns: 58px 1fr; align-items: center; gap: 6px; }
+#help .srow > span { display: flex; flex-direction: column; color: #8e8c84; font-size: 11px; line-height: 1.15; }
+#help .srow > span em { font-style: normal; font-weight: 700; font-size: 10px; color: #f1f0ea; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 #help .dk-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0 0; }
 #help .dk-top .cap { min-width: 0; color: #a9a79f; font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #help .dk-top .cap b { color: #fff; font-size: 13px; }
 #help .dk-tex { flex: none; display: flex; align-items: center; gap: 6px; color: #8e8c84; font-size: 11px; }
+#help .bgbtn { width: 28px; height: 28px; padding: 0; display: grid; place-items: center; border: 1.5px solid #3a3a40; border-radius: 50%; background: #1f1f23; color: #cfcdc5; cursor: pointer; }
+#help .bgbtn svg { width: 16px; height: 16px; }
 #help .seg.mini { border-width: 1.5px; border-radius: 8px; }
 #help .seg.mini button { flex: none; padding: 4px 10px; font-size: 11px; }
 #help .dk-rows { display: grid; gap: 4px; margin-top: 2px; }
@@ -467,7 +470,7 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
 #help .swatches label { background: conic-gradient(#e33, #ee3, #3d3, #3dd, #33e, #d3d, #e33); overflow: hidden; }
 #help .swatches.strip { gap: 7px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 3px 14px 3px 2px; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
 #help .swatches.strip::-webkit-scrollbar { display: none; }
-#help .swatches.strip button, #help .swatches.strip label { flex: none; width: 27px; height: 27px; border-width: 2px; box-shadow: 0 0 0 1.5px #3a3a40; }
+#help .swatches.strip button, #help .swatches.strip label { flex: none; width: 30px; height: 30px; border-width: 2px; box-shadow: 0 0 0 1.5px #3a3a40; }
 #help .swatches.strip button[aria-pressed="true"], #help .swatches.strip label.on { box-shadow: 0 0 0 2px #fff; }
 #help .swatches.strip button.auto { width: auto; min-width: 40px; font-size: 10px; padding: 0 8px; }
 #help .swatches button.auto { width: auto; min-width: 48px; border-radius: 17px; padding: 0 10px; background: #1f1f23; color: #cfcdc5; font: 700 11px system-ui, sans-serif; }
@@ -662,3 +665,7 @@ html[data-layout="c"] :is(#device, #back, .pvdev).land, html[data-layout="d"] :i
   font: 600 13px/1.4 system-ui, sans-serif; text-align: center;
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* docked: give the console a contrasting backdrop (and rounded edges) so full-bleed consoles don't melt into the page */
+html.docked body { background: var(--dock-bg) !important; }
+html.docked #device[data-layout="c"], html.docked #device[data-layout="d"] { border-radius: 26px; box-shadow: 0 16px 40px rgba(0, 0, 0, .5), 0 0 0 2px var(--body-lo); }

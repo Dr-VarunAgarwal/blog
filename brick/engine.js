@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '24';
+  const BUILD = '25';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -720,8 +720,23 @@
   // help sheet
   const help = $('#help');
   const helpOpen = () => !help.hidden;
+  /* backdrop behind the console while the dock is open, so a console never melts into the page (Super is the same colour as the page it sits on) */
+  const BACKDROPS = ['auto', 'dark', 'light', 'grid'];
+  let bgMode = store.get('bg', 'auto'); if (BACKDROPS.indexOf(bgMode) < 0) bgMode = 'auto';
+  const BG_CSS = {
+    dark: 'radial-gradient(ellipse at 50% 28%, #2c2e36 0%, #101114 78%)',
+    light: 'radial-gradient(ellipse at 50% 28%, #f3f1eb 0%, #bab6ab 82%)',
+    grid: 'linear-gradient(rgba(255,255,255,.09) 1px, transparent 1px) 0 0 / 22px 22px, linear-gradient(90deg, rgba(255,255,255,.09) 1px, transparent 1px) 0 0 / 22px 22px, #1c3b63'
+  };
+  function applyBackdrop() {
+    document.documentElement.classList.toggle('docked', !help.hidden);
+    const pick = bgMode === 'auto' ? (lum(currentColour().body) < .2 ? 'light' : 'dark') : bgMode;
+    document.documentElement.style.setProperty('--dock-bg', BG_CSS[pick]);
+    const bb = $('#bg-pick'); if (bb) bb.title = 'Backdrop: ' + bgMode;
+  }
   function toggleHelp(v) {
     help.hidden = !(v === undefined ? help.hidden : v);
+    applyBackdrop();
     const g = $('#help-open'); if (g) g.setAttribute('aria-pressed', String(!help.hidden));
     fit();                                           // the console shrinks into whatever the docked panel leaves free
   }
@@ -894,6 +909,7 @@
     fitLabel();
     if (look.layout !== 'd' && pinnedName) { pinnedName = false; labelEl.classList.remove('named'); labelEl.textContent = defaultLabel(); }
     store.set('look', look);
+    applyBackdrop();
     renderSheet();
     fit();
   }
@@ -913,6 +929,7 @@
   tintBox.addEventListener('click', e => { const b = e.target.closest('button[data-tint]'); if (b) setTint(+b.dataset.tint); });
   menuBox.addEventListener('click', e => { const b = e.target.closest('button[data-menu]'); if (b) { look.menu = b.dataset.menu; applyLook(); } });
   const texBox = $('#tex-pick');
+  $('#bg-pick').addEventListener('click', () => { bgMode = BACKDROPS[(BACKDROPS.indexOf(bgMode) + 1) % BACKDROPS.length]; store.set('bg', bgMode); applyBackdrop(); toast('Backdrop: ' + bgMode); });
   texBox.addEventListener('click', e => { const b = e.target.closest('button[data-tex]'); if (b) { look.tex = b.dataset.tex === '0' ? 'off' : null; applyLook(); } });
 
   /* tetromino-outline decals for the Super layout (generic block shapes, drawn here so there is nothing to download) */
@@ -982,30 +999,35 @@
   }
 
   /* ------------------ skins: one-tap complete looks ------------------ */
-  // each ready-made skin also picks a different screen tint, so the defaults show off the options
+  // ready-made combinations: console + body + buttons + screen tint, picked to look good together (key: null = the body's own buttons)
   const SKINS = [
-    { name: 'Super',     sub: 'Royal',  layout: 'c', colour: 'royal',  tint: 0 },
-    { name: 'Super',     sub: 'Cream',  layout: 'c', colour: 'cream',  tint: 2 },
-    { name: 'Lightning', sub: 'Clear',  layout: 'a', colour: 'clear',  tint: 1 },
-    { name: 'Lightning', sub: 'Black',  layout: 'a', colour: 'black',  tint: 1 },
-    { name: 'Lightning', sub: 'Red',    layout: 'a', colour: 'red',    tint: 3 },
-    { name: 'Kitty',     sub: 'Yellow', layout: 'b', colour: 'yellow', tint: 0 },
-    { name: 'Kitty',     sub: 'Pink',   layout: 'b', colour: 'pink',   tint: 2 },
-    { name: 'Immersive', sub: 'Black',  layout: 'd', colour: 'black',  tint: 1 },
-    { name: 'Immersive', sub: 'Olive',  layout: 'd', colour: 'gray',   tint: 3 }
+    { name: 'Super',     sub: 'Royal',   layout: 'c', colour: 'royal',       key: null,      tint: 0 },
+    { name: 'Super',     sub: 'Cream',   layout: 'c', colour: 'cream',       key: null,      tint: 2 },
+    { name: 'Super',     sub: 'Arcade',  layout: 'c', colour: 'black',       key: '#e0382d', tint: 2 },
+    { name: 'Lightning', sub: 'Black',   layout: 'a', colour: 'black',       key: null,      tint: 1 },
+    { name: 'Lightning', sub: 'Red',     layout: 'a', colour: 'red',         key: null,      tint: 3 },
+    { name: 'Lightning', sub: 'Smoke',   layout: 'a', colour: 'clear',       key: null,      tint: 1 },
+    { name: 'Lightning', sub: 'Ice',     layout: 'a', colour: 'clear-ice',   key: null,      tint: 0 },
+    { name: 'Lightning', sub: 'Grape',   layout: 'a', colour: 'clear-grape', key: null,      tint: 2 },
+    { name: 'Kitty',     sub: 'Yellow',  layout: 'b', colour: 'yellow',      key: null,      tint: 0 },
+    { name: 'Kitty',     sub: 'Pink',    layout: 'b', colour: 'pink',        key: null,      tint: 2 },
+    { name: 'Kitty',     sub: 'Mint',    layout: 'b', colour: 'green',       key: '#f5d31c', tint: 1 },
+    { name: 'Immersive', sub: 'Black',   layout: 'd', colour: 'black',       key: null,      tint: 1 },
+    { name: 'Immersive', sub: 'Olive',   layout: 'd', colour: 'gray',        key: null,      tint: 3 }
   ];
+  const skinColour = s => Object.assign({}, COLOURS.find(x => x.id === s.colour), s.key ? { key: s.key } : {});
   const skinBox = $('#skin-pick');
   SKINS.forEach((s, i) => {
     const card = document.createElement('div');
     card.className = 'skin'; card.setAttribute('role', 'option'); card.tabIndex = 0; card.dataset.skin = i;
     card.setAttribute('aria-label', s.name + ' ' + s.sub);
-    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .1));
-    card.insertAdjacentHTML('beforeend', s.name + '<small>' + s.sub + '</small>');
+    card.appendChild(makeConsole(s.layout, skinColour(s), s.tint, .1));
+    card.insertAdjacentHTML('beforeend', s.sub + '<small>' + s.name + '</small>');
     skinBox.appendChild(card);
   });
   function applySkinIndex(i) {
     const s = SKINS[i];
-    look.layout = s.layout; look.colour = s.colour; look.custom = null; look.key = null;
+    look.layout = s.layout; look.colour = s.colour; look.custom = null; look.key = s.key || null;
     palIdx = s.tint; store.set('pal', palIdx); applyPalette();
     applyLook();
   }
@@ -1047,7 +1069,10 @@
   function renderLive() {
     const info = LAYOUT_INFO[look.layout];
     const cn = look.colour === 'custom' ? 'Custom colour' : (function () { const f = COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}; return f.shell === 'clear' ? 'Clear ' + f.name.toLowerCase() : f.name; })();
-    $('#live-cap').innerHTML = '<b>' + info[0] + '</b> ' + cn + (look.key ? ' · custom buttons' : '') + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
+    const curId = look.colour || DEFAULT_COLOUR[look.layout];
+    const sk = SKINS.find(s => s.layout === look.layout && s.colour === curId && s.tint === palIdx && (s.key || null) === (look.key || null));
+    $('#live-cap').innerHTML = sk ? '<b>' + sk.name + '</b> ' + sk.sub + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen'
+      : '<b>' + info[0] + '</b> ' + cn + (look.key ? ' · custom buttons' : '') + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
   }
 
   /* sheet tabs */
@@ -1103,6 +1128,9 @@
     swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === cur)));
     swatchBox.querySelector('label').classList.toggle('on', cur === 'custom');
     tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
+    { const bn = look.colour === 'custom' ? 'Custom' : ((COLOURS.find(c => c.id === cur) || {}).shell ? 'Clear ' + COLOURS.find(c => c.id === cur).name.toLowerCase() : (COLOURS.find(c => c.id === cur) || {}).name);
+      const kc2 = (look.key || '').toLowerCase(), kn = !look.key ? 'Auto' : ((KEYCOLS.find(k => k[0] === kc2) || [])[1] || 'Custom');
+      $('#val-body').textContent = bn || ''; $('#val-key').textContent = kn; $('#val-tint').textContent = PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase(); }
     texBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.tex === '0') === (look.tex === 'off'))));
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
     skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
@@ -1134,7 +1162,7 @@
   const api = {
     BUILD, SKINS, applySkin: applySkinIndex, currentSkinIndex, on, Sound, Haptic, store, STATE: { OFF, BOOT, MENU, PLAY, PAUSE, OVER },
     lcdMsg, powerOff() { clearTimeout(powerHold); powerHold = 0; if (state !== OFF) powerToggle(); }, menuMode, get state() { return state; }, setBatteries, get batteries() { return batteries; }, toast, pauseIfPlaying,
-    skinPreview: (i, scale) => makeConsole(SKINS[i].layout, COLOURS.find(x => x.id === SKINS[i].colour), SKINS[i].tint, scale)
+    skinPreview: (i, scale) => makeConsole(SKINS[i].layout, skinColour(SKINS[i]), SKINS[i].tint, scale)
   };
   window.BrickConsole = { api, g, press, unpress, advance, render, GAMES, get mascot() { return mascotNow.id; }, get state() { return state; }, get game() { return game; }, sel, hi: hiAll };
 })();
