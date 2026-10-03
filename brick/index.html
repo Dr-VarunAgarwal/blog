@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=12">
+<link rel="stylesheet" href="brick.css?v=13">
 </head>
 <body>
 <!--
@@ -34,13 +34,14 @@
 <main id="stage">
   <div id="device" data-layout="a">
 
-    <a class="corner home" href="../" aria-label="Back to lucidité" title="Back to lucidité">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
-    </a>
+    <button class="corner flipbtn" id="flip-open" aria-label="Flip the console over" title="Flip over: battery door and about">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 10v4M12 18v3" /><path d="M8 7.5 3.5 12 8 16.5Z"/><path d="M16 7.5 20.5 12 16 16.5Z"/></svg>
+    </button>
     <button class="corner cfgbtn" id="help-open" aria-label="Settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><path d="M12 2.6v3M12 18.4v3M2.6 12h3M18.4 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/></svg>
     </button>
 
+    <div class="shell">
     <i class="bolt l"></i><i class="bolt r"></i>
     <svg class="decals dl" aria-hidden="true"></svg><svg class="decals dr" aria-hidden="true"></svg>
     <div class="sframe"></div>
@@ -111,6 +112,35 @@
     <svg class="grip" viewBox="0 0 64 50" aria-hidden="true" fill="none" stroke-width="4.5" stroke-linecap="round">
       <path d="M6 46 L26 6 M20 46 L40 6 M34 46 L54 6 M48 46 L68 6" clip-path="inset(0)"/>
     </svg>
+    </div>
+  </div>
+
+  <!-- the back of the console: battery door with an About panel; flip over with the corner key -->
+  <div id="back" data-layout="a" aria-hidden="true">
+    <button class="corner flipbtn" id="flip-back" aria-label="Flip the console back to the front" title="Flip back" tabindex="-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 10v4M12 18v3" /><path d="M8 7.5 3.5 12 8 16.5Z"/><path d="M16 7.5 20.5 12 16 16.5Z"/></svg>
+    </button>
+    <div class="shell">
+      <div class="bk-bay" id="bk-bay">
+        <div class="bk-slots">
+          <div class="bk-slot"><i>+</i><i>&minus;</i></div><div class="bk-slot"><i>+</i><i>&minus;</i></div>
+        </div>
+        <button type="button" class="bk-bat" data-i="0" aria-label="AA battery 1, tap to remove"><i class="nub"></i><i class="band"></i><b>AA</b></button>
+        <button type="button" class="bk-bat" data-i="1" aria-label="AA battery 2, tap to remove"><i class="nub"></i><i class="band"></i><b>AA</b></button>
+        <p class="bk-hint" id="bk-hint">Tap a battery to take it out.</p>
+        <button type="button" class="bk-btn" id="bk-close">Close the door</button>
+      </div>
+      <div class="bk-door" id="bk-door">
+        <div class="bk-ridges"><em></em><em></em><em></em></div>
+        <h2>BRICK GAME</h2>
+        <div class="bk-sub">9999 IN 1</div>
+        <p>A playable rebuild of the pocket brick handheld: twelve games, ten speeds and ten levels, made to fit in your phone.</p>
+        <p>Made by <b>Varun Agarwal</b>.</p>
+        <a class="bk-link" id="bk-blog" href="https://blog.varunagarwal.com/" target="_blank" rel="noopener">Visit my blog <span aria-hidden="true">&#8599;</span></a>
+        <p class="bk-fine">Original code, art and sounds. Not affiliated with any manufacturer or game company.</p>
+        <button type="button" class="bk-btn" id="bk-open">Open the battery door</button>
+      </div>
+    </div>
   </div>
 
   <div id="help" hidden>
@@ -205,9 +235,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=12"></script>
-<script src="mascots.js?v=12"></script>
-<script src="engine.js?v=12"></script>
-<script src="welcome.js?v=12"></script>
+<script src="games.js?v=13"></script>
+<script src="mascots.js?v=13"></script>
+<script src="engine.js?v=13"></script>
+<script src="back.js?v=13"></script>
+<script src="welcome.js?v=13"></script>
 </body>
 </html>
