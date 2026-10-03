@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "10";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "11";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -327,7 +327,7 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
   display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 #help .card {
-  position: relative; width: 100%; max-width: 460px; height: min(680px, 88vh); height: min(680px, 88dvh);
+  position: relative; width: 100%; max-width: 460px; height: min(880px, 94vh); height: min(880px, 94dvh);
   display: flex; flex-direction: column; overflow: hidden;
   background: #17171a; border: 1px solid #2c2c32; border-radius: 16px; padding: 22px 22px 0;
   color: #dedcd4; font-size: 14px; line-height: 1.5; user-select: text; -webkit-user-select: text;
@@ -362,8 +362,8 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
 #help .fsnote { margin: 4px 0 0; font-size: 12px; color: #8e8c84; }
 
 #help .livepv {
-  position: sticky; top: 0; z-index: 3; display: flex; justify-content: center; align-items: center; gap: 14px;
-  margin: 0 -22px; padding: 12px 22px; background: #17171a; border-bottom: 1px solid #26262b;
+  position: sticky; top: 0; z-index: 3; display: flex; justify-content: center; align-items: center; gap: 18px;
+  height: min(310px, 38vh); height: min(310px, 38dvh); margin: 0 -22px; padding: 10px 22px; background: #17171a; border-bottom: 1px solid #26262b;
 }
 #help .livepv .cap { align-self: center; color: #8e8c84; font-size: 12px; line-height: 1.5; max-width: 150px; }
 #help .livepv .cap b { display: block; color: #fff; font-size: 14px; margin-bottom: 2px; }
@@ -371,12 +371,12 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
 #help .carousel { position: relative; margin: 0 -22px; }
 #help .skins {
   display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-  padding: 6px calc(50% - 66px) 8px;
+  padding: 6px calc(50% - 46px) 8px;
 }
 #help .skins::-webkit-scrollbar { display: none; }
 #help .skin {
-  flex: 0 0 132px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px 10px;
-  background: #1f1f23; border: 2px solid #2c2c32; border-radius: 14px; color: #cfcdc5; font: 600 13px/1.25 system-ui, sans-serif; cursor: pointer;
+  flex: 0 0 92px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 4px 8px;
+  background: #1f1f23; border: 2px solid #2c2c32; border-radius: 12px; color: #cfcdc5; font: 600 12px/1.25 system-ui, sans-serif; cursor: pointer;
 }
 #help .skin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #help .car-btn {
@@ -396,7 +396,7 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
 #help .dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #3a3a40; cursor: pointer; }
 #help .dots button[aria-current="true"] { background: var(--accent); transform: scale(1.25); }
 #help .skin .pv-wrap { margin-bottom: 6px; }
-#help .skin small { color: #8e8c84; font-weight: 500; font-size: 12px; }
+#help .skin small { color: #8e8c84; font-weight: 500; font-size: 11px; }
 #help .skin[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
 
 /* miniature consoles: a scaled clone of the real shell, so previews are always exactly what you'll get */
@@ -413,6 +413,8 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
 }
 #help .swatches button[aria-pressed="true"], #help .swatches label.on { box-shadow: 0 0 0 2px #fff; }
 #help .swatches label { background: conic-gradient(#e33, #ee3, #3d3, #3dd, #33e, #d3d, #e33); overflow: hidden; }
+#help .swatches button.auto { width: auto; min-width: 48px; border-radius: 17px; padding: 0 10px; background: #1f1f23; color: #cfcdc5; font: 700 11px system-ui, sans-serif; }
+#help .swatches button.auto[aria-pressed="true"] { color: #fff; }
 #help .swatches input { position: absolute; inset: -6px; opacity: 0; cursor: pointer; width: 46px; height: 46px; }
 #help .seg { display: flex; border: 2px solid #2c2c32; border-radius: 10px; overflow: hidden; }
 #help .seg button { flex: 1; background: #1f1f23; border: 0; color: #cfcdc5; padding: 9px 4px; font: 600 12px system-ui, sans-serif; cursor: pointer; }

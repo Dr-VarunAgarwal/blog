@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '10';
+  const BUILD = '11';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -637,7 +637,7 @@
   const help = $('#help');
   const helpOpen = () => !help.hidden;
   function toggleHelp(v) { help.hidden = !(v === undefined ? help.hidden : v); }
-  $('#help-open').addEventListener('click', () => { showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); if (window.__brickCentreSkin) window.__brickCentreSkin(); });
+  $('#help-open').addEventListener('click', () => { showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); if (window.__brickCentreSkin) window.__brickCentreSkin(); if (window.__brickRenderLive) window.__brickRenderLive(); });
   $('#help-close').addEventListener('click', () => toggleHelp(false));
   help.addEventListener('click', e => { if (e.target === help) toggleHelp(false); });
   $('#help-games').innerHTML = GAMES.map((d, i) => '<li><b>' + String(i + 1).padStart(2, '0') + '</b> ' + d.name + '</li>').join('');
@@ -722,15 +722,19 @@
   const lum = c => { const [r, g, b] = hex(c).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; };
 
   let look = store.get('look', null) || {};
-  look = { layout: 'abcd'.includes(look.layout) && look.layout ? look.layout : 'a', colour: look.colour || null, custom: look.custom || null, menu: look.menu === 'orig' || look.menu === 'quick' ? look.menu : null };
+  look = { layout: 'abcd'.includes(look.layout) && look.layout ? look.layout : 'a', colour: look.colour || null, custom: look.custom || null, menu: look.menu === 'orig' || look.menu === 'quick' ? look.menu : null, key: /^#[0-9a-f]{6}$/i.test(look.key || '') ? look.key : null };
   const menuMode = () => look.menu || ((look.layout === 'c' || look.layout === 'd') ? 'orig' : 'quick');
 
-  function currentColour() {
+  function baseColour() {
     if (look.colour === 'custom' && look.custom) {          // any body colour: pick readable keys and print colour
       const l = lum(look.custom);
       return { body: look.custom, key: l < .2 ? '#f5d31c' : '#fbfbf8', ink: l > .5 ? '#1b1a14' : '#f4f4f0', decal: l < .2 ? '#d9dce0' : mix(look.custom, l > .5 ? '#000' : '#fff', .7), alt: l < .2 ? '#f5d31c' : (l > .5 ? '#9a3412' : '#ffe08a') };
     }
     return COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || COLOURS[0];
+  }
+  function currentColour() {                                 // body colour preset + your own button colour, if you picked one
+    const c = baseColour();
+    return look.key ? Object.assign({}, c, { key: look.key }) : c;
   }
   function colourVars(c) {
     const light = lum(c.body) > .2;
@@ -855,13 +859,13 @@
     const card = document.createElement('div');
     card.className = 'skin'; card.setAttribute('role', 'option'); card.tabIndex = 0; card.dataset.skin = i;
     card.setAttribute('aria-label', s.name + ' ' + s.sub);
-    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .3));
+    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .19));
     card.insertAdjacentHTML('beforeend', s.name + '<small>' + s.sub + '</small>');
     skinBox.appendChild(card);
   });
   function pickSkin(card) {
     const s = SKINS[+card.dataset.skin];
-    look.layout = s.layout; look.colour = s.colour; look.custom = null;
+    look.layout = s.layout; look.colour = s.colour; look.custom = null; look.key = null;
     palIdx = s.tint; store.set('pal', palIdx); applyPalette();
     applyLook();
   }
@@ -887,6 +891,7 @@
     goSkin(i, false); markDots();
   }
   window.__brickCentreSkin = centreSelected;
+  window.__brickRenderLive = () => renderLive();
 
   skinBox.addEventListener('keydown', e => { const c = e.target.closest('[data-skin]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pickSkin(c); } });
 
@@ -896,9 +901,12 @@
   function renderLive() {
     const info = LAYOUT_INFO[look.layout], cap = document.createElement('div');
     const cn = look.colour === 'custom' ? 'Custom colour' : (COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}).name;
-    cap.className = 'cap'; cap.innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
-    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, .17), cap);
+    cap.className = 'cap'; cap.innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + (look.key ? ' · custom buttons' : '') + '<br>' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
+    // big preview: fill the pinned area (it is about 40% of the sheet), whatever the screen size
+    const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 20) / DIMS[look.layout]) : .3;
+    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, sc), cap);
   }
+  window.addEventListener('resize', () => { if (!help.hidden) renderLive(); });
 
   /* sheet tabs */
   const tabsBox = $('#help-tabs');
@@ -907,6 +915,21 @@
     document.querySelectorAll('#help [data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
   }
   tabsBox.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) { showTab(b.dataset.tab); if (b.dataset.tab === 'style' && window.__brickCentreSkin) window.__brickCentreSkin(); } });
+
+  /* button colour: Auto (follows the body colour) or any colour you like */
+  const KEYCOLS = [
+    ['#f5d31c', 'Yellow'], ['#fbfbf8', 'White'], ['#e0382d', 'Red'], ['#f08a24', 'Orange'], ['#2f9d5c', 'Green'],
+    ['#2f6fd8', 'Blue'], ['#7a5be0', 'Purple'], ['#f08cb8', 'Pink'], ['#1b1b1f', 'Black']
+  ];
+  const keyBox = $('#key-pick');
+  keyBox.innerHTML = '<button type="button" class="auto" data-key="auto" aria-label="Automatic button colour">Auto</button>' +
+    KEYCOLS.map(k => '<button type="button" data-key="' + k[0] + '" aria-label="' + k[1] + ' buttons" title="' + k[1] + '" style="background:' + k[0] + '"></button>').join('') +
+    '<label title="Pick any colour" aria-label="Custom button colour"><input type="color" id="key-custom" value="#f5d31c"></label>';
+  keyBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-key]'); if (!b) return;
+    look.key = b.dataset.key === 'auto' ? null : b.dataset.key; applyLook();
+  });
+  $('#key-custom').addEventListener('input', ev => { look.key = ev.target.value; applyLook(); });
 
   /* mascot picker (Style tab): Random + every character, drawn from the same sprites the LCD uses */
   const mascotBox2 = $('#mascot-pick');
@@ -941,6 +964,9 @@
     skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
     hapBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.hap === '1') === Haptic.enabled)));
     mascotBox2.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mascot === mascotPref)));
+    const kc = (look.key || '').toLowerCase(), known = KEYCOLS.some(k => k[0] === kc);
+    keyBox.querySelectorAll('button[data-key]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.key === 'auto' ? !look.key : b.dataset.key === kc)));
+    keyBox.querySelector('label').classList.toggle('on', !!look.key && !known);
     $('#haptic-note').textContent = !Haptic.supported ? 'This device has no vibration motor.' :
       Haptic.experimental ? 'Keys and game events tick your phone. On iPhone this is experimental and only a light tick.' : 'Keys and game events buzz your phone: a light tap on the D-pad, firmer on the small keys, patterns for line clears and crashes.';
     renderLive();
