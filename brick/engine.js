@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '28';
+  const BUILD = '29';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -251,7 +251,7 @@
     document.body.classList.toggle('is-on', state !== OFF);
   }
   /* ---------- home: the list of games and the local leaderboard ---------- */
-  const home = { page: 'games', idleT: 0 };                      // page: 'games' | 'scores' | 'preview' (the idle robot demo)
+  const home = { page: 'games', idleT: 0 };                      // page: 'games' | 'scores'; the Classic page is the MENU state, one step to the left or right
   let board = store.get('board', null);                          // { gameId: [{ s: score, t: when }] } best five per game, kept on this device
   if (!board || typeof board !== 'object') {
     board = {};
@@ -320,12 +320,16 @@
 
   function dispatch(btn, isRepeat) {
     if (state === HOME) {
-      if (home.page === 'preview') { home.page = 'games'; home.idleT = 0; return; }       // any key wakes the screen
       home.idleT = 0;
       const n = GAMES.length;
       if (btn === 'down') sel.game = (sel.game + 1) % n;
       else if (btn === 'up') sel.game = (sel.game + n - 1) % n;
-      else if (btn === 'left' || btn === 'right' || btn === 'rotate') { if (isRepeat) return; home.page = home.page === 'games' ? 'scores' : 'games'; }
+      else if (btn === 'left' || btn === 'right' || btn === 'rotate') {          // pages sit side by side: Games, Scores, Classic
+        if (isRepeat) return;
+        const back = btn === 'left', to = home.page === 'games' ? (back ? 'classic' : 'scores') : (back ? 'games' : 'classic');
+        if (to === 'classic') { Sound.fx('tick'); toMenu(); return; }
+        home.page = to;
+      }
       else return;
       Sound.fx('tick'); store.set('sel', sel); showName(); emit('menu');
       return;
@@ -371,7 +375,7 @@
     }
     if (btn === 'reset') { releaseAll(); if (state !== BOOT) goHome(); return; }
     if (btn === 'sp') {
-      if (state === HOME) { if (home.page === 'preview') { home.page = 'games'; home.idleT = 0; } else { Sound.fx('click'); toMenu(); } }
+      if (state === HOME) { Sound.fx('click'); toMenu(); }
       else if (state === MENU) startGame();
       else if (state === PLAY || state === PAUSE) togglePause();
       else if (state === OVER) toMenu();
@@ -575,7 +579,7 @@
     ctx.strokeRect(5.7, 5.7, W * CW + 5.6, H * CH + 5.6);
 
     // cells: ghost grid, then shadow, then ink (Home's list and score pages are drawn as text instead)
-    const textHome = state === HOME && home.page !== 'preview';
+    const textHome = state === HOME;
     if (textHome) drawHome(P, CW, CH);
     else {
       const isOn = i => f[i] === 1 || (f[i] === 2 && blink);
@@ -600,7 +604,7 @@
     const bx = PCX - 18.4, by = 80, mw = 9.2, mh = 8.6;
     ctx.strokeStyle = P.soft; ctx.lineWidth = 1; ctx.strokeRect(bx - 2.5, by - 2.5, mw * 4 + 5, mh * 4 + 5);
     for (let i = 0; i < 16; i++) {
-      const on = boot || (idle ? (state === HOME && home.page !== 'preview' ? g.n : demoG.n) : g.n)[i] === 1;
+      const on = boot || (state === MENU ? demoG.n : g.n)[i] === 1;
       cell(bx + (i % 4) * mw, by + ((i / 4) | 0) * mh, mw, mh, on ? P.ink : P.ghost);
     }
 
@@ -637,7 +641,7 @@
       text('GAMES', fx + 4, fy + 11, P.soft, 8, 'left');
       text(String(sel.game + 1) + '/' + n, fx + fw - 4, fy + 11, P.soft, 8, 'right');
       ctx.fillStyle = P.soft; ctx.fillRect(fx + 2, fy + 15, fw - 4, 1);
-      const rowH = Math.min(18, (fh - 24) / Math.min(n, 12)), vis = Math.min(n, Math.floor((fh - 24) / rowH));
+      const rowH = Math.min(18, (fh - 36) / Math.min(n, 12)), vis = Math.min(n, Math.floor((fh - 36) / rowH));
       let top = Math.max(0, Math.min(n - vis, sel.game - (vis >> 1)));
       for (let i = 0; i < vis; i++) {
         const gi = top + i, y = fy + 20 + i * rowH, on = gi === sel.game;
@@ -648,6 +652,7 @@
         if (hiAll[GAMES[gi].id]) text('*', fx + fw - 6, y + rowH - 5, col, 9, 'right');
       }
       if (top > 0) text('^', fx + fw - 6, fy + 11, P.ink, 8, 'right');
+      text('< CLASSIC   SCORES >', fx + fw / 2, fy + fh - 5, P.soft, 7.5, 'center');
       return;
     }
     // scores
@@ -668,7 +673,7 @@
         if (i < 4) { ctx.fillStyle = P.ghost; ctx.fillRect(fx + 6, y + 15, fw - 12, 1); }
       }
     }
-    text('< GAMES >', fx + fw / 2, fy + fh - 5, P.soft, 7.5, 'center');
+    text('< GAMES   CLASSIC >', fx + fw / 2, fy + fh - 5, P.soft, 7.5, 'center');
   }
   // the little steaming coffee cup that means "paused" (take a break)
   function drawCoffee(x, y, col) {
@@ -698,9 +703,9 @@
     let text;
     if (first && state === OVER) text = newHi ? 'NEW HIGH SCORE!' : 'GAME OVER. ONE MORE GO?';
     else if (first && state === PAUSE) text = 'PAUSED. TAKE A COFFEE.';
-    else if (first && state === HOME) text = home.page === 'preview' ? 'ANY KEY: BACK TO THE LIST' : 'UP/DOWN: PICK. S/P: GO.';
-    else if (first && state === MENU) text = hi ? 'BEST ' + hi + '. BEAT IT.' : 'NO SCORE YET. BE FIRST.';
-    else if (state === HOME && tk.n % 4 === 1) text = home.page === 'scores' ? 'LEFT/RIGHT: BACK TO GAMES' : 'ROTATE OR LEFT/RIGHT: SCORES';
+    else if (first && state === HOME) text = 'UP/DOWN: PICK. S/P: GO.';
+    else if (first && state === MENU) text = 'RESET GOES HOME. S/P PLAYS.';
+    else if (state === HOME && tk.n % 4 === 1) text = 'LEFT/RIGHT: GAMES, SCORES, CLASSIC';
     else if (tk.n % 3 === 1) text = hi && (state === MENU || state === HOME) ? 'BEST ' + hi + '. BEAT IT.' : TIPS_INFO[tk.info++ % TIPS_INFO.length];
     else text = tk.n % 3 === 2 ? TIPS_INFO[tk.info++ % TIPS_INFO.length] : TIPS_FUN[tk.fun++ % TIPS_FUN.length];
     tk.n++; tk.state = state; tk.text = text; tk.start = clock;
@@ -775,7 +780,7 @@
       else { const k = Math.floor((stateT - half) / (BOOT_MS - half) * n); for (let i = k; i < n; i++) view[SPIRAL[i]] = 1; }
       return view;
     }
-    if (state === MENU || (state === HOME && home.page === 'preview')) {
+    if (state === MENU) {
       if (!demo) startDemo();
       if (!demo) { view.fill(0); return view; }
       demoG.clear();
@@ -814,8 +819,8 @@
     else if (state === MENU) { repeats(); stepDemo(dt); }
     else if (state === HOME) {
       repeats();
-      if (home.page === 'preview') stepDemo(dt);
-      else { home.idleT += dt; if (home.idleT > 7000 && !Object.keys(held).some(b => held[b])) { home.page = 'preview'; demo = null; } }
+      home.idleT += dt;                                                         // left alone, Home drifts to the Classic page: the robot plays
+      if (home.idleT > 6000 && !Object.keys(held).some(b => held[b])) toMenu();
     }
     else if (state === PLAY) {
       if (startDelay > 0) startDelay -= dt;
