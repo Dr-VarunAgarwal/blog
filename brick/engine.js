@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '19';
+  const BUILD = '20';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -774,7 +774,9 @@
     const ex = document.exitFullscreen || document.webkitExitFullscreen;
     if (isFs() && ex) { try { const p = ex.call(document); if (p && p.catch) p.catch(() => { }); } catch (_) { /* ignore */ } }
   }
+  const fsBtn = $('#fs-open');
   function renderFs() {
+    if (fsBtn) { fsBtn.setAttribute('aria-pressed', String(isFs())); fsBtn.title = isFs() ? 'Leave full screen' : 'Full screen'; }
     const row = $('#fs-row');
     row.hidden = !fsEnabled;
     $('#fs-note').hidden = fsEnabled;
@@ -786,9 +788,15 @@
     if (wantFs) enterFs(); else exitFs();
     setTimeout(renderFs, 150);
   });
+  if (fsBtn) fsBtn.addEventListener('click', () => {
+    Haptic.key('fn');
+    if (!fsEnabled) { toast('On iPhone: Share, then Add to Home Screen, for full screen'); return; }
+    if (isFs()) { wantFs = false; store.set('fs', false); exitFs(); } else { wantFs = true; store.set('fs', true); enterFs(); }
+    setTimeout(renderFs, 150);
+  });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { renderFs(); fit(); }));
   window.__brickFsOnPower = () => { if (wantFs) enterFs(); };
-  const firstTouchFs = () => { document.removeEventListener('pointerup', firstTouchFs, true); document.removeEventListener('keydown', firstTouchFs, true); if (wantFs) enterFs(); };
+  const firstTouchFs = ev => { if (ev && ev.target && ev.target.closest && ev.target.closest('#fs-open')) return; document.removeEventListener('pointerup', firstTouchFs, true); document.removeEventListener('keydown', firstTouchFs, true); if (wantFs) enterFs(); };
   document.addEventListener('pointerup', firstTouchFs, true); document.addEventListener('keydown', firstTouchFs, true);
   window.__brickRenderFs = renderFs;
 
@@ -823,8 +831,13 @@
     { id: 'gray',   name: 'Smoke',  body: '#4b4e55', key: '#f5d31c', ink: '#f1f1f1', decal: '#c9ccd1', alt: '#f5d31c' },
     { id: 'cream',  name: 'Cream',  body: '#efe7d2', key: '#f6c80f', ink: '#1f2c63', decal: '#3d63c9', alt: '#c2410c' },
     { id: 'royal',  name: 'Royal',  body: '#2f5fb8', key: '#f7d51d', ink: '#ffffff', decal: '#e8f0ff', alt: '#f7d51d' },
-    { id: 'clear',  name: 'Clear',  body: '#8ea2ad', key: '#f5d31c', ink: '#f4f7f9', decal: '#e6eef2', alt: '#f5d31c', swatch: 'linear-gradient(135deg, #9db0bb 0 50%, #1d7a4c 50%)' }
+    // see-through shells: a few tints over the circuit board (Finish > Glass tint). Only the first shows in the Body strip.
+    { id: 'clear',       name: 'Smoke', shell: 'clear', body: '#8ea2ad', key: '#f5d31c', ink: '#f4f7f9', decal: '#e6eef2', alt: '#f5d31c', glass: 'rgba(140,160,172,.56)', swatch: 'linear-gradient(135deg, #9db0bb 0 50%, #1d7a4c 50%)' },
+    { id: 'clear-ice',   name: 'Ice',   shell: 'clear', body: '#6fa9d8', key: '#fbfbf8', ink: '#ffffff', decal: '#e3f1ff', alt: '#ffe08a', glass: 'rgba(96,170,235,.52)',  swatch: 'linear-gradient(135deg, #7db6e6 0 50%, #1d7a4c 50%)' },
+    { id: 'clear-grape', name: 'Grape', shell: 'clear', body: '#9a78cf', key: '#f7d51d', ink: '#ffffff', decal: '#eee6ff', alt: '#f7d51d', glass: 'rgba(150,100,215,.54)', swatch: 'linear-gradient(135deg, #a98adb 0 50%, #1d7a4c 50%)' },
+    { id: 'clear-lime',  name: 'Lime',  shell: 'clear', body: '#5fae45', key: '#fbfbf8', ink: '#ffffff', decal: '#e8f7de', alt: '#f7d51d', glass: 'rgba(120,205,95,.5)',   swatch: 'linear-gradient(135deg, #7fcf62 0 50%, #1d7a4c 50%)' }
   ];
+  const isClearId = id => ((COLOURS.find(c => c.id === id) || {}).shell === 'clear');
   const DEFAULT_COLOUR = { a: 'black', b: 'yellow', c: 'royal', d: 'black' };            // what each shell wears until you pick
   const hex = c => { c = c.replace('#', ''); return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)); };
   const toHex = a => '#' + a.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
@@ -851,7 +864,8 @@
     return {
       '--body': c.body, '--body-hi': mix(c.body, '#ffffff', light ? .22 : .13), '--body-lo': mix(c.body, '#000000', .55),
       '--key': c.key, '--key-rim': mix(c.key, '#000000', .16), '--key-side': mix(c.key, '#000000', .48),
-      '--ink': c.ink, '--decal': c.decal, '--alt': c.alt || c.key
+      '--ink': c.ink, '--decal': c.decal, '--alt': c.alt || c.key,
+      '--glass': c.glass || 'rgba(140, 160, 172, .56)'
     };
   }
   function applyLook() {
@@ -861,7 +875,7 @@
     device.dataset.layout = look.layout;
     document.documentElement.dataset.layout = look.layout;
     document.documentElement.dataset.tex = look.tex === 'off' ? 'off' : 'on';
-    const shellKind = c.id === 'clear' ? 'clear' : '';
+    const shellKind = c.shell === 'clear' ? 'clear' : '';
     device.dataset.shell = shellKind; document.documentElement.dataset.shell = shellKind; if (backEl) backEl.dataset.shell = shellKind;
     if (backEl) backEl.dataset.layout = look.layout;
     PF = (look.layout === 'c' || look.layout === 'd') ? PROFILES.tall : PROFILES.classic;
@@ -877,7 +891,7 @@
 
   /* picker UI inside the sheet */
   const swatchBox = $('#colour-pick'), tintBox = $('#tint-pick'), layoutBox = $('#layout-pick'), menuBox = $('#menu-pick');
-  swatchBox.innerHTML = COLOURS.map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + c.name + '" title="' + c.name + '" style="background:' + (c.swatch || c.body) + '"></button>').join('') +
+  swatchBox.innerHTML = COLOURS.filter(c => c.id === 'clear' || !c.shell).map(c => '<button type="button" data-colour="' + c.id + '" aria-label="' + (c.shell ? 'Clear' : c.name) + '" title="' + (c.shell ? 'Clear (see-through)' : c.name) + '" style="background:' + (c.swatch || c.body) + '"></button>').join('') +
     '<label title="Pick any colour" aria-label="Custom colour"><input type="color" id="colour-custom" value="#2f6fd8"></label>';
   tintBox.innerHTML = PALETTES.map((p, i) => '<button type="button" data-tint="' + i + '" aria-label="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" title="' + p.name[0] + p.name.slice(1).toLowerCase() + ' screen" style="background:' + p.bg + '"></button>').join('');
   swatchBox.addEventListener('click', e => {
@@ -895,9 +909,13 @@
   const shellBox = $('#shell-pick'), texBox = $('#tex-pick');
   shellBox.addEventListener('click', e => {
     const b = e.target.closest('button[data-shell]'); if (!b) return;
-    if (b.dataset.shell === 'clear') look.colour = 'clear'; else if (look.colour === 'clear') look.colour = null;
+    const cur = look.colour || DEFAULT_COLOUR[look.layout];
+    if (b.dataset.shell === 'clear') { if (!isClearId(cur)) look.colour = 'clear'; } else if (isClearId(cur)) look.colour = null;
     applyLook();
   });
+  const glassBox = $('#glass-pick');
+  glassBox.innerHTML = COLOURS.filter(c => c.shell === 'clear').map(c => '<button type="button" data-glass="' + c.id + '" aria-label="' + c.name + ' glass" title="' + c.name + '" style="background:' + c.swatch + '"></button>').join('');
+  glassBox.addEventListener('click', e => { const b = e.target.closest('button[data-glass]'); if (b) { look.colour = b.dataset.glass; applyLook(); } });
   texBox.addEventListener('click', e => { const b = e.target.closest('button[data-tex]'); if (b) { look.tex = b.dataset.tex === '0' ? 'off' : null; applyLook(); } });
   // Customise sub-menu: Skins / Layout / Finish / Mascot
   const subBox = $('#style-sub');
@@ -966,7 +984,7 @@
     const dev = TEMPLATE.cloneNode(true);
     dev.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));      // clones are decoration: no duplicate ids
     dev.removeAttribute('id'); dev.removeAttribute('style'); dev.classList.remove('land'); dev.classList.add('pvdev');
-    dev.dataset.layout = layout; dev.dataset.shell = c.id === 'clear' ? 'clear' : '';
+    dev.dataset.layout = layout; dev.dataset.shell = c.shell === 'clear' ? 'clear' : '';
     dev.querySelectorAll('button, a').forEach(el => { el.tabIndex = -1; });
     const lab = dev.querySelector('.lbl'); if (lab) { lab.textContent = ({ a: 'CLASSIC', c: 'SUPER' })[layout] || ''; lab.classList.remove('named'); }
     const screen = dev.querySelector('.lcd-screen'); screen.insertBefore(lcdMock(layout, PALETTES[tint]), screen.firstChild);
@@ -1040,7 +1058,7 @@
   const LAYOUT_INFO = { a: ['Lightning', 'Classic black handheld with lightning bolts'], b: ['Kitty', 'Cat-print unit: big screen, cross D-pad, pill keys'], c: ['Super', 'Illustrated unit: framed screen, every key labelled'], d: ['Immersive', 'Big screen and labelled keys, no console shell'] };
   function renderLive() {
     const info = LAYOUT_INFO[look.layout];
-    const cn = look.colour === 'custom' ? 'Custom colour' : (COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}).name;
+    const cn = look.colour === 'custom' ? 'Custom colour' : (function () { const f = COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}; return f.shell === 'clear' ? 'Clear ' + f.name.toLowerCase() : f.name; })();
     $('#live-cap').innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + (look.key ? ' · custom buttons' : '') + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
     // big preview: fill the pinned area whatever the screen size
     const h = liveBox.clientHeight, sc = h > 60 ? Math.min(.42, (h - 4) / DIMS[look.layout]) : .3;
@@ -1107,10 +1125,13 @@
 
   function renderSheet() {
     const cur = look.colour || DEFAULT_COLOUR[look.layout];
-    swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === cur)));
+    const curStrip = isClearId(cur) ? 'clear' : cur;
+    swatchBox.querySelectorAll('button[data-colour]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colour === curStrip)));
+    glassBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.glass === cur)));
+    $('#glass-row').hidden = !isClearId(cur);
     swatchBox.querySelector('label').classList.toggle('on', cur === 'custom');
     tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
-    shellBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.shell === 'clear') === (cur === 'clear'))));
+    shellBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.shell === 'clear') === isClearId(cur))));
     texBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.tex === '0') === (look.tex === 'off'))));
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
     skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
