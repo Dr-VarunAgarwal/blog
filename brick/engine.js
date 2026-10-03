@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '8';
+  const BUILD = '9';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -628,7 +628,7 @@
   const help = $('#help');
   const helpOpen = () => !help.hidden;
   function toggleHelp(v) { help.hidden = !(v === undefined ? help.hidden : v); }
-  $('#help-open').addEventListener('click', () => { showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); });
+  $('#help-open').addEventListener('click', () => { showTab('style'); toggleHelp(true); if (window.__brickRenderFs) window.__brickRenderFs(); if (window.__brickCentreSkin) window.__brickCentreSkin(); });
   $('#help-close').addEventListener('click', () => toggleHelp(false));
   help.addEventListener('click', e => { if (e.target === help) toggleHelp(false); });
   $('#help-games').innerHTML = GAMES.map((d, i) => '<li><b>' + String(i + 1).padStart(2, '0') + '</b> ' + d.name + '</li>').join('');
@@ -844,9 +844,9 @@
   const skinBox = $('#skin-pick');
   SKINS.forEach((s, i) => {
     const card = document.createElement('div');
-    card.className = 'skin'; card.setAttribute('role', 'button'); card.tabIndex = 0; card.dataset.skin = i;
+    card.className = 'skin'; card.setAttribute('role', 'option'); card.tabIndex = 0; card.dataset.skin = i;
     card.setAttribute('aria-label', s.name + ' ' + s.sub);
-    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .23));
+    card.appendChild(makeConsole(s.layout, COLOURS.find(x => x.id === s.colour), s.tint, .3));
     card.insertAdjacentHTML('beforeend', s.name + '<small>' + s.sub + '</small>');
     skinBox.appendChild(card);
   });
@@ -857,6 +857,28 @@
     applyLook();
   }
   skinBox.addEventListener('click', e => { const c = e.target.closest('[data-skin]'); if (c) pickSkin(c); });
+  /* carousel: swipe / arrows / dots, selected skin centred when the sheet opens */
+  const dotsBox = $('#skin-dots');
+  SKINS.forEach((s, i) => {
+    const d = document.createElement('button'); d.type = 'button'; d.setAttribute('aria-label', 'Skin ' + (i + 1) + ': ' + s.name + ' ' + s.sub); d.dataset.dot = i;
+    dotsBox.appendChild(d);
+  });
+  const cardLeft = i => { const c = skinBox.children[i]; return c.offsetLeft - (skinBox.clientWidth - c.offsetWidth) / 2; };
+  const goSkin = (i, smooth) => { i = Math.max(0, Math.min(SKINS.length - 1, i)); skinBox.scrollTo({ left: cardLeft(i), behavior: smooth ? 'smooth' : 'auto' }); };
+  const nearestSkin = () => { let best = 0, d = 1e9; for (let i = 0; i < skinBox.children.length; i++) { const x = Math.abs(cardLeft(i) - skinBox.scrollLeft); if (x < d) { d = x; best = i; } } return best; };
+  function markDots() { const n = nearestSkin(); dotsBox.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-current', String(i === n))); }
+  let carRaf = 0;
+  skinBox.addEventListener('scroll', () => { if (!carRaf) carRaf = requestAnimationFrame(() => { carRaf = 0; markDots(); }); }, { passive: true });
+  $('#skin-prev').addEventListener('click', () => goSkin(nearestSkin() - 1, true));
+  $('#skin-next').addEventListener('click', () => goSkin(nearestSkin() + 1, true));
+  dotsBox.addEventListener('click', e => { const b = e.target.closest('button[data-dot]'); if (b) goSkin(+b.dataset.dot, true); });
+  function centreSelected() {
+    let i = SKINS.findIndex(s => s.layout === look.layout && s.colour === (look.colour || DEFAULT_COLOUR[look.layout]) && s.tint === palIdx);
+    if (i < 0) i = Math.max(0, SKINS.findIndex(s => s.layout === look.layout));
+    goSkin(i, false); markDots();
+  }
+  window.__brickCentreSkin = centreSelected;
+
   skinBox.addEventListener('keydown', e => { const c = e.target.closest('[data-skin]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pickSkin(c); } });
 
   /* live preview: always shows your current console, updates as you change anything */
@@ -866,7 +888,7 @@
     const info = LAYOUT_INFO[look.layout], cap = document.createElement('div');
     const cn = look.colour === 'custom' ? 'Custom colour' : (COLOURS.find(c => c.id === (look.colour || DEFAULT_COLOUR[look.layout])) || {}).name;
     cap.className = 'cap'; cap.innerHTML = '<b>' + info[0] + '</b>' + info[1] + '<br>' + cn + ' · ' + PALETTES[palIdx].name[0] + PALETTES[palIdx].name.slice(1).toLowerCase() + ' screen';
-    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, .22), cap);
+    liveBox.replaceChildren(makeConsole(look.layout, currentColour(), palIdx, .17), cap);
   }
 
   /* sheet tabs */
@@ -875,7 +897,7 @@
     tabsBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
     document.querySelectorAll('#help [data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
   }
-  tabsBox.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
+  tabsBox.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) { showTab(b.dataset.tab); if (b.dataset.tab === 'style' && window.__brickCentreSkin) window.__brickCentreSkin(); } });
 
   /* haptics row (Play tab) */
   const hapBox = $('#haptic-pick');
@@ -888,7 +910,7 @@
     tintBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tint === palIdx)));
     layoutBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.layout === look.layout)));
     menuBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.menu === menuMode())));
-    skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin]; b.setAttribute('aria-pressed', String(s.layout === look.layout && s.colour === cur && s.tint === palIdx)); });
+    skinBox.querySelectorAll('[data-skin]').forEach(b => { const s = SKINS[+b.dataset.skin], on = s.layout === look.layout && s.colour === cur && s.tint === palIdx; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
     hapBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.hap === '1') === Haptic.enabled)));
     $('#haptic-note').textContent = !Haptic.supported ? 'This device has no vibration motor.' :
       Haptic.experimental ? 'Keys and game events tick your phone. On iPhone this is experimental and only a light tick.' : 'Keys and game events buzz your phone: a light tap on the D-pad, firmer on the small keys, patterns for line clears and crashes.';

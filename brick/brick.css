@@ -5,7 +5,7 @@
  * Colours are CSS variables set on :root by engine.js (console colour picker).
  */
 :root {
-  --build: "8";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
+  --build: "9";        /* must match BUILD in engine.js: lets the page notice a stale stylesheet */
   --body: #17171a;      /* shell */
   --body-hi: #2b2b2e;   /* top edge catching the light */
   --body-lo: #0b0b0d;   /* outline / underside */
@@ -45,18 +45,20 @@ body {
 }
 :is(#device, .pvdev) * { touch-action: none; }
 
-/* corner controls live on the shell and scale with it: small outlined round icon buttons */
+/* corner controls are part of the console: small molded round keys in the shell's own tones */
 .corner {
-  position: absolute; top: 5px; width: 34px; height: 34px; z-index: 3;
+  position: absolute; top: 6px; width: 34px; height: 34px; z-index: 3;
   display: grid; place-items: center; padding: 0; cursor: pointer; text-decoration: none;
-  color: var(--ink); opacity: .5; background: none; border: 1.6px solid currentColor; border-radius: 50%;
-  transition: opacity .15s, transform .1s;
+  color: var(--ink); background: var(--body-hi); border: 0; border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--body-lo), 0 3px 0 var(--body-lo);
+  transition: transform .04s, box-shadow .04s;
 }
-.corner svg { width: 19px; height: 19px; display: block; }
-.corner:hover, .corner:focus-visible { opacity: .95; outline: none; }
-.corner:active { transform: scale(.92); }
-.corner.home { left: 6px; }
-.corner.cfgbtn { right: 6px; }
+.corner svg { width: 18px; height: 18px; display: block; opacity: .85; }
+.corner:hover svg, .corner:focus-visible svg { opacity: 1; }
+.corner:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.corner:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--body-lo), 0 0 0 var(--body-lo); }
+.corner.home { left: 8px; }
+.corner.cfgbtn { right: 8px; }
 
 /* ---------- parts shared by both layouts ---------- */
 .lcd-frame { position: absolute; background: #2b2c30; box-shadow: inset 0 0 0 2px #18191b; }
@@ -325,11 +327,13 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
   display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 #help .card {
-  position: relative; width: 100%; max-width: 460px; max-height: 90vh; max-height: 90dvh; overflow: auto;
-  -webkit-overflow-scrolling: touch; touch-action: pan-y;
-  background: #17171a; border: 1px solid #2c2c32; border-radius: 16px; padding: 22px 22px 18px;
+  position: relative; width: 100%; max-width: 460px; height: min(680px, 88vh); height: min(680px, 88dvh);
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #17171a; border: 1px solid #2c2c32; border-radius: 16px; padding: 22px 22px 0;
   color: #dedcd4; font-size: 14px; line-height: 1.5; user-select: text; -webkit-user-select: text;
 }
+#help .card > h2, #help .card > .tabs { flex: none; }
+#help .panes { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; margin: 0 -22px; padding: 0 22px 22px; }
 #help h2 { margin: 0 0 6px; font: 400 30px/1 Impact, "Arial Narrow Bold", sans-serif; letter-spacing: 1px; color: #fff; }
 #help h3 { margin: 18px 0 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 #help .lede { margin: 0; color: #bdbbb2; }
@@ -348,7 +352,7 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
 }
 #help-close:hover { color: #fff; }
 
-#help .tabs { display: flex; gap: 4px; margin: 14px 0 6px; padding: 4px; background: #101013; border-radius: 12px; }
+#help .tabs { display: flex; gap: 4px; margin: 14px 0 0; padding: 4px; background: #101013; border-radius: 12px; }
 #help .tabs button { flex: 1; padding: 9px 0; border: 0; border-radius: 9px; background: none; color: #9d9b93; font: 600 13px system-ui, sans-serif; cursor: pointer; }
 #help .tabs button[aria-selected="true"] { background: #26262b; color: #fff; }
 #help section[hidden] { display: none; }
@@ -358,20 +362,33 @@ html[data-layout="c"] :is(#device, .pvdev).land, html[data-layout="d"] :is(#devi
 #help .fsnote { margin: 4px 0 0; font-size: 12px; color: #8e8c84; }
 
 #help .livepv {
-  position: sticky; top: -22px; z-index: 3; display: flex; justify-content: center; align-items: flex-start; gap: 14px;
-  margin: 0 -22px; padding: 34px 22px 12px; background: #17171a; border-bottom: 1px solid #26262b;
+  position: sticky; top: 0; z-index: 3; display: flex; justify-content: center; align-items: center; gap: 14px;
+  margin: 0 -22px; padding: 12px 22px; background: #17171a; border-bottom: 1px solid #26262b;
 }
 #help .livepv .cap { align-self: center; color: #8e8c84; font-size: 12px; line-height: 1.5; max-width: 150px; }
 #help .livepv .cap b { display: block; color: #fff; font-size: 14px; margin-bottom: 2px; }
 
-#help .skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+#help .carousel { position: relative; margin: 0 -22px; }
+#help .skins {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  padding: 6px calc(50% - 66px) 8px;
+}
+#help .skins::-webkit-scrollbar { display: none; }
 #help .skin {
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px 8px;
-  background: #1f1f23; border: 2px solid #2c2c32; border-radius: 12px; color: #cfcdc5; font: 600 12px/1.25 system-ui, sans-serif; cursor: pointer;
+  flex: 0 0 132px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px 10px;
+  background: #1f1f23; border: 2px solid #2c2c32; border-radius: 14px; color: #cfcdc5; font: 600 13px/1.25 system-ui, sans-serif; cursor: pointer;
 }
 #help .skin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#help .car-btn {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 34px; height: 34px; border-radius: 50%;
+  border: 0; background: rgba(23,23,26,.85); color: #fff; font: 400 24px/1 system-ui; cursor: pointer; box-shadow: 0 0 0 1px #3a3a40;
+}
+#help .car-btn.prev { left: 6px; } #help .car-btn.next { right: 6px; }
+#help .dots { display: flex; justify-content: center; gap: 7px; margin: 2px 0 4px; }
+#help .dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #3a3a40; cursor: pointer; }
+#help .dots button[aria-current="true"] { background: var(--accent); transform: scale(1.25); }
 #help .skin .pv-wrap { margin-bottom: 6px; }
-#help .skin small { color: #8e8c84; font-weight: 500; font-size: 11px; }
+#help .skin small { color: #8e8c84; font-weight: 500; font-size: 12px; }
 #help .skin[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
 
 /* miniature consoles: a scaled clone of the real shell, so previews are always exactly what you'll get */

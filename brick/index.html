@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=8">
+<link rel="stylesheet" href="brick.css?v=9">
 </head>
 <body>
 <!--
@@ -37,8 +37,8 @@
     <a class="corner home" href="../" aria-label="Back to lucidité" title="Back to lucidité">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
     </a>
-    <button class="corner cfgbtn" id="help-open" aria-label="Style, settings and help" title="Style, settings and help">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2.1-1 2.1-2 0-1.7-1.3-1.8-1.3-3.1 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4-4-7-9-7Z"/><circle cx="7.6" cy="11.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="10.6" cy="7.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.6" cy="7.6" r="1.15" fill="currentColor" stroke="none"/></svg>
+    <button class="corner cfgbtn" id="help-open" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><path d="M12 2.6v3M12 18.4v3M2.6 12h3M18.4 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/></svg>
     </button>
 
     <i class="bolt l"></i><i class="bolt r"></i>
@@ -123,10 +123,16 @@
         <button type="button" role="tab" data-tab="help" aria-selected="false">Help</button>
       </div>
 
+      <div class="panes">
       <section data-pane="style">
         <div class="livepv" id="live-pv"></div>
         <h3>Skins</h3>
-        <div class="skins" id="skin-pick"></div>
+        <div class="carousel">
+          <button type="button" class="car-btn prev" id="skin-prev" aria-label="Previous skin">&#8249;</button>
+          <div class="skins" id="skin-pick" role="listbox" aria-label="Skins"></div>
+          <button type="button" class="car-btn next" id="skin-next" aria-label="Next skin">&#8250;</button>
+        </div>
+        <div class="dots" id="skin-dots"></div>
         <h3>Fine-tune</h3>
         <div class="opt"><div class="optl">Layout</div>
           <div class="seg" id="layout-pick">
@@ -186,12 +192,13 @@
           <li>On iPhone the ringer switch silences web audio.</li>
         </ul>
       </section>
+      </div>
     </div>
   </div>
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=8"></script>
-<script src="engine.js?v=8"></script>
+<script src="games.js?v=9"></script>
+<script src="engine.js?v=9"></script>
 </body>
 </html>
