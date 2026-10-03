@@ -19,7 +19,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="brick.css?v=24">
+<link rel="stylesheet" href="brick.css?v=25">
 </head>
 <body>
 <!--
@@ -167,7 +167,9 @@
       <section data-pane="style">
         <div class="dk-top">
           <div class="cap" id="live-cap"></div>
-          <div class="dk-tex"><span>Texture</span>
+          <div class="dk-tex">
+            <button type="button" class="bgbtn" id="bg-pick" aria-label="Change the backdrop behind the console" title="Backdrop"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></button>
+            <span>Texture</span>
             <div class="seg mini" id="tex-pick">
               <button type="button" data-tex="1">On</button>
               <button type="button" data-tex="0">Off</button>
@@ -181,9 +183,9 @@
         </div>
         <div class="dots" id="skin-dots" hidden></div>
         <div class="dk-rows">
-          <div class="srow"><span>Body</span><div class="swatches strip" id="colour-pick"></div></div>
-          <div class="srow"><span>Buttons</span><div class="swatches strip" id="key-pick"></div></div>
-          <div class="srow"><span>Screen</span><div class="swatches strip" id="tint-pick"></div></div>
+          <div class="srow"><span>Body<em id="val-body"></em></span><div class="swatches strip" id="colour-pick"></div></div>
+          <div class="srow"><span>Buttons<em id="val-key"></em></span><div class="swatches strip" id="key-pick"></div></div>
+          <div class="srow"><span>Screen<em id="val-tint"></em></span><div class="swatches strip" id="tint-pick"></div></div>
           <div class="srow"><span>Mascot</span><div class="mascots" id="mascot-pick"></div></div>
         </div>
       </section>
@@ -246,10 +248,10 @@
 </main>
 
 <noscript><p style="color:#ddd;font:16px system-ui;padding:2rem">Brick Game needs JavaScript.</p></noscript>
-<script src="games.js?v=24"></script>
-<script src="mascots.js?v=24"></script>
-<script src="engine.js?v=24"></script>
-<script src="back.js?v=24"></script>
-<script src="welcome.js?v=24"></script>
+<script src="games.js?v=25"></script>
+<script src="mascots.js?v=25"></script>
+<script src="engine.js?v=25"></script>
+<script src="back.js?v=25"></script>
+<script src="welcome.js?v=25"></script>
 </body>
 </html>
