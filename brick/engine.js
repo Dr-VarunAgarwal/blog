@@ -8,7 +8,7 @@
 
   /* Self-heal: if the browser served an old stylesheet next to this script (stale HTTP/service-worker cache),
      drop every cache and reload once, so a half-updated page never stays on screen. */
-  const BUILD = '34';
+  const BUILD = '35';
   // Escape hatch: open /brick/?reset once to wipe this site's service worker and caches, then land on a clean page.
   if (/[?&]reset\b/.test(location.search)) {
     const regs = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))) : Promise.resolve();
@@ -774,7 +774,7 @@
   /* ---------- the strip under the mascot: warnings, tips and little jokes ---------- */
   const TIPS_INFO = [
     'HOLD ROTATE FOR TURBO IN SNAKE AND ROAD RACER', 'UP IS A HARD DROP IN BRICK FALL', 'RESET TAKES YOU HOME',
-    'PICK SPEED AND LEVEL ON THE TITLE SCREEN', 'BEST SCORES ARE SAVED ON THIS DEVICE', 'HOLD ON/OFF DURING A GAME TO SWITCH OFF',
+    'PICK SPEED AND LEVEL ON THE CLASSIC SCREEN', 'BEST SCORES ARE SAVED ON THIS DEVICE', 'HOLD ON/OFF DURING A GAME TO SWITCH OFF',
     'THE GEAR OPENS SETTINGS', 'THE TOP-LEFT KEY TURNS THE CONSOLE OVER', 'LEVEL CHANGES THE CHALLENGE, SPEED CHANGES THE PACE'
   ];
   const TIPS_FUN = [
