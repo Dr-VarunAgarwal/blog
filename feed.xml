@@ -6,7 +6,14 @@
   <atom:link href="https://blog.varunagarwal.com/feed.xml" rel="self" type="application/rss+xml"/>
   <description>New things filed across Varun Agarwal's sites: photos, books, notes.</description>
   <language>en</language>
-  <lastBuildDate>Sun, 11 Oct 2026 17:38:39 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 07:08:13 GMT</lastBuildDate>
+  <item>
+    <title>Notes: Lab2Life</title>
+    <link>https://varunagarwal.com/lab2life/</link>
+    <guid isPermaLink="false">https://varunagarwal.com/lab2life/#2026-11-23</guid>
+    <pubDate>Mon, 23 Nov 2026 07:08:13 GMT</pubDate>
+    <description>&lt;p&gt;I was curious about how scientific discoveries actually affect and change the world around us. One instance that comes to mind is atomic switches: I remember reading that news and being wowed, unaware of how it could change the world. So I curated a set of scientific discoveries, when they came into real-world use, and how they have impacted other discoveries over time. Partly researched by Gemini and Claude, conceptualised by me.&lt;/p&gt;</description>
+  </item>
   <item>
     <title>Notes: Captain Claw on Switch</title>
     <link>https://notes.varunagarwal.com/captain-claw-switch/</link>

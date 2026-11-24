@@ -164,7 +164,11 @@ add({ section: 'site', title: 'CV',      url: 'https://varunagarwal.com/', blurb
   const file = 'index.html';
   const ENTRIES = extractArray(show('notes', file), 'ENTRIES');
   for (const e of ENTRIES) {
-    if (e.status === 'live') {
+    if (e.status === 'live' && e.url) {
+      // external live link (e.g. Lab2Life on varunagarwal.com): no page in this repo to read
+      add({ section: 'notes', title: e.name, url: e.url, blurb: e.blurb || '',
+        date: firstSeen('notes', file, `name:'${e.name}'`) || e.date });
+    } else if (e.status === 'live') {
       const html = show('notes', `${e.slug}/index.html`);
       add({ section: 'notes', title: e.name, url: `${REPOS.notes.base}${e.slug}/`, keywords: e.slug,
         blurb: e.blurb || metaDescription(html), cover: pageImage(html, `${REPOS.notes.base}${e.slug}/`),
