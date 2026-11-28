@@ -6,6 +6,7 @@
     { "key": "books",   "label": "Books",   "url": "https://books.varunagarwal.com/",   "role": "reading" },
     { "key": "wander",  "label": "Wander",  "url": "https://wander.varunagarwal.com/",  "role": "photographs, travel, visual field material — name/framing still evolving, not settled" },
     { "key": "notes",   "label": "Notes",   "url": "https://notes.varunagarwal.com/",   "role": "gadgets, projects, writeups, miscellaneous interests" },
-    { "key": "contact", "label": "Contact", "url": "https://contact.varunagarwal.com/", "role": "contact / vCard" }
+    { "key": "contact", "label": "Contact", "url": "https://contact.varunagarwal.com/", "role": "contact / vCard" },
+    { "key": "lab2life","label": "Lab2Life","url": "https://varunagarwal.com/lab2life/","role": "scientific discoveries against the year of their first real-world use" }
   ]
 }

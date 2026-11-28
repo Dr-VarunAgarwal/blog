@@ -295,6 +295,12 @@
     color:var(--muted-on-paper);
   }
 
+  .pinned-link{ display:flex; align-items:center; gap:0.6rem; text-decoration:none; }
+  .pinned-link svg{ width:18px; height:18px; flex-shrink:0; color:var(--text-on-paper); }
+  .pinned-link .upcoming-name{ color:var(--text-on-paper); }
+  .pinned-link:hover .upcoming-name, .pinned-link:hover svg{ color:var(--hover); }
+  .pinned-note{ margin:0.3rem 0 0 1.65rem; font-size:0.75rem; line-height:1.4; color:var(--muted-on-paper); }
+
   footer{
     max-width:var(--max); margin:1rem auto 0; padding:1.25rem 1.5rem 1.5rem;
     color:var(--muted-on-paper); font-size:0.7rem; letter-spacing:0.04em;
@@ -420,6 +426,12 @@
   [data-sec="paws"]  { --sec-color:#b5572e; }
   [data-sec="site"]  { --sec-color:#9a7a38; }
 </style>
+<style>
+/* page transitions: a soft cross-fade between pages on the same family of sites (ignored by browsers without support) */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.28s}
+@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}
+</style>
 </head>
 <body>
 
@@ -505,6 +517,18 @@
     </div>
     <ol class="filed-list" id="filed-list"></ol>
     <button class="filed-more" id="filed-more" type="button" hidden>Older</button>
+  </div>
+
+  <div class="upcoming pinned">
+    <span class="upcoming-tag">Also</span>
+    <a class="pinned-link" href="https://varunagarwal.com/lab2life/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/>
+        <path d="M7.5 15h9"/>
+      </svg>
+      <span class="upcoming-name">Lab2Life</span>
+    </a>
+    <p class="pinned-note">Scientific discoveries, and when they reached real life.</p>
   </div>
 
   <div class="upcoming">
